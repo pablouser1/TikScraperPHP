@@ -1,7 +1,6 @@
 {
     "name": "pablouser1/tikscraper",
     "description": "Get data from TikTok API",
-    "version": "1.0.0",
     "type": "library",
     "license": "AGPL-3.0-or-later",
     "require": {
