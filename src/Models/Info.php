@@ -10,7 +10,7 @@ class Info extends Base {
         $this->meta = new Meta($req->http_success, $req->code, $req->data);
     }
 
-    public function setInfo(object $detail) {
+    public function setDetail(object $detail) {
         $this->detail = $detail;
     }
 
@@ -20,7 +20,7 @@ class Info extends Base {
 
     public function fromCache(object $cache) {
         $this->setMeta(new Response(true, 200, ''));
-        $this->setInfo($cache->info);
+        $this->setDetail($cache->detail);
         $this->setStats($cache->stats);
     }
 }

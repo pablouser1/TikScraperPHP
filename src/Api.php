@@ -57,7 +57,7 @@ class Api {
             $json_string = Misc::string_between($req->data, "window['SIGI_STATE']=", ";window['SIGI_RETRY']=");
             $jsonData = json_decode($json_string);
             if (isset($jsonData->UserModule)) {
-                $response->setInfo($jsonData->UserModule->users->{$username});
+                $response->setDetail($jsonData->UserModule->users->{$username});
                 $response->setStats($jsonData->UserModule->stats->{$username});
                 $this->cache->set($cache_key, $response->ToJson());
             }
@@ -109,7 +109,7 @@ class Api {
         $response = new Info;
         $response->setMeta($req);
         if ($response->meta->success) {
-            $response->setInfo($req->data->challengeInfo->challenge);
+            $response->setDetail($req->data->challengeInfo->challenge);
             $response->setStats($req->data->challengeInfo->stats);
             $this->cache->set($cache_key, $response->ToJson());
         }
@@ -152,7 +152,7 @@ class Api {
             $json_string = Misc::string_between($req->data, "window['SIGI_STATE']=", ";window['SIGI_RETRY']=");
             $jsonData = json_decode($json_string);
             if (isset($jsonData->MusicModule)) {
-                $result->setInfo($jsonData->MusicModule->musicInfo->music);
+                $result->setDetail($jsonData->MusicModule->musicInfo->music);
                 $result->setStats($jsonData->MusicModule->musicInfo->stats);
 
                 $this->cache->set($cache_key, $result->ToJson());
@@ -219,7 +219,7 @@ class Api {
                 $response->setItems([$item]);
                 $response->setNav(false, null, '');
                 $info = new Info;
-                $info->setInfo($jsonData->UserModule->users->{$username});
+                $info->setDetail($jsonData->UserModule->users->{$username});
                 $info->setStats($item->stats);
                 $response->setInfo($info);
                 $this->cache->set($cache_key, $response->ToJson());
