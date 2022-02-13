@@ -2,7 +2,7 @@
     "name": "pablouser1/tikscraper",
     "description": "Get data from TikTok API",
     "type": "library",
-    "license": "AGPL-3.0-or-later",
+    "license": "MIT",
     "require": {
         "php": ">=7.3|^8.0"
     },
