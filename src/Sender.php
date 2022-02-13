@@ -8,7 +8,6 @@ use TikScraper\Models\Response;
 
 class Sender {
     private const REFERER = 'https://www.tiktok.com/foryou';
-    private const DEFAULT_USERAGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36";
     private const DEFAULT_HEADERS = [
         "authority: m.tiktok.com",
         "method: GET",
@@ -25,9 +24,13 @@ class Sender {
     ];
 
     private $remote_signer = 'http://localhost:8080/signature';
+    private $proxy = [];
+    private string $cookie_file = '';
 
     function __construct(array $config) {
         if (isset($config['remote_signer'])) $this->remote_signer = $config['remote_signer'];
+        $this->cookie_file = $_config['cookie_file'] ?? sys_get_temp_dir() . '/tiktok.txt';
+        if (isset($config['proxy'])) $this->proxy = $config['proxy'];
     }
 
     // -- Extra -- //
@@ -36,13 +39,14 @@ class Sender {
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HEADER => false,
-            CURLOPT_USERAGENT => self::DEFAULT_USERAGENT,
+            CURLOPT_USERAGENT => Common::DEFAULT_USERAGENT,
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $url,
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json'
             ]
         ]);
+        Curl::handleProxy($ch, $this->proxy);
         $data = curl_exec($ch);
         $data_json = json_decode($data);
         return $data_json;
@@ -55,9 +59,11 @@ class Sender {
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HEADER => true,
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_USERAGENT => self::DEFAULT_USERAGENT,
+            CURLOPT_USERAGENT => Common::DEFAULT_USERAGENT,
             CURLOPT_ENCODING => 'utf-8',
             CURLOPT_AUTOREFERER => true,
+            CURLOPT_COOKIEJAR => $this->cookie_file,
+            CURLOPT_COOKIEFILE => $this->cookie_file,
             CURLOPT_HTTPHEADER => $req_headers
         ]);
 
@@ -73,6 +79,8 @@ class Sender {
                 return $len;
             }
         );
+
+        Curl::handleProxy($ch, $this->proxy);
 
         $data = curl_exec($ch);
         return $data;
@@ -107,7 +115,7 @@ class Sender {
         $cookies = '';
         $ch = curl_init();
         $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint . '/';
-        $useragent = self::DEFAULT_USERAGENT;
+        $useragent = Common::DEFAULT_USERAGENT;
 
         if ($isApi) {
             $device_id = Misc::makeId();
@@ -149,6 +157,7 @@ class Sender {
             CURLOPT_COOKIE => $cookies,
             CURLOPT_HTTPHEADER => array_merge($headers, self::DEFAULT_HEADERS)
         ]);
+        Curl::handleProxy($ch, $this->proxy);
         $data = curl_exec($ch);
         if (!curl_errno($ch)) {
             // Request sent

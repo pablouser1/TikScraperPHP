@@ -58,4 +58,11 @@ class Misc {
         $len = strpos($string, $end, $ini) - $ini;
         return substr($string, $ini, $len);
     }
+
+    public static function normalize($string) {
+        $string = preg_replace("/([^a-z0-9])/", "-", strtolower($string));
+        $string = preg_replace("/(\s+)/", "-", strtolower($string));
+        $string = preg_replace("/([-]+){2,}/", "-", strtolower($string));
+        return $string;
+    }
 }

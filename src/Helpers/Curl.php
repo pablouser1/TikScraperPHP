@@ -11,4 +11,14 @@ class Curl {
         }
         return $cookies;
     }
+
+    static public function handleProxy(\CurlHandle &$ch, array $proxy) {
+        // Proxy
+        if (isset($proxy['host'], $proxy['port'])) {
+            curl_setopt($ch, CURLOPT_PROXY, $proxy['host'] . ":" . $proxy['port']);
+            if (isset($proxy['username'], $proxy['password'])) {
+                curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxy['username'] . ":" . $proxy['password']);
+            }
+        }
+    }
 }

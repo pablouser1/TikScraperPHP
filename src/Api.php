@@ -4,6 +4,7 @@ namespace TikScraper;
 
 use TikScraper\Helpers\Curl;
 use TikScraper\Helpers\Misc;
+use TikScraper\Models\Discover;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
 use TikScraper\Models\Response;
@@ -186,14 +187,62 @@ class Api {
         }
         return $this->__buildErrorFeed($music);
     }
-
-    public function getDiscover() {
-        $cacheKey = 'discover';
-        if ($this->cache->exists($cacheKey)) {
-            // TODO, ADD CACHE SUPPORT
+    /**
+     * Get video by video id
+     * Accept video ID and returns video detail object
+     */
+    public function getVideoByID(string $video_id): Feed {
+        $subdomain = '';
+        $endpoint = '';
+        if (is_numeric($video_id)) {
+            $subdomain = 'm';
+            $endpoint = '/v/' . $video_id;
+        } else {
+            $subdomain = 'vm';
+            $endpoint = '/' . $video_id;
         }
 
-        // TODO, MAKE DISCOVER
+        $req = $this->sender->sendGet($endpoint, $subdomain, [], false);
+        $response = new Feed;
+        $response->setMeta($req);
+        if ($response->meta->success) {
+            $json_string = Misc::string_between($req->data, "window['SIGI_STATE']=", ";window['SIGI_RETRY']=");
+            $jsonData = json_decode($json_string);
+            if (isset($jsonData->ItemModule, $jsonData->ItemList, $jsonData->UserModule)) {
+                $id = $jsonData->ItemList->video->keyword;
+                $item = $jsonData->ItemModule->{$id};
+                $username = $item->author;
+
+                $response->setItems([$item]);
+                $response->setNav(false, null, '');
+                $info = new Info;
+                $info->setInfo($jsonData->UserModule->users->{$username});
+                $info->setStats($item->stats);
+                $response->setInfo($info);
+            }
+        }
+        return $response;
+    }
+
+    public function getDiscover(): Discover {
+        $cacheKey = 'discover';
+        if ($this->cache->exists($cacheKey));
+        $query = [
+            'userCount' => 30,
+            'from_page' => 'discover'
+        ];
+        $req = $this->sender->sendGet('/node/share/discover', 'm', $query, true);
+        $response = new Discover;
+        $response->setMeta($req);
+        if ($response->meta->success) {
+            $response->setItems(
+                $req->data->body[0]->exploreList,
+                $req->data->body[1]->exploreList,
+                $req->data->body[2]->exploreList
+            );
+            $this->cache->set($cacheKey, $response->ToJson());
+        }
+        return $response;
     }
 
     // Misc

@@ -9,11 +9,22 @@ class Feed extends Base {
     public ?int $minCursor = 0;
     public string $maxCursor = '0';
 
-    private function setData(array $items, bool $hasMore, ?int $minCursor, string $maxCursor) {
-        $this->items = $items;
+    public function setMeta(Response $req) {
+        $this->meta = new Meta($req->http_success, $req->code, $req->data);
+    }
+
+    public function setInfo(Info $info) {
+        $this->info = $info;
+    }
+
+    public function setNav(bool $hasMore, ?int $minCursor, string $maxCursor) {
         $this->hasMore = $hasMore;
         $this->minCursor = $minCursor;
         $this->maxCursor = $maxCursor;
+    }
+
+    public function setItems(array $items) {
+        $this->items = $items;
     }
 
     public function fromReq(Response $req, ?int $minCursor = 0, string $ttwid = '') {
@@ -25,16 +36,17 @@ class Feed extends Base {
             } else {
                 $maxCursor = $data->cursor ?? null;
             }
-            $this->setData($data->itemList, $data->hasMore, $minCursor, $maxCursor);
+            $this->setItems($data->ItemList);
+            $this->setNav($data->hasMore, $minCursor, $maxCursor);
         }
-    }
-
-    public function setInfo(Info $info) {
-        $this->info = $info;
     }
 
     public function fromCache(object $cache) {
         $this->meta = new Meta(true, 200, '');
-        $this->setData($cache->items, $cache->hasMore, $cache->minCursor, $cache->maxCursor);
+        $info = new Info;
+        $info->fromCache($cache->info);
+        $this->setItems($cache->items);
+        $this->setNav($cache->hasMore, $cache->minCursor, $cache->maxCursor);
+        $this->setInfo($info);
     }
 }

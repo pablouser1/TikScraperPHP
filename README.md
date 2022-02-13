@@ -16,7 +16,7 @@ TikTok uses a signature system to validate some requests, this library gets thos
 I personally use [this one](https://github.com/carcabot/tiktok-signature) and I highly recommend it.
 
 ## TODO
-* Fix getHashtagFeed (currently returning VERIFY_CODE at least for me)
+* Fix getHashtagFeed and getDiscover (currently returning VERIFY_CODE at least for me)
 * Adding Discover
 * Cache some cookies
 
