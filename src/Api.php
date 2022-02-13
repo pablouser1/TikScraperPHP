@@ -19,8 +19,9 @@ class Api {
     }
 
     public function getTrending(string $ttwid = '', int $page = 0): Feed {
+        // TODO, ADD CACHE SUPPORT
         $cache_key = 'trending-feed-' . $page;
-        if ($this->cache->exists($cache_key)) return $this->cache->handleFeed($cache_key);
+        // if ($this->cache->exists($cache_key)) return $this->cache->handleFeed($cache_key);
 
         if (!$ttwid) {
             $ttwid = $this->__getTtwid();
@@ -38,9 +39,11 @@ class Api {
         $response = new Feed;
         $response->fromReq($req, null, $ttwid);
 
+        /*
         if ($response->meta->success) {
             $this->cache->set($cache_key, $response->ToJson());
         }
+        */
         return $response;
     }
 
@@ -259,7 +262,7 @@ class Api {
     }
 
     private function __getTtwid(): string {
-        $data = $this->sender->sendHead('https://www.tiktok.com/');
+        $data = $this->sender->sendHead('https://www.tiktok.com/foryou?lang=en');
         $cookies = Curl::extractCookies($data);
         return $cookies['ttwid'];
     }
