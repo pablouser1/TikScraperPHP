@@ -4,6 +4,9 @@
     "version": "1.0.0",
     "type": "library",
     "license": "AGPL-3.0-or-later",
+    "require": {
+        "php": ">=7.3|^8.0"
+    },
     "autoload": {
         "psr-4": {
             "TikScraper\\": "src/"
