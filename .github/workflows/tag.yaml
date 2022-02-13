@@ -17,7 +17,7 @@ jobs:
       with:
         GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         tag_prefix: "v"
-        root: "${process.env.GITHUB_WORKSPACE}/VERSION"
+        root: "./VERSION"
         regex_pattern: "(^[0-9][0-9.]*$)"
     - name: Create Release
       uses: ncipollo/release-action@v1
