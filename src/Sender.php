@@ -50,6 +50,8 @@ class Sender {
             CURLOPT_USERAGENT => Common::DEFAULT_USERAGENT,
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $url,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 30,
             CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json'
             ]
