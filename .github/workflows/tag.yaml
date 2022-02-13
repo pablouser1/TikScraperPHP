@@ -19,7 +19,7 @@ jobs:
         tag_prefix: "v"
         strategy: regex
         root: "./VERSION"
-        regex_pattern: "(^[0-9][0-9.]*$)"
+        regex_pattern: "/(^[0-9][0-9.]*$)/g"
     - name: Create Release
       uses: ncipollo/release-action@v1
       with:
