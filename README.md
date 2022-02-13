@@ -3,7 +3,7 @@ A Wrapper for the TikTok API made with PHP
 
 ## How to Use
 ```php
-$api = new TikWrapper([
+$api = new \TikScraper\Api([
     'signer_url' => 'URL_HERE'
 ], $cacheEngine);
 
