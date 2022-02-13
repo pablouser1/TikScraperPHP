@@ -23,14 +23,21 @@ class Sender {
         "sec-gpc: 1"
     ];
 
+    private Storage $storage;
+
     private $remote_signer = 'http://localhost:8080/signature';
     private $proxy = [];
-    private string $cookie_file = '';
 
     function __construct(array $config) {
         if (isset($config['remote_signer'])) $this->remote_signer = $config['remote_signer'];
-        $this->cookie_file = $_config['cookie_file'] ?? sys_get_temp_dir() . '/tiktok.txt';
         if (isset($config['proxy'])) $this->proxy = $config['proxy'];
+
+        $this->storage = new Storage($config['storage_file'] ?? sys_get_temp_dir() . '/tiktok.json');
+        if (!isset($this->storage->cookies['csrf_session_id'], $this->storage->headers['csrf_token'])) {
+            $extra = $this->getInfo('https://www.tiktok.com');
+            $this->storage->cookies['csrf_session_id'] = $extra['csrf_session_id'];
+            $this->storage->headers['csrf_token'] = $extra['csrf_token'];
+        }
     }
 
     // -- Extra -- //
@@ -62,8 +69,6 @@ class Sender {
             CURLOPT_USERAGENT => Common::DEFAULT_USERAGENT,
             CURLOPT_ENCODING => 'utf-8',
             CURLOPT_AUTOREFERER => true,
-            CURLOPT_COOKIEJAR => $this->cookie_file,
-            CURLOPT_COOKIEFILE => $this->cookie_file,
             CURLOPT_HTTPHEADER => $req_headers
         ]);
 
@@ -139,10 +144,8 @@ class Sender {
 
             // Extra
             if ($subdomain === 'm') {
-                $extra = $this->getInfo($url);
-                $csrf_token = $extra['csrf_token'];
-                $headers[] = "x-secsdk-csrf-token: {$csrf_token}";
-                $cookies .= Request::getCookies($device_id, $extra['csrf_session_id']);
+                $headers[] = 'x-secsdk-csrf-token:' . $this->storage->headers['csrf_token'];
+                $cookies .= Request::getCookies($device_id, $this->storage->cookies['csrf_session_id']);
             }
         }
 

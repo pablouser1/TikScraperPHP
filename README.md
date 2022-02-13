@@ -4,7 +4,8 @@ A Wrapper for the TikTok API made with PHP
 ## How to Use
 ```php
 $api = new \TikScraper\Api([
-    'signer_url' => 'URL_HERE'
+    'signer_url' => 'URL_HERE',
+    'storage_file' => '/tmp/test.json'
 ], $cacheEngine);
 
 $hashtag_feed = $api->getHashtagFeed();
@@ -17,8 +18,6 @@ I personally use [this one](https://github.com/carcabot/tiktok-signature) and I 
 
 ## TODO
 * Fix getHashtagFeed and getDiscover (currently returning VERIFY_CODE at least for me)
-* Adding Discover
-* Cache some cookies
 
 ## Credits
 HUGE thanks to the following projects, this wouldn't be possible without their help

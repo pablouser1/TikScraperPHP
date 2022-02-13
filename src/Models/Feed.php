@@ -36,7 +36,7 @@ class Feed extends Base {
             } else {
                 $maxCursor = $data->cursor ?? null;
             }
-            $this->setItems($data->ItemList);
+            $this->setItems($data->itemList);
             $this->setNav($data->hasMore, $minCursor, $maxCursor);
         }
     }
