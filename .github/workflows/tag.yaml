@@ -1,0 +1,24 @@
+name: Create Tag
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get version
+        id: version
+        uses: notiz-dev/github-action-json-property@release
+        with:
+          path: 'composer.json'
+          prop_path: 'version'
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{steps.version.outputs.prop}}
+          token: ${{ secrets.GITHUB_TOKEN }}
