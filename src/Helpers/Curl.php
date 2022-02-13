@@ -19,6 +19,7 @@ class Curl {
             if (isset($proxy['username'], $proxy['password'])) {
                 curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxy['username'] . ":" . $proxy['password']);
             }
+            curl_setopt($ch, CURLOPT_NOPROXY, '127.0.0.1,localhost');
         }
     }
 }

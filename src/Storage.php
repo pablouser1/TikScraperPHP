@@ -15,7 +15,7 @@ class Storage {
         }
     }
 
-    function __destruct() {
+    public function save() {
         if (!empty($this->cookies) && !empty($this->headers)) {
             $data = [
                 'cookies' => $this->cookies,

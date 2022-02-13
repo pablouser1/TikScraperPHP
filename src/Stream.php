@@ -36,7 +36,7 @@ class Stream {
         return strlen($data);
     }
 
-    public function stream($url) {
+    public function url($url) {
         $ch = curl_init($url);
 
         $headers = [];

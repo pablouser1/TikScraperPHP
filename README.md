@@ -5,7 +5,13 @@ A Wrapper for the TikTok API made with PHP
 ```php
 $api = new \TikScraper\Api([
     'signer_url' => 'URL_HERE',
-    'storage_file' => '/tmp/test.json'
+    'storage_file' => '/tmp/test.json',
+    'proxy' => [
+        'host' => 'EXAMPLE_HOST',
+        'port' => 8080,
+        'user' => 'EXAMPLE_USER',
+        'password' => 'EXAMPLE_PASSWORD'
+    ]
 ], $cacheEngine);
 
 $hashtag_feed = $api->getHashtagFeed();
@@ -15,9 +21,6 @@ echo $hashtag_feed->ToJSON(true);
 ## Signatures
 TikTok uses a signature system to validate some requests, this library gets those signatures using a third party signer.
 I personally use [this one](https://github.com/carcabot/tiktok-signature) and I highly recommend it.
-
-## TODO
-* Fix getHashtagFeed and getDiscover (currently returning VERIFY_CODE at least for me)
 
 ## Credits
 HUGE thanks to the following projects, this wouldn't be possible without their help

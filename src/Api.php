@@ -83,7 +83,7 @@ class Api {
                 "appId" => 1233
             ];
 
-            $req = $this->sender->sendGet('/api/post/item_list/', 'm', $query, true, true);
+            $req = $this->sender->sendGet('/api/post/item_list/', 'm', $query, true, true, true);
             $response = new Feed;
             $response->fromReq($req, $cursor);
             $response->setInfo($user);
@@ -128,7 +128,7 @@ class Api {
                 "challengeID" => $id,
                 "cursor" => $cursor
             ];
-            $req = $this->sender->sendGet('/api/challenge/item_list', 'm', $query);
+            $req = $this->sender->sendGet('/api/challenge/item_list', 'm', $query, true, false);
             $response = new Feed;
             $response->fromReq($req, $cursor);
             $response->setInfo($hashtag);
@@ -174,7 +174,7 @@ class Api {
                 "shareUid" => "",
                 "count" => 30,
             ];
-            $req = $this->sender->sendGet('/api/music/item_list/', 'm', $query, true, true);
+            $req = $this->sender->sendGet('/api/music/item_list/', 'm', $query, true, true, true);
             $response = new Feed;
             $response->fromReq($req, $cursor);
             $response->setInfo($music);
@@ -192,6 +192,9 @@ class Api {
      * Accept video ID and returns video detail object
      */
     public function getVideoByID(string $video_id): Feed {
+        $cache_key = 'video-' . $video_id;
+        if ($this->cache->exists($cache_key)) return $this->cache->handleFeed($cache_key);
+
         $subdomain = '';
         $endpoint = '';
         if (is_numeric($video_id)) {
@@ -219,6 +222,7 @@ class Api {
                 $info->setInfo($jsonData->UserModule->users->{$username});
                 $info->setStats($item->stats);
                 $response->setInfo($info);
+                $this->cache->set($cache_key, $response->ToJson());
             }
         }
         return $response;
@@ -226,12 +230,12 @@ class Api {
 
     public function getDiscover(): Discover {
         $cacheKey = 'discover';
-        if ($this->cache->exists($cacheKey));
+        // if ($this->cache->exists($cacheKey)) return $this->cache->handleDiscover();
         $query = [
             'userCount' => 30,
             'from_page' => 'discover'
         ];
-        $req = $this->sender->sendGet('/node/share/discover', 'm', $query, true);
+        $req = $this->sender->sendGet('/node/share/discover', 'm', $query, true, false);
         $response = new Discover;
         $response->setMeta($req);
         if ($response->meta->success) {
@@ -240,7 +244,7 @@ class Api {
                 $req->data->body[1]->exploreList,
                 $req->data->body[2]->exploreList
             );
-            $this->cache->set($cacheKey, $response->ToJson());
+            // $this->cache->set($cacheKey, $response->ToJson());
         }
         return $response;
     }

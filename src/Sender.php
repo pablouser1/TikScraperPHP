@@ -37,11 +37,12 @@ class Sender {
             $extra = $this->getInfo('https://www.tiktok.com');
             $this->storage->cookies['csrf_session_id'] = $extra['csrf_session_id'];
             $this->storage->headers['csrf_token'] = $extra['csrf_token'];
+            $this->storage->save();
         }
     }
 
     // -- Extra -- //
-    public function remoteSign(string $url) {
+    public function remoteSign(string $url): ?object {
         $ch = curl_init($this->remote_signer);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
@@ -55,8 +56,11 @@ class Sender {
         ]);
         Curl::handleProxy($ch, $this->proxy);
         $data = curl_exec($ch);
-        $data_json = json_decode($data);
-        return $data_json;
+        if (!curl_errno($ch)) {
+            $data_json = json_decode($data);
+            return $data_json;
+        }
+        return null;
     }
 
     public function sendHead(string $url, array &$headers = [], array $req_headers = []) {
@@ -113,6 +117,7 @@ class Sender {
         string $subdomain = 'm',
         array $query = [],
         bool $isApi = true,
+        bool $sign = true,
         bool $send_tt_params = false,
         string $ttwid = ''
     ): Response {
@@ -123,29 +128,37 @@ class Sender {
         $useragent = Common::DEFAULT_USERAGENT;
 
         if ($isApi) {
+            $url .= Request::buildQuery($query);
             $device_id = Misc::makeId();
             $verifyFp = Misc::verify_fp();
             $query['device_id'] = $device_id;
             $query['verifyFp'] = $verifyFp;
             // URL to send to signer
-            $signing_url = $url . Request::buildQuery($query);
-            $signer_res = $this->remoteSign($signing_url);
-            $url = $signer_res->data->signed_url;
+            if ($sign) {
+                $signer_res = $this->remoteSign($url);
+                if ($signer_res && $signer_res->status === 'ok') {
+                    $url = $signer_res->data->signed_url;
 
-            $useragent = $signer_res->data->navigator->user_agent;
+                    $useragent = $signer_res->data->navigator->user_agent;
 
-            if ($send_tt_params) {
-                $headers[] = 'x-tt-params: ' . $signer_res->data->{'x-tt-params'};
-            }
+                    if ($send_tt_params) {
+                        $headers[] = 'x-tt-params: ' . $signer_res->data->{'x-tt-params'};
+                    }
 
-            if ($ttwid) {
-                $cookies .= 'ttwid=' . $ttwid . ';';
-            }
+                    if ($ttwid) {
+                        $cookies .= 'ttwid=' . $ttwid . ';';
+                    }
 
-            // Extra
-            if ($subdomain === 'm') {
-                $headers[] = 'x-secsdk-csrf-token:' . $this->storage->headers['csrf_token'];
-                $cookies .= Request::getCookies($device_id, $this->storage->cookies['csrf_session_id']);
+                    // Extra
+                    if ($subdomain === 'm') {
+                        $path = parse_url($url, PHP_URL_PATH);
+                        $headers[] = "path: {$path}";
+                        $headers[] = 'x-secsdk-csrf-token:' . $this->storage->headers['csrf_token'];
+                        $cookies .= Request::getCookies($device_id, $this->storage->cookies['csrf_session_id']);
+                    }
+                } else {
+                    return new Response(false, 503, '');
+                }
             }
         }
 
@@ -155,7 +168,7 @@ class Sender {
             CURLOPT_HEADER => false,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_USERAGENT => $useragent,
-            CURLOPT_ENCODING => "utf-8",
+            CURLOPT_ENCODING => 'utf-8',
             CURLOPT_AUTOREFERER => true,
             CURLOPT_COOKIE => $cookies,
             CURLOPT_HTTPHEADER => array_merge($headers, self::DEFAULT_HEADERS)
