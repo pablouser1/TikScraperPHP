@@ -11,16 +11,13 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Autotag
-      id: tag
-      uses: butlerlogic/action-autotag@stable
+    - name: Read package.json
+      id: version
+      uses: juliangruber/read-file-action@v1
       with:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        tag_prefix: "v"
-        root: "./VERSION"
-        regex_pattern: "(^[0-9][0-9.]*$)"
+        path: ./VERSION
     - name: Create Release
       uses: ncipollo/release-action@v1
       with:
-        tag: v${{steps.tag.outputs.version}}
+        tag: v${{steps.tag.outputs.content}}
         token: ${{ secrets.GITHUB_TOKEN }}
