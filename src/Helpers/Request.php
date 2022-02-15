@@ -1,6 +1,8 @@
 <?php
 namespace TikScraper\Helpers;
 
+use TikScraper\Common;
+
 class Request {
     static public function getCookies(string $device_id, string $csrf_session_id): string {
         $cookies = '';
@@ -22,8 +24,8 @@ class Request {
             "aid" => 1988,
             "app_name" => "tiktok_web",
             "device_platform" => "web_mobile",
-            "region" => "US",
-            "priority_region" => "US",
+            "region" => "us",
+            "priority_region" => "",
             "os" => "ios",
             "referer" => '',
             "cookie_enabled" => true,
@@ -32,14 +34,15 @@ class Request {
             "browser_language" => "en-US",
             "browser_platform" => "Linux",
             "browser_name" => "Mozilla",
-            "browser_version" => "5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (Windows NT 10.0; Win64; x64) Chrome/90.0.4430.85 Safari/537.36",
+            "browser_version" => urlencode(Common::DEFAULT_USERAGENT),
             "browser_online" => true,
             "tz_name" => "America/Chicago",
             "is_page_visible" => true,
             "focus_state" => true,
             "is_fullscreen" => false,
             "history_len" => rand(0, 30),
-            "language" => "en"
+            "language" => "en",
+            'msToken' => ''
         ]);
         return '?' . http_build_query($query_merged);
     }

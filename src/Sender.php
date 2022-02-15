@@ -8,37 +8,27 @@ use TikScraper\Models\Response;
 
 class Sender {
     private const REFERER = 'https://www.tiktok.com/foryou';
-    private const DEFAULT_HEADERS = [
+    private const DEFAULT_API_HEADERS = [
         "authority: m.tiktok.com",
         "method: GET",
         "scheme: https",
         "accept: application/json, text/plain, */*",
         "accept-encoding: gzip, deflate, br",
         "accept-language: en-US,en;q=0.9",
-        "origin:" . self::REFERER,
-        "referer:" . self::REFERER,
         "sec-fetch-dest: empty",
         "sec-fetch-mode: cors",
         "sec-fetch-site: same-site",
         "sec-gpc: 1"
     ];
 
-    private Storage $storage;
-
     private $remote_signer = 'http://localhost:8080/signature';
     private $proxy = [];
+    private $use_test_endpoints = false;
 
     function __construct(array $config) {
         if (isset($config['remote_signer'])) $this->remote_signer = $config['remote_signer'];
         if (isset($config['proxy'])) $this->proxy = $config['proxy'];
-
-        $this->storage = new Storage($config['storage_file'] ?? sys_get_temp_dir() . '/tiktok.json');
-        if (!isset($this->storage->cookies['csrf_session_id'], $this->storage->headers['csrf_token'])) {
-            $extra = $this->getInfo('https://www.tiktok.com');
-            $this->storage->cookies['csrf_session_id'] = $extra['csrf_session_id'];
-            $this->storage->headers['csrf_token'] = $extra['csrf_token'];
-            $this->storage->save();
-        }
+        if (isset($config['use_test_endpoints'])) $this->use_test_endpoints = true;
     }
 
     // -- Extra -- //
@@ -119,48 +109,44 @@ class Sender {
         string $subdomain = 'm',
         array $query = [],
         bool $isApi = true,
-        bool $sign = true,
         bool $send_tt_params = false,
         string $ttwid = ''
     ): Response {
+        if ($this->use_test_endpoints && $subdomain === 'm') {
+            $subdomain = 't';
+        }
         $headers = [];
         $cookies = '';
         $ch = curl_init();
-        $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint . '/';
+        $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint . '/' . Request::buildQuery($query);;
         $useragent = Common::DEFAULT_USERAGENT;
 
         if ($isApi) {
-            $url .= Request::buildQuery($query);
+            $headers = array_merge($headers, self::DEFAULT_API_HEADERS);
             $device_id = Misc::makeId();
             $verifyFp = Misc::verify_fp();
             $query['device_id'] = $device_id;
             $query['verifyFp'] = $verifyFp;
             // URL to send to signer
-            if ($sign) {
-                $signer_res = $this->remoteSign($url);
-                if ($signer_res && $signer_res->status === 'ok') {
-                    $url = $signer_res->data->signed_url;
+            $signer_res = $this->remoteSign($url);
+            if ($signer_res && $signer_res->status === 'ok') {
+                $url = $signer_res->data->signed_url;
 
-                    $useragent = $signer_res->data->navigator->user_agent;
+                $useragent = $signer_res->data->navigator->user_agent;
 
-                    if ($send_tt_params) {
-                        $headers[] = 'x-tt-params: ' . $signer_res->data->{'x-tt-params'};
-                    }
-
-                    if ($ttwid) {
-                        $cookies .= 'ttwid=' . $ttwid . ';';
-                    }
-
-                    // Extra
-                    if ($subdomain === 'm') {
-                        $path = parse_url($url, PHP_URL_PATH);
-                        $headers[] = "path: {$path}";
-                        $headers[] = 'x-secsdk-csrf-token:' . $this->storage->headers['csrf_token'];
-                        $cookies .= Request::getCookies($device_id, $this->storage->cookies['csrf_session_id']);
-                    }
-                } else {
-                    return new Response(false, 503, '');
+                if ($send_tt_params) {
+                    $headers[] = 'x-tt-params: ' . $signer_res->data->{'x-tt-params'};
                 }
+
+                if ($ttwid) {
+                    $cookies .= 'ttwid=' . $ttwid . ';';
+                }
+
+                // Extra
+                $path = parse_url($url, PHP_URL_PATH);
+                $headers[] = "path: {$path}";
+            } else {
+                return new Response(false, 503, '');
             }
         }
 
@@ -172,8 +158,10 @@ class Sender {
             CURLOPT_USERAGENT => $useragent,
             CURLOPT_ENCODING => 'utf-8',
             CURLOPT_AUTOREFERER => true,
+            CURLOPT_REFERER => self::REFERER,
             CURLOPT_COOKIE => $cookies,
-            CURLOPT_HTTPHEADER => array_merge($headers, self::DEFAULT_HEADERS)
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4
         ]);
         Curl::handleProxy($ch, $this->proxy);
         $data = curl_exec($ch);

@@ -18,11 +18,7 @@ class Api {
         $this->cache = new Cache($cache_engine);
     }
 
-    public function getTrending(string $ttwid = '', int $page = 0): Feed {
-        // TODO, ADD CACHE SUPPORT
-        $cache_key = 'trending-feed-' . $page;
-        // if ($this->cache->exists($cache_key)) return $this->cache->handleFeed($cache_key);
-
+    public function getTrending(string $ttwid = ''): Feed {
         if (!$ttwid) {
             $ttwid = $this->__getTtwid();
         }
@@ -38,12 +34,6 @@ class Api {
         $req = $this->sender->sendGet('/api/recommend/item_list', 'm', $query, true, false, $ttwid);
         $response = new Feed;
         $response->fromReq($req, null, $ttwid);
-
-        /*
-        if ($response->meta->success) {
-            $this->cache->set($cache_key, $response->ToJson());
-        }
-        */
         return $response;
     }
 
@@ -86,7 +76,7 @@ class Api {
                 "appId" => 1233
             ];
 
-            $req = $this->sender->sendGet('/api/post/item_list/', 'm', $query, true, true, true);
+            $req = $this->sender->sendGet('/api/post/item_list/', 'm', $query, true, true);
             $response = new Feed;
             $response->fromReq($req, $cursor);
             $response->setInfo($user);
@@ -131,7 +121,7 @@ class Api {
                 "challengeID" => $id,
                 "cursor" => $cursor
             ];
-            $req = $this->sender->sendGet('/api/challenge/item_list', 'm', $query, true, false);
+            $req = $this->sender->sendGet('/api/challenge/item_list', 'm', $query);
             $response = new Feed;
             $response->fromReq($req, $cursor);
             $response->setInfo($hashtag);
@@ -177,7 +167,7 @@ class Api {
                 "shareUid" => "",
                 "count" => 30,
             ];
-            $req = $this->sender->sendGet('/api/music/item_list/', 'm', $query, true, true, true);
+            $req = $this->sender->sendGet('/api/music/item_list/', 'm', $query, true, true);
             $response = new Feed;
             $response->fromReq($req, $cursor);
             $response->setInfo($music);
@@ -233,12 +223,14 @@ class Api {
 
     public function getDiscover(): Discover {
         $cacheKey = 'discover';
-        // if ($this->cache->exists($cacheKey)) return $this->cache->handleDiscover();
+        if ($this->cache->exists($cacheKey)) return $this->cache->handleDiscover($cacheKey);
         $query = [
             'userCount' => 30,
-            'from_page' => 'discover'
+            'from_page' => 'discover',
+            'device_id' => Misc::makeId()
         ];
-        $req = $this->sender->sendGet('/node/share/discover', 'm', $query, true, false);
+        $req = $this->sender->sendGet('/node/share/discover', 'www', $query, false);
+        $req->data = json_decode($req->data); // Temp workaround
         $response = new Discover;
         $response->setMeta($req);
         if ($response->meta->success) {
@@ -247,7 +239,7 @@ class Api {
                 $req->data->body[1]->exploreList,
                 $req->data->body[2]->exploreList
             );
-            // $this->cache->set($cacheKey, $response->ToJson());
+            $this->cache->set($cacheKey, $response->ToJson());
         }
         return $response;
     }
@@ -262,8 +254,8 @@ class Api {
     }
 
     private function __getTtwid(): string {
-        $data = $this->sender->sendHead('https://www.tiktok.com/foryou?lang=en');
+        $data = $this->sender->sendHead('https://www.tiktok.com');
         $cookies = Curl::extractCookies($data);
-        return $cookies['ttwid'];
+        return $cookies['ttwid'] ?? '';
     }
 }
