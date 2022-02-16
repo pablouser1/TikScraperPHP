@@ -55,45 +55,44 @@ class Sender {
         return null;
     }
 
-    public function sendHead(string $url, array &$headers = [], array $req_headers = []) {
+    public function sendHead(string $url, array $req_headers = [], string $useragent = Common::DEFAULT_USERAGENT) {
+        $headers = [];
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_NOBODY => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HEADER => true,
             CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_USERAGENT => Common::DEFAULT_USERAGENT,
+            CURLOPT_USERAGENT => $useragent,
             CURLOPT_ENCODING => 'utf-8',
             CURLOPT_AUTOREFERER => true,
             CURLOPT_HTTPHEADER => $req_headers
         ]);
 
-        curl_setopt($ch, CURLOPT_HEADERFUNCTION,
-            function ($ch, $header) use ($headers) {
-                $len = strlen($header);
-                $header = explode(':', $header, 2);
-                if (count($header) < 2) // ignore invalid headers
-                    return $len;
-
-                $headers[strtolower(trim($header[0]))][] = trim($header[1]);
-
-                return $len;
-            }
-        );
+        curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($curl, $header) use (&$headers) {
+            $len = strlen($header);
+            $header = explode(':', $header, 2);
+            if (count($header) < 2) return $len;
+            $headers[strtolower(trim($header[0]))][] = trim($header[1]);
+            return $len;
+        });
 
         Curl::handleProxy($ch, $this->proxy);
 
         $data = curl_exec($ch);
-        return $data;
+        return [
+            'data' => $data,
+            'headers' => $headers
+        ];
     }
 
-    public function getInfo(string $url): array {
-        $headers = [];
-        $data = $this->sendHead($url, $headers, [
+    public function getInfo(string $url, string $useragent): array {
+        $res = $this->sendHead($url, [
             "x-secsdk-csrf-version: 1.2.5",
-            "x-secsdk-csrf-request: 1"
-        ]);
-        $cookies = Curl::extractCookies($data);
+            "x-secsdk-csrf-request: 1",
+        ], $useragent);
+        $headers = $res['headers'];
+        $cookies = Curl::extractCookies($res['data']);
 
         $csrf_session_id = isset($cookies['csrf_session_id']) ? $cookies['csrf_session_id'] : '';
         $csrf_token = isset($headers['x-ware-csrf-token'][0]) ? explode(',', $headers['x-ware-csrf-token'][0])[1] : '';
@@ -118,10 +117,11 @@ class Sender {
         $headers = [];
         $cookies = '';
         $ch = curl_init();
-        $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint . '/' . Request::buildQuery($query);;
+        $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint . '/';
         $useragent = Common::DEFAULT_USERAGENT;
 
         if ($isApi) {
+            $url .= Request::buildQuery($query);
             $headers = array_merge($headers, self::DEFAULT_API_HEADERS);
             $device_id = Misc::makeId();
             $verifyFp = Misc::verify_fp();
@@ -145,6 +145,9 @@ class Sender {
                 // Extra
                 $path = parse_url($url, PHP_URL_PATH);
                 $headers[] = "path: {$path}";
+                $extra = $this->getInfo($url, $useragent);
+                $headers[] = 'x-secsdk-csrf-token:' . $extra['csrf_token'];
+                $cookies .= Request::getCookies($device_id, $extra['csrf_session_id']);
             } else {
                 return new Response(false, 503, '');
             }

@@ -13,8 +13,13 @@ class Request {
             "tt_csrf_token" => Misc::generateRandomString(16)
         ];
 
+        $i = 0;
+        $cookies_index = count($cookies_array) - 1;
+
         foreach ($cookies_array as $key => $value) {
-            $cookies .= "{$key}={$value};";
+            if ($i === $cookies_index) $cookies .= "{$key}={$value}";
+            else $cookies .= "{$key}={$value}; ";
+            $i++;
         }
         return $cookies;
     }
@@ -31,12 +36,12 @@ class Request {
             "cookie_enabled" => true,
             "screen_width" => 1920,
             "screen_height" => 1080,
-            "browser_language" => "en-US",
-            "browser_platform" => "Linux",
+            "browser_language" => "en-us",
+            "browser_platform" => "iPhone",
             "browser_name" => "Mozilla",
             "browser_version" => urlencode(Common::DEFAULT_USERAGENT),
             "browser_online" => true,
-            "tz_name" => "America/Chicago",
+            "timezone_name" => "America/Chicago",
             "is_page_visible" => true,
             "focus_state" => true,
             "is_fullscreen" => false,

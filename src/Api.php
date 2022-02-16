@@ -254,8 +254,8 @@ class Api {
     }
 
     private function __getTtwid(): string {
-        $data = $this->sender->sendHead('https://www.tiktok.com');
-        $cookies = Curl::extractCookies($data);
+        $res = $this->sender->sendHead('https://www.tiktok.com');
+        $cookies = Curl::extractCookies($res['data']);
         return $cookies['ttwid'] ?? '';
     }
 }
