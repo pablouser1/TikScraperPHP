@@ -28,7 +28,7 @@ class Sender {
     function __construct(array $config) {
         if (isset($config['remote_signer'])) $this->remote_signer = $config['remote_signer'];
         if (isset($config['proxy'])) $this->proxy = $config['proxy'];
-        if (isset($config['use_test_endpoints'])) $this->use_test_endpoints = true;
+        if (isset($config['use_test_endpoints']) && $config['use_test_endpoints']) $this->use_test_endpoints = true;
     }
 
     // -- Extra -- //
@@ -89,12 +89,12 @@ class Sender {
     public function getInfo(string $url, string $useragent): array {
         $res = $this->sendHead($url, [
             "x-secsdk-csrf-version: 1.2.5",
-            "x-secsdk-csrf-request: 1",
+            "x-secsdk-csrf-request: 1"
         ], $useragent);
         $headers = $res['headers'];
         $cookies = Curl::extractCookies($res['data']);
 
-        $csrf_session_id = isset($cookies['csrf_session_id']) ? $cookies['csrf_session_id'] : '';
+        $csrf_session_id = $cookies['csrf_session_id'] ?? '';
         $csrf_token = isset($headers['x-ware-csrf-token'][0]) ? explode(',', $headers['x-ware-csrf-token'][0])[1] : '';
 
         return [
