@@ -13,7 +13,7 @@ class Api {
     private Sender $sender;
     private Cache $cache;
 
-    function __construct(array $config = [], mixed $cache_engine = false) {
+    function __construct(array $config = [], $cache_engine = null) {
         $this->sender = new Sender($config);
         $this->cache = new Cache($cache_engine);
     }

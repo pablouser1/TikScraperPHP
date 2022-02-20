@@ -12,7 +12,7 @@ class Curl {
         return $cookies;
     }
 
-    static public function handleProxy(\CurlHandle &$ch, array $proxy) {
+    static public function handleProxy(&$ch, array $proxy) {
         // Proxy
         if (isset($proxy['host'], $proxy['port'])) {
             curl_setopt($ch, CURLOPT_PROXY, $proxy['host'] . ":" . $proxy['port']);

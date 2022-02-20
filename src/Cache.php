@@ -8,9 +8,9 @@ use TikScraper\Models\Info;
 class Cache {
     const TIMEOUT = 3600;
     private bool $enabled = false;
-    private mixed $engine;
+    private $engine;
 
-    function __construct(mixed $cache_engine) {
+    function __construct($cache_engine) {
         if ($cache_engine) {
             $this->enabled = true;
             $this->engine = $cache_engine;

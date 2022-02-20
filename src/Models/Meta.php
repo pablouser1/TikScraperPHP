@@ -9,7 +9,7 @@ class Meta {
     public int $tiktok_code = 0;
     public string $tiktok_msg = '';
 
-    function __construct(bool $http_success, int $code, mixed $data) {
+    function __construct(bool $http_success, int $code, $data) {
         $keys = array_keys(Codes::list);
         $http_success = $http_success;
         $http_code = $code;
