@@ -64,11 +64,9 @@ class Api {
 
         $user = $this->getUser($username);
         if ($user->meta->success) {
-            $id = $user->detail->id;
             $secUid = $user->detail->secUid;
             $query = [
                 "count" => 30,
-                "id" => $id,
                 "cursor" => $cursor,
                 "type" => 1,
                 "secUid" => $secUid,

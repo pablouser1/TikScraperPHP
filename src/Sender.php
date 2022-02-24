@@ -124,15 +124,16 @@ class Sender {
             $url .= Request::buildQuery($query);
             $headers = array_merge($headers, self::DEFAULT_API_HEADERS);
             $device_id = Misc::makeId();
-            $verifyFp = Misc::verify_fp();
-            $query['device_id'] = $device_id;
-            $query['verifyFp'] = $verifyFp;
             // URL to send to signer
             $signer_res = $this->remoteSign($url);
             if ($signer_res && $signer_res->status === 'ok') {
                 $url = $signer_res->data->signed_url;
 
                 $useragent = $signer_res->data->navigator->user_agent;
+                $verifyFp = $signer_res->data->verify_fp;
+
+                // Add verifyFp and device id to GET query
+                $url .= '&device_id=' . $device_id . '&verifyFp=' . $verifyFp;
 
                 if ($send_tt_params) {
                     $headers[] = 'x-tt-params: ' . $signer_res->data->{'x-tt-params'};
@@ -145,6 +146,8 @@ class Sender {
                 // Extra
                 $path = parse_url($url, PHP_URL_PATH);
                 $headers[] = "path: {$path}";
+
+                // Get csrf headers and cookies
                 $extra = $this->getInfo($url, $useragent);
                 $headers[] = 'x-secsdk-csrf-token:' . $extra['csrf_token'];
                 $cookies .= Request::getCookies($device_id, $extra['csrf_session_id']);
