@@ -12,6 +12,7 @@ class Codes {
         10113 => "SHARK_SLIDE",
         10114 => "SHARK_BLOCK",
         10119 => "LIVE_NEED_LOGIN",
+        10201 => 'INVALID_MUSIC_ID',
         10202 => "USER_NOT_EXIST",
         10203 => "MUSIC_NOT_EXIST",
         10204 => "VIDEO_NOT_EXIST",

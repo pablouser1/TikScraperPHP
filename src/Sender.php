@@ -7,7 +7,14 @@ use TikScraper\Helpers\Request;
 use TikScraper\Models\Response;
 
 class Sender {
-    private const REFERER = 'https://www.tiktok.com/foryou';
+    private const REFERER = 'https://www.tiktok.com';
+
+    private const DEFAULT_HTML_HEADERS = [
+        "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        "Accept-Encoding: gzip, deflate",
+        "Connection: keep-alive"
+    ];
+
     private const DEFAULT_API_HEADERS = [
         "authority: m.tiktok.com",
         "method: GET",
@@ -37,13 +44,12 @@ class Sender {
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HEADER => false,
-            CURLOPT_USERAGENT => Common::DEFAULT_USERAGENT,
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => $url,
             CURLOPT_TIMEOUT => 30,
             CURLOPT_CONNECTTIMEOUT => 30,
             CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json'
+                'Content-Type: text/plain'
             ]
         ]);
         Curl::handleProxy($ch, $this->proxy);
@@ -103,11 +109,11 @@ class Sender {
         ];
     }
 
-    public function sendGet(
+    public function sendApi(
         string $endpoint,
         string $subdomain = 'm',
         array $query = [],
-        bool $isApi = true,
+        string $static_url = '',
         bool $send_tt_params = false,
         string $ttwid = ''
     ): Response {
@@ -117,45 +123,74 @@ class Sender {
         $headers = [];
         $cookies = '';
         $ch = curl_init();
-        $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint . '/';
+        $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint;
         $useragent = Common::DEFAULT_USERAGENT;
+        $device_id = Misc::makeId();
 
-        if ($isApi) {
-            $url .= Request::buildQuery($query);
-            $headers = array_merge($headers, self::DEFAULT_API_HEADERS);
-            $device_id = Misc::makeId();
-            // URL to send to signer
-            $signer_res = $this->remoteSign($url);
-            if ($signer_res && $signer_res->status === 'ok') {
-                $url = $signer_res->data->signed_url;
-
-                $useragent = $signer_res->data->navigator->user_agent;
-                $verifyFp = $signer_res->data->verify_fp;
-
-                // Add verifyFp and device id to GET query
-                $url .= '&device_id=' . $device_id . '&verifyFp=' . $verifyFp;
-
-                if ($send_tt_params) {
-                    $headers[] = 'x-tt-params: ' . $signer_res->data->{'x-tt-params'};
-                }
-
-                if ($ttwid) {
-                    $cookies .= 'ttwid=' . $ttwid . ';';
-                }
-
-                // Extra
-                $path = parse_url($url, PHP_URL_PATH);
-                $headers[] = "path: {$path}";
-
-                // Get csrf headers and cookies
-                $extra = $this->getInfo($url, $useragent);
-                $headers[] = 'x-secsdk-csrf-token:' . $extra['csrf_token'];
-                $cookies .= Request::getCookies($device_id, $extra['csrf_session_id']);
-            } else {
-                return new Response(false, 503, '');
+        $headers[] = "Path: {$endpoint}";
+        $url .= Request::buildQuery($query) . '&device_id=' . $device_id;
+        $headers = array_merge($headers, self::DEFAULT_API_HEADERS);
+        // URL to send to signer
+        $signer_res = $this->remoteSign($url);
+        if ($signer_res && $signer_res->status === 'ok') {
+            $url = $signer_res->data->signed_url;
+            $useragent = $signer_res->data->navigator->user_agent;
+            if ($send_tt_params) {
+                $headers[] = 'x-tt-params: ' . $signer_res->data->{'x-tt-params'};
             }
+            if ($ttwid) {
+                $cookies .= 'ttwid=' . $ttwid . ';';
+            }
+        } else {
+            return new Response(false, 503, '');
         }
 
+        $extra = $this->getInfo($url, $useragent);
+        $headers[] = 'x-secsdk-csrf-token:' . $extra['csrf_token'];
+        $cookies .= Request::getCookies($device_id, $extra['csrf_session_id']);
+
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $static_url ? $static_url : $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HEADER => false,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_USERAGENT => $useragent,
+            CURLOPT_ENCODING => 'utf-8',
+            CURLOPT_AUTOREFERER => true,
+            CURLOPT_REFERER => self::REFERER,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_CONNECTTIMEOUT => 30,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_MAXREDIRS => 5,
+            CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4
+        ]);
+        if ($cookies) {
+            curl_setopt($ch, CURLOPT_COOKIE, $cookies);
+        }
+
+        Curl::handleProxy($ch, $this->proxy);
+        $data = curl_exec($ch);
+        if (!curl_errno($ch)) {
+            // Request sent
+            $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+            return new Response($code >= 200 && $code < 400, $code, json_decode($data));
+        }
+        return new Response(false, 503, '');
+    }
+
+    public function sendHTML(
+        string $endpoint,
+        string $subdomain = 'www',
+        array $query = []
+    ): Response {
+        $headers = [];
+        $ch = curl_init();
+        $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint;
+        $useragent = Common::DEFAULT_USERAGENT;
+        // Add query
+        if (!empty($query)) $url .= '?' . http_build_query($query);
+        // Add headers for HTML request
+        $headers = array_merge($headers, self::DEFAULT_HTML_HEADERS);
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
@@ -164,9 +199,10 @@ class Sender {
             CURLOPT_USERAGENT => $useragent,
             CURLOPT_ENCODING => 'utf-8',
             CURLOPT_AUTOREFERER => true,
-            CURLOPT_REFERER => self::REFERER,
-            CURLOPT_COOKIE => $cookies,
             CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_CONNECTTIMEOUT => 30,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_MAXREDIRS => 5,
             CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4
         ]);
         Curl::handleProxy($ch, $this->proxy);
@@ -174,7 +210,7 @@ class Sender {
         if (!curl_errno($ch)) {
             // Request sent
             $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-            return new Response($code >= 200 && $code < 400, $code, $isApi ? json_decode($data) : $data);
+            return new Response($code >= 200 && $code < 400, $code, $data);
         }
         return new Response(false, 503, '');
     }

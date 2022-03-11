@@ -31,7 +31,7 @@ class Api {
             "insertedItemID" => "",
         ];
 
-        $req = $this->sender->sendGet('/api/recommend/item_list', 'm', $query, true, false, $ttwid);
+        $req = $this->sender->sendApi('/api/recommend/item_list', 'm', $query, '', false, $ttwid);
         $response = new Feed;
         $response->fromReq($req, null, $ttwid);
         return $response;
@@ -43,7 +43,9 @@ class Api {
         $cache_key = 'user-' . $username;
         if ($this->cache->exists($cache_key)) return $this->cache->handleInfo($cache_key);
 
-        $req = $this->sender->sendGet("/@{$username}/?lang=en", 'www', [], false);
+        $req = $this->sender->sendHTML("/@{$username}", 'www', [
+            'lang' => 'en'
+        ], false);
         $response = new Info;
         $response->setMeta($req);
         if ($response->meta->success) {
@@ -68,13 +70,10 @@ class Api {
             $query = [
                 "count" => 30,
                 "cursor" => $cursor,
-                "type" => 1,
-                "secUid" => $secUid,
-                "sourceType" => 8,
-                "appId" => 1233
+                "secUid" => $secUid
             ];
 
-            $req = $this->sender->sendGet('/api/post/item_list/', 'm', $query, true, true);
+            $req = $this->sender->sendApi('/api/post/item_list', 'm', $query, StaticUrls::USER_FEED, true);
             $response = new Feed;
             $response->fromReq($req, $cursor);
             $response->setInfo($user);
@@ -95,8 +94,7 @@ class Api {
         $query = [
             "challengeName" => $hashtag
         ];
-        $endpoint = '/api/challenge/detail/';
-        $req = $this->sender->sendGet($endpoint, 'm', $query);
+        $req = $this->sender->sendApi('/api/challenge/detail', 'm', $query);
         $response = new Info;
         $response->setMeta($req);
         if ($response->meta->success) {
@@ -119,7 +117,7 @@ class Api {
                 "challengeID" => $id,
                 "cursor" => $cursor
             ];
-            $req = $this->sender->sendGet('/api/challenge/item_list', 'm', $query);
+            $req = $this->sender->sendApi('/api/challenge/item_list', 'm', $query);
             $response = new Feed;
             $response->fromReq($req, $cursor);
             $response->setInfo($hashtag);
@@ -136,18 +134,14 @@ class Api {
         $cache_key = 'music- ' . $music_id;
         if ($this->cache->exists($cache_key)) return $this->cache->handleInfo($cache_key);
 
-        $req = $this->sender->sendGet("/music/{$music_id}", 'www', [], false);
+        $req = $this->sender->sendApi("/node/share/music/{$music_id}", 'm');
         $result = new Info;
         $result->setMeta($req);
         if ($result->meta->success) {
-            $json_string = Misc::string_between($req->data, "window['SIGI_STATE']=", ";window['SIGI_RETRY']=");
-            $jsonData = json_decode($json_string);
-            if (isset($jsonData->MusicModule)) {
-                $result->setDetail($jsonData->MusicModule->musicInfo->music);
-                $result->setStats($jsonData->MusicModule->musicInfo->stats);
+            $result->setDetail($req->data->musicInfo->music);
+            $result->setStats($req->data->musicInfo->stats);
 
-                $this->cache->set($cache_key, $result->ToJson());
-            }
+            $this->cache->set($cache_key, $result->ToJson());
         }
         return $result;
     }
@@ -165,7 +159,7 @@ class Api {
                 "shareUid" => "",
                 "count" => 30,
             ];
-            $req = $this->sender->sendGet('/api/music/item_list/', 'm', $query, true, true);
+            $req = $this->sender->sendApi('/api/music/item_list', 'm', $query, '', true);
             $response = new Feed;
             $response->fromReq($req, $cursor);
             $response->setInfo($music);
@@ -196,7 +190,7 @@ class Api {
             $endpoint = '/' . $video_id;
         }
 
-        $req = $this->sender->sendGet($endpoint, $subdomain, [], false);
+        $req = $this->sender->sendHTML($endpoint, $subdomain, [], false);
         $response = new Feed;
         $response->setMeta($req);
         if ($response->meta->success) {
@@ -227,8 +221,7 @@ class Api {
             'from_page' => 'discover',
             'device_id' => Misc::makeId()
         ];
-        $req = $this->sender->sendGet('/node/share/discover', 'www', $query, false);
-        $req->data = json_decode($req->data); // Temp workaround
+        $req = $this->sender->sendApi('/node/share/discover', 'www', $query);
         $response = new Discover;
         $response->setMeta($req);
         if ($response->meta->success) {
