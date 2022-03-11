@@ -45,7 +45,7 @@ class Api {
 
         $req = $this->sender->sendHTML("/@{$username}", 'www', [
             'lang' => 'en'
-        ], false);
+        ]);
         $response = new Info;
         $response->setMeta($req);
         if ($response->meta->success) {
@@ -190,7 +190,7 @@ class Api {
             $endpoint = '/' . $video_id;
         }
 
-        $req = $this->sender->sendHTML($endpoint, $subdomain, [], false);
+        $req = $this->sender->sendHTML($endpoint, $subdomain, []);
         $response = new Feed;
         $response->setMeta($req);
         if ($response->meta->success) {
