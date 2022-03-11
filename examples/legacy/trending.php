@@ -1,6 +1,7 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
+use TikScraper\Legacy;
 header('Content-Type: application/json');
-$api = new TikScraper\Legacy();
-$trending = $api->getHashtagFeed('femboy');
+$api = new Legacy();
+$trending = $api->getTrending();
 echo $trending->ToJson(true);
