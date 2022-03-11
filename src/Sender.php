@@ -9,12 +9,6 @@ use TikScraper\Models\Response;
 class Sender {
     private const REFERER = 'https://www.tiktok.com';
 
-    private const DEFAULT_HTML_HEADERS = [
-        "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-        "Accept-Encoding: gzip, deflate",
-        "Connection: keep-alive"
-    ];
-
     private const DEFAULT_API_HEADERS = [
         "authority: m.tiktok.com",
         "method: GET",
@@ -32,12 +26,14 @@ class Sender {
     private $proxy = [];
     private $use_test_endpoints = false;
     private $useragent = Common::DEFAULT_USERAGENT;
+    private $cookie_file = '';
 
     function __construct(array $config) {
         if (isset($config['remote_signer'])) $this->remote_signer = $config['remote_signer'];
         if (isset($config['proxy'])) $this->proxy = $config['proxy'];
         if (isset($config['use_test_endpoints']) && $config['use_test_endpoints']) $this->use_test_endpoints = true;
         if (isset($config['user_agent'])) $this->useragent = $config['user_agent'];
+        $this->cookie_file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'tiktok.txt';
     }
 
     // -- Extra -- //
@@ -193,14 +189,11 @@ class Sender {
         string $subdomain = 'www',
         array $query = []
     ): Response {
-        $headers = [];
         $ch = curl_init();
         $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint;
         $useragent = $this->useragent;
         // Add query
         if (!empty($query)) $url .= '?' . http_build_query($query);
-        // Add headers for HTML request
-        $headers = array_merge($headers, self::DEFAULT_HTML_HEADERS);
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
@@ -209,10 +202,11 @@ class Sender {
             CURLOPT_USERAGENT => $useragent,
             CURLOPT_ENCODING => 'utf-8',
             CURLOPT_AUTOREFERER => true,
-            CURLOPT_HTTPHEADER => $headers,
             CURLOPT_CONNECTTIMEOUT => 30,
             CURLOPT_TIMEOUT => 30,
             CURLOPT_MAXREDIRS => 5,
+            CURLOPT_COOKIEJAR => $this->cookie_file,
+            CURLOPT_COOKIEFILE => $this->cookie_file,
             CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4
         ]);
         Curl::handleProxy($ch, $this->proxy);

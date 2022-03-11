@@ -1,8 +1,7 @@
 <?php
-require '../vendor/autoload.php';
-use TikScraper\Api;
+require __DIR__."/../vendor/autoload.php";
 
 header('Content-Type: application/json');
-$api = new Api();
-$hashtag = $api->getMusic('Casa-de-Papel-feat-Jul-6831786395300808706');
+$api = new TikScraper\Api();
+$hashtag = $api->getMusic('Epic-Music-863502-6873501791145691137');
 echo $hashtag->ToJson(true);

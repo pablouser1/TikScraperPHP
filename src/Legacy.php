@@ -20,9 +20,9 @@ class Legacy {
 
     public function getTrending(int $cursor = 0): Feed {
         $query = [
-            "type"      => 5,
-            "id"        => 1,
-            "count"     => 30,
+            "type" => 5,
+            "id" => 1,
+            "count" => 30,
             "minCursor" => 0,
             "maxCursor" => $cursor
         ];
@@ -63,9 +63,9 @@ class Legacy {
         $user = $this->getUser($username);
         if ($user->meta->success) {
             $query = [
-                "type"      => 1,
-                "id"        => $user->detail->id,
-                "count"     => 30,
+                "type" => 1,
+                "id" => $user->detail->id,
+                "count" => 30,
                 "minCursor" => 0,
                 "maxCursor" => $cursor
             ];
@@ -107,9 +107,9 @@ class Legacy {
         if ($hashtag->meta->success) {
             $id = $hashtag->detail->id;
             $query = [
-                "type"      => 3,
-                "id"        => $id,
-                "count"     => 30,
+                "type" => 3,
+                "id" => $id,
+                "count" => 30,
                 "minCursor" => 0,
                 "maxCursor" => $cursor
             ];
@@ -147,9 +147,9 @@ class Legacy {
         $music = $this->getMusic($music_id);
         if ($music->meta->success) {
             $query = [
-                "type"      => 4,
-                "id"        => $music->detail->id,
-                "count"     => 30,
+                "type" => 4,
+                "id" => $music->detail->id,
+                "count" => 30,
                 "minCursor" => 0,
                 "maxCursor" => $cursor
             ];
