@@ -1,6 +1,5 @@
 <?php
 namespace TikScraper;
-use TikScraper\Helpers\Curl;
 use TikScraper\Helpers\Misc;
 use TikScraper\Models\Discover;
 use TikScraper\Models\Feed;
@@ -12,6 +11,9 @@ class Legacy {
     private Cache $cache;
 
     function __construct(array $config = [], $cache_engine = null) {
+        if (!isset($config['user_agent'])) {
+            $config['user_agent'] = Common::LEGACY_USERAGENT;
+        }
         $this->sender = new Sender($config);
         $this->cache = new Cache($cache_engine);
     }

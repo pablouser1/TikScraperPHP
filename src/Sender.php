@@ -31,11 +31,13 @@ class Sender {
     private $remote_signer = 'http://localhost:8080/signature';
     private $proxy = [];
     private $use_test_endpoints = false;
+    private $useragent = Common::DEFAULT_USERAGENT;
 
     function __construct(array $config) {
         if (isset($config['remote_signer'])) $this->remote_signer = $config['remote_signer'];
         if (isset($config['proxy'])) $this->proxy = $config['proxy'];
         if (isset($config['use_test_endpoints']) && $config['use_test_endpoints']) $this->use_test_endpoints = true;
+        if (isset($config['user_agent'])) $this->useragent = $config['user_agent'];
     }
 
     // -- Extra -- //
@@ -61,7 +63,10 @@ class Sender {
         return null;
     }
 
-    public function sendHead(string $url, array $req_headers = [], string $useragent = Common::DEFAULT_USERAGENT) {
+    public function sendHead(string $url, array $req_headers = [], string $useragent = '') {
+        if (!$useragent) {
+            $useragent = $this->useragent;
+        }
         $headers = [];
         $ch = curl_init($url);
         curl_setopt_array($ch, [
@@ -125,7 +130,7 @@ class Sender {
         $cookies = '';
         $ch = curl_init();
         $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint;
-        $useragent = Common::DEFAULT_USERAGENT;
+        $useragent = $this->useragent;
         $device_id = Misc::makeId();
 
         $headers[] = "Path: {$endpoint}";
@@ -191,7 +196,7 @@ class Sender {
         $headers = [];
         $ch = curl_init();
         $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint;
-        $useragent = Common::DEFAULT_USERAGENT;
+        $useragent = $this->useragent;
         // Add query
         if (!empty($query)) $url .= '?' . http_build_query($query);
         // Add headers for HTML request

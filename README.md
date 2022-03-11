@@ -5,6 +5,7 @@ A Wrapper for the TikTok API made with PHP
 ```php
 $api = new \TikScraper\Api([
     'signer_url' => 'URL_HERE', # Defaults to http://localhost:8080/signature
+    'user_agent' => 'YOUR_CUSTOM_USER_AGENT_HERE',
     'proxy' => [
         'host' => 'EXAMPLE_HOST',
         'port' => 8080,
