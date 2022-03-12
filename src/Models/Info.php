@@ -19,7 +19,7 @@ class Info extends Base {
     }
 
     public function fromCache(object $cache) {
-        $this->setMeta(new Response(true, 200, ''));
+        $this->setMeta(new Response(true, 200, 'PLACEHOLDER'));
         $this->setDetail($cache->detail);
         $this->setStats($cache->stats);
     }

@@ -69,7 +69,7 @@ class Feed extends Base {
     }
 
     public function fromCache(object $cache) {
-        $this->meta = new Meta(true, 200, '');
+        $this->meta = new Meta(true, 200, 'PLACEHOLDER');
         $info = new Info;
         $info->fromCache($cache->info);
         $this->setItems($cache->items);
