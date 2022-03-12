@@ -17,6 +17,6 @@ class Discover extends Base {
 
     public function fromCache(object $cache) {
         $this->meta = new Meta(true, 200, '');
-        $this->setItems($cache->items['users'], $cache->items['tags'], $cache->items['music']);
+        $this->setItems($cache->items->users, $cache->items->tags, $cache->items->music);
     }
 }
