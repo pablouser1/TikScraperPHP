@@ -9,6 +9,7 @@ class Legacy extends Api {
         if (!isset($config['user_agent'])) {
             $config['user_agent'] = Common::LEGACY_USERAGENT;
         }
+        $config['signer'] = [];
         parent::__construct($config, $cache_engine);
     }
 

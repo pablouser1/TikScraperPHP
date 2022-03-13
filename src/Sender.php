@@ -71,6 +71,7 @@ class Sender {
         Curl::handleProxy($ch, $this->proxy);
 
         $data = curl_exec($ch);
+        curl_close($ch);
         return [
             'data' => $data,
             'headers' => $headers
@@ -128,9 +129,6 @@ class Sender {
                 if ($ttwid) {
                     $cookies .= 'ttwid=' . $ttwid . ';';
                 }
-                $extra = $this->getInfo($url, $useragent);
-                $headers[] = 'x-secsdk-csrf-token:' . $extra['csrf_token'];
-                $cookies .= Request::getCookies($device_id, $extra['csrf_session_id']);
             } else {
                 return new Response(false, 500, (object) [
                     'statusCode' => 20
@@ -140,6 +138,10 @@ class Sender {
             $verify_fp = Misc::verify_fp();
             $url .= '&verifyFp=' . $verify_fp;
         }
+
+        $extra = $this->getInfo($url, $useragent);
+        $headers[] = 'x-secsdk-csrf-token:' . $extra['csrf_token'];
+        $cookies .= Request::getCookies($device_id, $extra['csrf_session_id']);
 
         curl_setopt_array($ch, [
             CURLOPT_URL => $static_url ? $static_url : $url,
@@ -162,9 +164,11 @@ class Sender {
 
         Curl::handleProxy($ch, $this->proxy);
         $data = curl_exec($ch);
-        if (!curl_errno($ch)) {
+        $error = curl_errno($ch);
+        $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        curl_close($ch);
+        if (!$error) {
             // Request sent
-            $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
             return new Response($code >= 200 && $code < 400, $code, json_decode($data));
         }
         return new Response(false, 503, (object) [
@@ -199,9 +203,11 @@ class Sender {
         ]);
         Curl::handleProxy($ch, $this->proxy);
         $data = curl_exec($ch);
-        if (!curl_errno($ch)) {
+        $error = curl_errno($ch);
+        $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        curl_close($ch);
+        if (!$error) {
             // Request sent
-            $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
             return new Response($code >= 200 && $code < 400, $code, $data);
         }
         return new Response(false, 503, '');
