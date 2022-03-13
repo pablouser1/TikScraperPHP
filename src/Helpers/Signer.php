@@ -16,8 +16,7 @@ class Signer {
     private $remote_url = '';
     // Selenium
     private RemoteWebDriver $driver;
-    public string $session_id = '';
-    public string $browser_url = '';
+    private $browser_url = '';
 
     /**
      * Close browser when finished
@@ -32,6 +31,7 @@ class Signer {
             $this->remote_url = $remote_url;
         } elseif ($browser_url) {
             $this->close_when_done = $close_when_done;
+            $this->browser_url = $browser_url;
             $this->setupSelenium($browser_url);
         }
     }
@@ -41,39 +41,41 @@ class Signer {
     }
 
     private function setupSelenium(string $browser_url) {
-        // Chrome options
-        $chromeOptions = new ChromeOptions();
-        $chromeOptions->addArguments([
-            '--headless',
-            '--disable-gpu',
-            '--no-sandbox',
-            '--disable-blink-features=AutomationControlled',
-            '--user-agent=' . Common::DEFAULT_USERAGENT
-        ]);
-        $chromeOptions->setExperimentalOption('excludeSwitches', ['enable-automation']);
-        $chromeOptions->setExperimentalOption('useAutomationExtension', false);
-
-        // Capabilities
-        $capabilities = DesiredCapabilities::chrome();
-        $capabilities->setCapability(ChromeOptions::CAPABILITY_W3C, $chromeOptions);
-
         // Start driver
-        $this->driver = RemoteWebDriver::create($browser_url, $capabilities);
-        // Stealth mode
-        $this->driver = (new SeleniumStealth($this->driver))->usePhpWebriverClient()->makeStealth();
+        $sessions = RemoteWebDriver::getAllSessions($browser_url);
+        if (!empty($sessions)) {
+            $this->driver = RemoteWebDriver::createBySessionID($sessions[0]['id'], $browser_url);
+            $this->driver = (new SeleniumStealth($this->driver))->usePhpWebriverClient()->makeStealth();
+        } else {
+            // Chrome options
+            $chromeOptions = new ChromeOptions();
+            $chromeOptions->addArguments([
+                '--headless',
+                '--disable-gpu',
+                '--no-sandbox',
+                '--disable-blink-features=AutomationControlled',
+                '--user-agent=' . Common::DEFAULT_USERAGENT
+            ]);
+            $chromeOptions->setExperimentalOption('excludeSwitches', ['enable-automation']);
+            $chromeOptions->setExperimentalOption('useAutomationExtension', false);
 
-        $this->session_id = $this->driver->getSessionID();
-        $this->remote_server = $this->driver->getCommandExecutor()->getAddressOfRemoteServer();
+            // Capabilities
+            $capabilities = DesiredCapabilities::chrome();
+            $capabilities->setCapability(ChromeOptions::CAPABILITY_W3C, $chromeOptions);
+            $this->driver = RemoteWebDriver::create($browser_url, $capabilities);
+            // Stealth mode
+            $this->driver = (new SeleniumStealth($this->driver))->usePhpWebriverClient()->makeStealth();
 
-        // Go to page
-        $this->driver->get(self::DEFAULT_URL);
-        $this->driver->wait()->until(WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::id('app')));
+            // Go to page
+            $this->driver->get(self::DEFAULT_URL);
+            $this->driver->wait()->until(WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::id('app')));
 
-        // Load scripts
-        $signature = file_get_contents(__DIR__ . '/../../js/signature.js');
-        $xttparams = file_get_contents(__DIR__ . '/../../js/xttparams.js');
-        $this->driver->executeScript($signature);
-        $this->driver->executeScript($xttparams);
+            // Load scripts
+            $signature = file_get_contents(__DIR__ . '/../../js/signature.js');
+            $xttparams = file_get_contents(__DIR__ . '/../../js/xttparams.js');
+            $this->driver->executeScript($signature);
+            $this->driver->executeScript($xttparams);
+        }
     }
 
     private function navigator(): object {
