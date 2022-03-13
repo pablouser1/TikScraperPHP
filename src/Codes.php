@@ -4,6 +4,9 @@ namespace TikScraper;
 class Codes {
     const list = [
         0 => "OK",
+        // 10 to 100 are PROXITOK ONLY errors
+        10 => 'CURL_ERROR',
+        20 => 'SIGNATURE_CONNECTION_ERROR',
         450 => "CLIENT_PAGE_ERROR",
         10000 => "VERIFY_CODE",
         10101 => "SERVER_ERROR_NOT_500",

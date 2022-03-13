@@ -13,13 +13,7 @@ class Meta {
         $keys = array_keys(Codes::list);
         $http_success = $http_success;
         $http_code = $code;
-
-        // Avoiding weird rate limits/ip bans from TikTok
-        if ($data === '') {
-            $tiktok_code = 10000;
-        } else {
-            $tiktok_code = is_object($data) ? $this->getCode($data) : 0;
-        }
+        $tiktok_code = is_object($data) ? $this->getCode($data) : 0;
         $tiktok_msg = in_array($tiktok_code, $keys) ? Codes::list[$tiktok_code] : 'Unknown error';
 
         // Setting values

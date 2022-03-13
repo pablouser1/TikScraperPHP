@@ -132,7 +132,6 @@ class Signer {
                 'Content-Type: text/plain'
             ]
         ]);
-        Curl::handleProxy($ch, $this->proxy);
         $data = curl_exec($ch);
         $error = curl_errno($ch);
         curl_close($ch);

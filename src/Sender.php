@@ -132,7 +132,9 @@ class Sender {
                 $headers[] = 'x-secsdk-csrf-token:' . $extra['csrf_token'];
                 $cookies .= Request::getCookies($device_id, $extra['csrf_session_id']);
             } else {
-                return new Response(false, 503, '');
+                return new Response(false, 500, (object) [
+                    'statusCode' => 20
+                ]);
             }
         } else {
             $verify_fp = Misc::verify_fp();
@@ -165,7 +167,9 @@ class Sender {
             $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
             return new Response($code >= 200 && $code < 400, $code, json_decode($data));
         }
-        return new Response(false, 503, '');
+        return new Response(false, 503, (object) [
+            'statusCode' => 10
+        ]);
     }
 
     public function sendHTML(
