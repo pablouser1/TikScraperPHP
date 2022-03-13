@@ -10,17 +10,17 @@ use TikScraper\Models\Info;
 use TikScraper\Models\Response;
 
 class Api {
-    private Sender $sender;
-    private Cache $cache;
+    protected Sender $sender;
+    protected Cache $cache;
 
     function __construct(array $config = [], $cache_engine = null) {
         $this->sender = new Sender($config);
         $this->cache = new Cache($cache_engine);
     }
 
-    public function getTrending(string $ttwid = ''): Feed {
-        if (!$ttwid) {
-            $ttwid = $this->__getTtwid();
+    public function getTrending($cursor = ''): Feed {
+        if (!$cursor) {
+            $cursor = $this->__getTtwid();
         }
 
         $query = [
@@ -31,9 +31,9 @@ class Api {
             "insertedItemID" => "",
         ];
 
-        $req = $this->sender->sendApi('/api/recommend/item_list', 'm', $query, '', false, $ttwid);
+        $req = $this->sender->sendApi('/api/recommend/item_list', 'm', $query, '', false, $cursor);
         $response = new Feed;
-        $response->fromReq($req, null, $ttwid);
+        $response->fromReq($req, null, $cursor);
         return $response;
     }
 
@@ -235,7 +235,7 @@ class Api {
     }
 
     // Misc
-    private function __buildErrorFeed(Info $info): Feed {
+    protected function __buildErrorFeed(Info $info): Feed {
         $meta = $info->meta;
         $req = new Response($meta->success, $meta->http_code, '');
         $feed = new Feed;

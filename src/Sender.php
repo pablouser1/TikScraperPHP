@@ -4,6 +4,7 @@ namespace TikScraper;
 use TikScraper\Helpers\Curl;
 use TikScraper\Helpers\Misc;
 use TikScraper\Helpers\Request;
+use TikScraper\Helpers\Signer;
 use TikScraper\Models\Response;
 
 class Sender {
@@ -22,14 +23,19 @@ class Sender {
         "sec-gpc: 1"
     ];
 
-    private $remote_signer = 'http://localhost:8080/signature';
+    private Signer $signer;
     private $proxy = [];
     private $use_test_endpoints = false;
     private $useragent = Common::DEFAULT_USERAGENT;
     private $cookie_file = '';
 
     function __construct(array $config) {
-        if (isset($config['remote_signer'])) $this->remote_signer = $config['remote_signer'];
+        // Signing
+        $signer = [];
+        if (isset($config['signer'])) $signer = $config['signer'];
+
+        $this->signer = new Signer($signer);
+
         if (isset($config['proxy'])) $this->proxy = $config['proxy'];
         if (isset($config['use_test_endpoints']) && $config['use_test_endpoints']) $this->use_test_endpoints = true;
         if (isset($config['user_agent'])) $this->useragent = $config['user_agent'];
@@ -37,28 +43,6 @@ class Sender {
     }
 
     // -- Extra -- //
-    public function remoteSign(string $url): ?object {
-        $ch = curl_init($this->remote_signer);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HEADER => false,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $url,
-            CURLOPT_TIMEOUT => 30,
-            CURLOPT_CONNECTTIMEOUT => 30,
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: text/plain'
-            ]
-        ]);
-        Curl::handleProxy($ch, $this->proxy);
-        $data = curl_exec($ch);
-        if (!curl_errno($ch)) {
-            $data_json = json_decode($data);
-            return $data_json;
-        }
-        return null;
-    }
-
     public function sendHead(string $url, array $req_headers = [], string $useragent = '') {
         if (!$useragent) {
             $useragent = $this->useragent;
@@ -134,7 +118,7 @@ class Sender {
         $headers = array_merge($headers, self::DEFAULT_API_HEADERS);
         if ($sign) {
             // URL to send to signer
-            $signer_res = $this->remoteSign($url);
+            $signer_res = $this->signer->run($url);
             if ($signer_res && $signer_res->status === 'ok') {
                 $url = $signer_res->data->signed_url;
                 $useragent = $signer_res->data->navigator->user_agent;

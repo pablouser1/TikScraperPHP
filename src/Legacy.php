@@ -1,24 +1,18 @@
 <?php
 namespace TikScraper;
-use TikScraper\Helpers\Misc;
 use TikScraper\Models\Discover;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
-use TikScraper\Models\Response;
 
-class Legacy {
-    private Sender $sender;
-    private Cache $cache;
-
+class Legacy extends Api {
     function __construct(array $config = [], $cache_engine = null) {
         if (!isset($config['user_agent'])) {
             $config['user_agent'] = Common::LEGACY_USERAGENT;
         }
-        $this->sender = new Sender($config);
-        $this->cache = new Cache($cache_engine);
+        parent::__construct($config, $cache_engine);
     }
 
-    public function getTrending(int $cursor = 0): Feed {
+    public function getTrending($cursor = 0): Feed {
         $query = [
             "type" => 5,
             "id" => 1,
@@ -30,29 +24,6 @@ class Legacy {
         $req = $this->sender->sendApi('/node/video/feed', 'm', $query, '', false, '', false);
         $response = new Feed;
         $response->fromReq($req, $cursor);
-        return $response;
-    }
-
-    // -- Main methods -- //
-    public function getUser(string $username): Info {
-        $username = urlencode($username);
-        $cache_key = 'user-' . $username;
-        if ($this->cache->exists($cache_key)) return $this->cache->handleInfo($cache_key);
-
-        $req = $this->sender->sendHTML("/@{$username}", 'www', [
-            'lang' => 'en'
-        ]);
-        $response = new Info;
-        $response->setMeta($req);
-        if ($response->meta->success) {
-            $json_string = Misc::string_between($req->data, "window['SIGI_STATE']=", ";window['SIGI_RETRY']=");
-            $jsonData = json_decode($json_string);
-            if (isset($jsonData->UserModule)) {
-                $response->setDetail($jsonData->UserModule->users->{$username});
-                $response->setStats($jsonData->UserModule->stats->{$username});
-                $this->cache->set($cache_key, $response->ToJson());
-            }
-        }
         return $response;
     }
 
@@ -166,46 +137,6 @@ class Legacy {
         }
         return $this->__buildErrorFeed($music);
     }
-    /**
-     * Get video by video id
-     * Accept video ID and returns video detail object
-     */
-    public function getVideoByID(string $video_id): Feed {
-        $cache_key = 'video-' . $video_id;
-        if ($this->cache->exists($cache_key)) return $this->cache->handleFeed($cache_key);
-
-        $subdomain = '';
-        $endpoint = '';
-        if (is_numeric($video_id)) {
-            $subdomain = 'm';
-            $endpoint = '/v/' . $video_id;
-        } else {
-            $subdomain = 'vm';
-            $endpoint = '/' . $video_id;
-        }
-
-        $req = $this->sender->sendHTML($endpoint, $subdomain, []);
-        $response = new Feed;
-        $response->setMeta($req);
-        if ($response->meta->success) {
-            $json_string = Misc::string_between($req->data, "window['SIGI_STATE']=", ";window['SIGI_RETRY']=");
-            $jsonData = json_decode($json_string);
-            if (isset($jsonData->ItemModule, $jsonData->ItemList, $jsonData->UserModule)) {
-                $id = $jsonData->ItemList->video->keyword;
-                $item = $jsonData->ItemModule->{$id};
-                $username = $item->author;
-
-                $response->setItems([$item]);
-                $response->setNav(false, null, '');
-                $info = new Info;
-                $info->setDetail($jsonData->UserModule->users->{$username});
-                $info->setStats($item->stats);
-                $response->setInfo($info);
-                $this->cache->set($cache_key, $response->ToJson());
-            }
-        }
-        return $response;
-    }
 
     public function getDiscover(): Discover {
         $cacheKey = 'discover';
@@ -226,14 +157,5 @@ class Legacy {
             $this->cache->set($cacheKey, $response->ToJson());
         }
         return $response;
-    }
-
-    // Misc
-    private function __buildErrorFeed(Info $info): Feed {
-        $meta = $info->meta;
-        $req = new Response($meta->success, $meta->http_code, '');
-        $feed = new Feed;
-        $feed->fromReq($req);
-        return $feed;
     }
 }
