@@ -53,7 +53,7 @@ class Feed extends Base {
             // Items
             if (isset($data->body->itemListData)) {
                 $this->setItemsLegacy($data->body->itemListData);
-            } else {
+            } elseif (isset($data->itemList)) {
                 $this->setItems($data->itemList);
             }
 
