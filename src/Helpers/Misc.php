@@ -2,6 +2,9 @@
 namespace TikScraper\Helpers;
 
 class Misc {
+    /**
+     * Creates device_id
+     */
     public static function makeId(): string {
         $characters = '0123456789';
         $randomString = '';
@@ -10,31 +13,12 @@ class Misc {
             $index = rand(0, strlen($characters) - 1);
             $randomString .= $characters[$index];
         }
-
         return $randomString;
     }
 
-    /**
-     * Verify Fingerprint, implementation from drawrowfly/tiktok-scraper adapted to PHP
-     * @link https://github.com/drawrowfly/tiktok-scraper/blob/5224f5cdfc3842a99b77b382249b960d2c87791c/src/helpers/Random.ts#L19
-     */
     public static function verify_fp(): string {
-        $chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-        $charlen = strlen($chars);
-        $time = base64_encode(str_replace('.', '', microtime(true)));
-        $arr = mb_str_split(str_repeat('0', 36));
-        $arr[8] = '_';
-        $arr[13] = '_';
-        $arr[18] = '_';
-        $arr[23] = '_';
-        $arr[14] = '4';
-        $new_arr = array_map(function ($x) use ($chars, $charlen) {
-            $rand_num = mt_rand() / mt_getrandmax() * $charlen;
-            $index = (int) floor($rand_num);
-            return $x === '0' ? substr($chars, $index, 1) : $x;
-        }, $arr);
-        $str = implode('', $new_arr);
-        return 'verify_' . strtolower($time) . '_' . $str;
+        // TODO, ADD PROPER VERIFY_FP METHOD
+        return 'verify_e6d8d4a90c859dfc33feefc618ea6c33';
     }
 
     static public function generateRandomString($length = 10): string {
@@ -66,6 +50,10 @@ class Misc {
         return $string;
     }
 
+    /**
+     * Converts TikTok's /node response to /api
+     * @link https://github.com/ssovit/TikTok-API-PHP/blob/82ce93fb8ed1536bd62bf51c4c99b8007fa884a1/lib/TikTok/Helper.php#L49
+     */
     public static function parseLegacyItems(array $items) {
         $final = [];
         foreach ($items as $item) {
@@ -83,7 +71,7 @@ class Misc {
                     "originCover" => @$item->itemInfos->coversOrigin[0],
                     "dynamicCover" => @$item->itemInfos->coversDynamic[0],
                     "playAddr" => @$item->itemInfos->video->urls[0],
-                    "downloadAddr" => @$item->itemInfos->video->urls[0],
+                    "downloadAddr" => @$item->itemInfos->video->urls[0]
                 ],
                 "author" => (object) [
                     "id" => @$item->authorInfos->userId,
@@ -94,7 +82,7 @@ class Misc {
                     "avatarLarger" => @$item->authorInfos->coversLarger[0],
                     "signature" => @$item->authorInfos->signature,
                     "verified" => @$item->authorInfos->verified,
-                    "secUid" => @$item->authorInfos->secUid,
+                    "secUid" => @$item->authorInfos->secUid
                 ],
                 "music" => (object) [
                     "id" => @$item->musicInfos->musicId,
@@ -104,13 +92,13 @@ class Misc {
                     "coverMedium" => @$item->musicInfos->coversMedium[0],
                     "coverLarge" => @$item->musicInfos->coversLarger[0],
                     "authorName" => @$item->musicInfos->authorName,
-                    "original" => @$item->musicInfos->original,
+                    "original" => @$item->musicInfos->original
                 ],
                 "stats" => (object) [
                     "diggCount" => @$item->itemInfos->diggCount,
                     "shareCount" => @$item->itemInfos->shareCount,
                     "commentCount" => @$item->itemInfos->commentCount,
-                    "playCount" => @$item->itemInfos->playCount,
+                    "playCount" => @$item->itemInfos->playCount
                 ],
                 "originalItem" => @$item->itemInfos->isOriginal,
                 "officalItem" => @$item->itemInfos->isOfficial,
@@ -119,7 +107,7 @@ class Misc {
                 "digged" => @$item->itemInfos->liked,
                 "itemCommentStatus" => @$item->itemInfos->commentStatus,
                 "showNotPass" => @$item->itemInfos->showNotPass,
-                "vl1" => false,
+                "vl1" => false
             ];
         }
         return $final;

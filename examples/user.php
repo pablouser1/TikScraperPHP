@@ -1,6 +1,6 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/common.php';
 header('Content-Type: application/json');
-$api = new TikScraper\Api();
+$api = getStandardApi();
 $user = $api->getUser('ibaillanos');
 echo $user->ToJson(true);

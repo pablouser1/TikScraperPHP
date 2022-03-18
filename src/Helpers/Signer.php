@@ -41,13 +41,14 @@ class Signer {
     }
 
     private function setupSelenium(string $browser_url) {
-        // Start driver
+        // Check existing sessions
         $sessions = RemoteWebDriver::getAllSessions($browser_url);
         if (!empty($sessions)) {
+            // Use first session that already exists
             $this->driver = RemoteWebDriver::createBySessionID($sessions[0]['id'], $browser_url);
             $this->driver = (new SeleniumStealth($this->driver))->usePhpWebriverClient()->makeStealth();
         } else {
-            // Chrome options
+            // Create session
             $chromeOptions = new ChromeOptions();
             $chromeOptions->addArguments([
                 '--headless',
@@ -93,6 +94,9 @@ class Signer {
         return (object) $info;
     }
 
+    /**
+     * Sign url using local chromedriver
+     */
     private function browser(string $url): ?object {
         $verifyfp = Misc::verify_fp();
         $url .= '&verifyFp=' . $verifyfp;
@@ -119,6 +123,9 @@ class Signer {
         ];
     }
 
+    /**
+     * Sign url using remote server
+     */
     private function remote(string $url): ?object {
         $ch = curl_init($this->remote_url);
         curl_setopt_array($ch, [
@@ -142,12 +149,15 @@ class Signer {
         return null;
     }
 
-    public function run(string $url): ?object {
+    /**
+     * Picks remote or local signing depending on the config passed to this class
+     */
+    public function run(string $url): object {
         if ($this->remote_url) {
             return $this->remote($url);
         } elseif ($this->browser_url) {
             return $this->browser($url);
         }
-        return null;
+        throw new \Exception('You are running this wrapper on Standard mode without a local or remote signer!', 500);
     }
 }

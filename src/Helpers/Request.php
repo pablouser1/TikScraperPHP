@@ -13,14 +13,10 @@ class Request {
             "tt_csrf_token" => Misc::generateRandomString(16)
         ];
 
-        $i = 0;
-        $cookies_index = count($cookies_array) - 1;
-
         foreach ($cookies_array as $key => $value) {
-            if ($i === $cookies_index) $cookies .= "{$key}={$value}";
-            else $cookies .= "{$key}={$value}; ";
-            $i++;
+            $cookies .= "{$key}={$value};";
         }
+
         return $cookies;
     }
 
@@ -30,7 +26,7 @@ class Request {
             "app_name" => "tiktok_web",
             "device_platform" => "web_mobile",
             "region" => "us",
-            "priority_region" => "",
+            "priority_region" => "us",
             "os" => "ios",
             "referer" => '',
             "cookie_enabled" => true,

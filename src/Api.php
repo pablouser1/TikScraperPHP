@@ -28,7 +28,7 @@ class Api {
             "id" => 1,
             "sourceType" => 12,
             "itemID" => 1,
-            "insertedItemID" => "",
+            "insertedItemID" => ""
         ];
 
         $req = $this->sender->sendApi('/api/recommend/item_list', 'm', $query, '', false, $cursor);
