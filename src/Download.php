@@ -33,8 +33,7 @@ class Download {
     private function no_watermark(string $id) {
         $ch = curl_init('https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=' . $id);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, $this->config['user-agent']);
-        curl_setopt($ch, CURLOPT_COOKIEFILE, '');
+        curl_setopt($ch, CURLOPT_USERAGENT, Common::DEFAULT_USERAGENT);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         $data = curl_exec($ch);
         if (!curl_errno($ch)) {
