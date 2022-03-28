@@ -50,7 +50,7 @@ class Download {
     }
 
     public function url(string $item, $file_name = "tiktok-video", $watermark = true) {
-        header('Content-type: video/mp4');
+        header('Content-Type: video/mp4');
         header('Content-Disposition: attachment; filename="' . $file_name . '.mp4"');
         header("Content-Transfer-Encoding: Binary");
         if ($watermark) {
