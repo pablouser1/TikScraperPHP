@@ -57,7 +57,7 @@ class Misc {
     public static function parseLegacyItems(array $items) {
         $final = [];
         foreach ($items as $item) {
-            $final[] = (object) [
+            $parsed = (object) [
                 "id" => @$item->itemInfos->id,
                 "desc" => @$item->itemInfos->text,
                 "createTime" => @$item->itemInfos->createTime,
@@ -100,6 +100,7 @@ class Misc {
                     "commentCount" => @$item->itemInfos->commentCount,
                     "playCount" => @$item->itemInfos->playCount
                 ],
+                "challenges" => [],
                 "originalItem" => @$item->itemInfos->isOriginal,
                 "officalItem" => @$item->itemInfos->isOfficial,
                 "secret" => @$item->itemInfos->secret,
@@ -109,6 +110,17 @@ class Misc {
                 "showNotPass" => @$item->itemInfos->showNotPass,
                 "vl1" => false
             ];
+
+            if (isset($item->challengeInfoList)) {
+                $parsed->challenges = array_map(function ($challenge) {
+                    return (object) [
+                        'id' => $challenge->challengeId,
+                        'title' => $challenge->challengeName,
+                        'desc' => $challenge->text
+                    ];
+                }, $item->challengeInfoList);
+            }
+            $final[] = $parsed;
         }
         return $final;
     }
