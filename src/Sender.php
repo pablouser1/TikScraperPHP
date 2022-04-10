@@ -26,7 +26,7 @@ class Sender {
     private Signer $signer;
     private $proxy = [];
     private $use_test_endpoints = false;
-    private $useragent = Common::DEFAULT_USERAGENT;
+    private $useragent = Common::USERAGENT;
     private $cookie_file = '';
 
     function __construct(array $config) {
@@ -39,7 +39,7 @@ class Sender {
         if (isset($config['proxy'])) $this->proxy = $config['proxy'];
         if (isset($config['use_test_endpoints']) && $config['use_test_endpoints']) $this->use_test_endpoints = true;
         if (isset($config['user_agent'])) $this->useragent = $config['user_agent'];
-        $this->cookie_file = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'tiktok.txt';
+        $this->cookie_file = sys_get_temp_dir() . '/tiktok.txt';
     }
 
     // -- Extra -- //

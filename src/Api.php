@@ -66,11 +66,16 @@ class Api {
 
         $user = $this->getUser($username);
         if ($user->meta->success) {
+            $id = $user->detail->id;
             $secUid = $user->detail->secUid;
             $query = [
                 "count" => 30,
+                "id" => $id,
                 "cursor" => $cursor,
-                "secUid" => $secUid
+                "type" => 1,
+                "secUid" => $secUid,
+                "sourceType" => 8,
+                "appId" => 1233
             ];
 
             $req = $this->sender->sendApi('/api/post/item_list', 'm', $query, StaticUrls::USER_FEED, true);
