@@ -242,7 +242,9 @@ class Api {
     // Misc
     protected function __buildErrorFeed(Info $info): Feed {
         $meta = $info->meta;
-        $req = new Response($meta->success, $meta->http_code, '');
+        $req = new Response($meta->success, $meta->http_code, (object) [
+            'statusCode' => $meta->tiktok_code
+        ]);
         $feed = new Feed;
         $feed->fromReq($req);
         return $feed;
