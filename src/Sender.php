@@ -26,7 +26,7 @@ class Sender {
     private Signer $signer;
     private $proxy = [];
     private $use_test_endpoints = false;
-    private $useragent = Common::USERAGENT;
+    private $useragent = Common::DEFAULT_USERAGENT;
     private $cookie_file = '';
 
     function __construct(array $config) {

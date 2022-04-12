@@ -10,7 +10,7 @@ class Download {
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_NOBODY, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, Common::USERAGENT);
+        curl_setopt($ch, CURLOPT_USERAGENT, Common::DEFAULT_USERAGENT);
         curl_setopt($ch, CURLOPT_REFERER, "https://www.tiktok.com/foryou");
         curl_exec($ch);
         $size = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
@@ -23,7 +23,7 @@ class Download {
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
         curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_USERAGENT, Common::USERAGENT);
+        curl_setopt($ch, CURLOPT_USERAGENT, Common::DEFAULT_USERAGENT);
         curl_setopt($ch, CURLOPT_REFERER, "https://www.tiktok.com/");
         curl_setopt($ch, CURLOPT_BUFFERSIZE, $this->buffer_size);
         curl_exec($ch);
@@ -33,7 +33,7 @@ class Download {
     private function no_watermark(string $id) {
         $ch = curl_init('https://api2.musical.ly/aweme/v1/aweme/detail/?aweme_id=' . $id);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, Common::USERAGENT);
+        curl_setopt($ch, CURLOPT_USERAGENT, Common::DEFAULT_USERAGENT);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         $data = curl_exec($ch);
         if (!curl_errno($ch)) {

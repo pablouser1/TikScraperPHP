@@ -7,7 +7,7 @@ use TikScraper\Models\Info;
 class Legacy extends Api {
     function __construct(array $config = [], $cache_engine = null) {
         if (!isset($config['user_agent'])) {
-            $config['user_agent'] = Common::USERAGENT;
+            $config['user_agent'] = Common::LEGACY_USERAGENT;
         }
         $config['signer'] = [];
         parent::__construct($config, $cache_engine);

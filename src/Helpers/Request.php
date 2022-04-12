@@ -29,7 +29,7 @@ class Request {
             "browser_name" => "Mozilla",
             "browser_online" => true,
             "browser_platform" => "iPhone",
-            "browser_version" => urlencode(Common::USERAGENT),
+            "browser_version" => urlencode(Common::DEFAULT_USERAGENT),
             "channel" => "tiktok_web",
             "cookie_enabled" => true,
             "device_platform" => "web_mobile",

@@ -21,7 +21,7 @@ class Stream {
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_RETURNTRANSFER => false,
             CURLOPT_HEADER => false,
-            CURLOPT_USERAGENT => Common::USERAGENT,
+            CURLOPT_USERAGENT => Common::DEFAULT_USERAGENT,
             CURLOPT_REFERER => "https://www.tiktok.com/discover"
         ]);
         curl_exec($ch);
