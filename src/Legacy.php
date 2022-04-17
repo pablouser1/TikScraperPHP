@@ -5,6 +5,7 @@ use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
 
 class Legacy extends Api {
+    const MODE = 'LEGACY';
     function __construct(array $config = [], $cache_engine = null) {
         if (!isset($config['user_agent'])) {
             $config['user_agent'] = Common::LEGACY_USERAGENT;

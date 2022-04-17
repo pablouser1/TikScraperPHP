@@ -10,6 +10,7 @@ use TikScraper\Models\Info;
 use TikScraper\Models\Response;
 
 class Api {
+    const MODE = 'STANDARD';
     protected Sender $sender;
     protected Cache $cache;
 
