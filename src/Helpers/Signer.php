@@ -58,7 +58,6 @@ class Signer {
                 '--user-agent=' . Common::DEFAULT_USERAGENT
             ]);
             $chromeOptions->setExperimentalOption('excludeSwitches', ['enable-automation']);
-            $chromeOptions->setExperimentalOption('useAutomationExtension', false);
 
             // Capabilities
             $capabilities = DesiredCapabilities::chrome();
