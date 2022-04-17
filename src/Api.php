@@ -96,16 +96,19 @@ class Api {
         $cache_key = 'hashtag-' . $hashtag;
         if ($this->cache->exists($cache_key)) return $this->cache->handleInfo($cache_key);
 
-        $query = [
-            "challengeName" => $hashtag
-        ];
-        $req = $this->sender->sendApi('/api/challenge/detail', 'm', $query);
+        $req = $this->sender->sendHTML('/tag/' . $hashtag, 'www', [
+            'lang' => 'en'
+        ]);
         $response = new Info;
         $response->setMeta($req);
         if ($response->meta->success) {
-            $response->setDetail($req->data->challengeInfo->challenge);
-            $response->setStats($req->data->challengeInfo->stats);
-            $this->cache->set($cache_key, $response->ToJson());
+            $json_string = Misc::string_between($req->data, "window['SIGI_STATE']=", ";window['SIGI_RETRY']=");
+            $jsonData = json_decode($json_string);
+            if (isset($jsonData->ChallengePage)) {
+                $response->setDetail($jsonData->ChallengePage->challengeInfo->challenge);
+                $response->setStats($jsonData->ChallengePage->challengeInfo->stats);
+                $this->cache->set($cache_key, $response->ToJson());
+            }
         }
         return $response;
     }

@@ -56,21 +56,6 @@ class Legacy extends Api {
         return $this->__buildErrorFeed($user);
     }
 
-    public function getHashtag(string $hashtag): Info {
-        $cache_key = 'hashtag-' . $hashtag;
-        if ($this->cache->exists($cache_key)) return $this->cache->handleInfo($cache_key);
-
-        $req = $this->sender->sendApi("/node/share/tag/{$hashtag}", 'm', [], '', false, '', false);
-        $response = new Info;
-        $response->setMeta($req);
-        if ($response->meta->success) {
-            $response->setDetail($req->data->challengeInfo->challenge);
-            $response->setStats($req->data->challengeInfo->stats);
-            $this->cache->set($cache_key, $response->ToJson());
-        }
-        return $response;
-    }
-
     public function getHashtagFeed(string $hashtag, int $cursor = 0): Feed {
         $cache_key = 'hashtag-' . $hashtag . '-feed-' . $cursor . '-legacy';
         if ($this->cache->exists($cache_key)) return $this->cache->handleFeed($cache_key);
