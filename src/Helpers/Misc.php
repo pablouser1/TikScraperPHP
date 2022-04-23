@@ -31,16 +31,14 @@ class Misc {
         return $randomString;
     }
 
-    public static function string_between(string $string, string $start, string $end): string {
-        $string = ' ' . $string;
-        $ini = strpos($string, $start);
-        if ($ini === 0) {
-            return '';
+    public static function extractSigi(string $string): ?object {
+        $dom = new \DomDocument();
+        $dom->loadHTML($string);
+        $script = $dom->getElementById('SIGI_STATE');
+        if ($script) {
+            return json_decode($script->textContent);
         }
-
-        $ini += strlen($start);
-        $len = strpos($string, $end, $ini) - $ini;
-        return substr($string, $ini, $len);
+        return null;
     }
 
     public static function normalize($string) {

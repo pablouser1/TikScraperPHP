@@ -50,8 +50,7 @@ class Api {
         $response = new Info;
         $response->setMeta($req);
         if ($response->meta->success) {
-            $json_string = Misc::string_between($req->data, "window['SIGI_STATE']=", ";window['SIGI_RETRY']=");
-            $jsonData = json_decode($json_string);
+            $jsonData = Misc::extractSigi($req->data);
             if (isset($jsonData->UserModule)) {
                 $response->setDetail($jsonData->UserModule->users->{$username});
                 $response->setStats($jsonData->UserModule->stats->{$username});
@@ -103,8 +102,7 @@ class Api {
         $response = new Info;
         $response->setMeta($req);
         if ($response->meta->success) {
-            $json_string = Misc::string_between($req->data, "window['SIGI_STATE']=", ";window['SIGI_RETRY']=");
-            $jsonData = json_decode($json_string);
+            $jsonData = Misc::extractSigi($req->data);
             if (isset($jsonData->ChallengePage)) {
                 $response->setDetail($jsonData->ChallengePage->challengeInfo->challenge);
                 $response->setStats($jsonData->ChallengePage->challengeInfo->stats);
@@ -203,8 +201,7 @@ class Api {
         $response = new Feed;
         $response->setMeta($req);
         if ($response->meta->success) {
-            $json_string = Misc::string_between($req->data, "window['SIGI_STATE']=", ";window['SIGI_RETRY']=");
-            $jsonData = json_decode($json_string);
+            $jsonData = Misc::extractSigi($req->data, "window['SIGI_STATE']=", ";window['SIGI_RETRY']=");
             if (isset($jsonData->ItemModule, $jsonData->ItemList, $jsonData->UserModule)) {
                 $id = $jsonData->ItemList->video->keyword;
                 $item = $jsonData->ItemModule->{$id};
