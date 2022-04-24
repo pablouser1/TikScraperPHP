@@ -33,7 +33,7 @@ class Misc {
 
     public static function extractSigi(string $string): ?object {
         $dom = new \DomDocument();
-        $dom->loadHTML($string);
+        @$dom->loadHTML($string);
         $script = $dom->getElementById('SIGI_STATE');
         if ($script) {
             return json_decode($script->textContent);
