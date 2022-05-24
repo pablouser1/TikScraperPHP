@@ -42,7 +42,7 @@ class Base {
         if (isset($this->info) && $this->info->meta->success && !$this->cache->exists($key_info)) $this->cache->set($key_info, $this->info->ToJson());
 
         // Feed
-        if (isset($this->feed) && $this->feed->meta->success && !$this->cache->exists($key_feed)) $this->cache->set($key_feed, $this->feed->ToJson());
+        if (isset($this->feed) && $this->feed->meta->success && !$this->cache->exists($key_feed) && strpos($key_info, 'trending') === false) $this->cache->set($key_feed, $this->feed->ToJson());
     }
 
     public function getInfo(): Info {

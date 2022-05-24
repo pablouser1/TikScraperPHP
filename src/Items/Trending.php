@@ -14,24 +14,22 @@ class Trending extends Base {
 
     public function feed($cursor = 0): self {
         $this->cursor = $cursor;
-        if ($this->canSendFeed()) {
-            if ($this->legacy) {
-                // Cache works for legacy mode only
-                $cached = $this->handleFeedCache();
-                if (!$cached) {
-                    $this->feedLegacy($cursor);
-                }
-            } else {
-                if ($this->cursor === 0) {
-                    $ttwid = $this->__getTtwid();
-                }
-                $this->feedStandard($ttwid);
+        if ($this->legacy) {
+            // Cache works for legacy mode only
+            $cached = $this->handleFeedCache();
+            if (!$cached) {
+                $this->feedLegacy($this->cursor);
             }
-            return $this;
+        } else {
+            if (!$this->cursor) {
+                $this->cursor = $this->__getTtwid();
+            }
+            $this->feedStandard($this->cursor);
         }
+        return $this;
     }
 
-    private function feedStandard(int $cursor = 0) {
+    private function feedStandard(string $cursor = "") {
         $query = [
             "count" => 30,
             "id" => 1,
