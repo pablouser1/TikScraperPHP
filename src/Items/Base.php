@@ -22,7 +22,7 @@ class Base {
     protected Feed $feed;
 
     function __construct(string $term, string $type, Sender $sender, Cache $cache, bool $legacy = false) {
-        $this->term = $term;
+        $this->term = urlencode($term);
         $this->type = $type;
         $this->sender = $sender;
         $this->cache = $cache;
