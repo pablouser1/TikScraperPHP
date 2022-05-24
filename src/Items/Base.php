@@ -37,10 +37,12 @@ class Base {
      */
     function __destruct() {
         // Info
-        if (isset($this->info) && $this->info->meta->success) $this->cache->set($this->getCacheKey(), $this->info->ToJson());
+        $key_info = $this->getCacheKey();
+        $key_feed = $this->getCacheKey(true);
+        if (isset($this->info) && $this->info->meta->success && !$this->cache->exists($key_info)) $this->cache->set($key_info, $this->info->ToJson());
 
         // Feed
-        if (isset($this->feed) && $this->feed->meta->success) $this->cache->set($this->getCacheKey(true), $this->feed->ToJson());
+        if (isset($this->feed) && $this->feed->meta->success && !$this->cache->exists($key_feed)) $this->cache->set($key_feed, $this->feed->ToJson());
     }
 
     public function getInfo(): Info {

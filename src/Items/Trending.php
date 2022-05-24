@@ -9,7 +9,7 @@ use TikScraper\Sender;
 
 class Trending extends Base {
     function __construct(bool $legacy = false, Sender $sender, Cache $cache) {
-        parent::__construct('', get_class($this), $legacy, $sender, $cache);
+        parent::__construct('', 'trending', $legacy, $sender, $cache);
     }
 
     public function feed($cursor = 0): self {

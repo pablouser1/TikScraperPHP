@@ -10,7 +10,7 @@ use TikScraper\Sender;
 
 class Hashtag extends Base {
     function __construct(string $term, bool $legacy = false, Sender $sender, Cache $cache) {
-        parent::__construct($term, get_class($this), $legacy, $sender, $cache);
+        parent::__construct($term, 'hashtag', $legacy, $sender, $cache);
         if (!isset($this->info)) {
             $this->info();
         }

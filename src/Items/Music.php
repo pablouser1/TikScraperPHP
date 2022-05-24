@@ -10,7 +10,7 @@ use TikScraper\Sender;
 
 class Music extends Base {
     function __construct(string $name, bool $legacy = false, Sender $sender, Cache $cache) {
-        parent::__construct($name, get_class($this), $legacy, $sender, $cache);
+        parent::__construct($name, 'music', $legacy, $sender, $cache);
         if (!isset($this->info)) {
             $this->info();
         }
