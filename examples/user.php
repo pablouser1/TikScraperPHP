@@ -1,6 +1,7 @@
 <?php
-require __DIR__ . '/common.php';
+require __DIR__ . '/../vendor/autoload.php';
 header('Content-Type: application/json');
-$api = getStandardApi();
-$user = $api->getUser('ibaillanos');
-echo $user->ToJson(true);
+$api = new \TikScraper\Api([], true);
+$item = $api->user('ibaillanos');
+$full = $item->feed()->getFull();
+echo $full->toJson();

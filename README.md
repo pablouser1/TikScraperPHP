@@ -2,8 +2,6 @@
 A Wrapper for the TikTok API made with PHP
 
 ## How to Use
-### Standard mode (Recommended)
-This mode requires signing, you can sign your requests using a [remote server](https://github.com/carcabot/tiktok-signature) or having a chromedriver running locally
 ```php
 $api = new \TikScraper\Api([
     'user_agent' => 'YOUR_CUSTOM_USER_AGENT_HERE',
@@ -18,28 +16,16 @@ $api = new \TikScraper\Api([
         'browser_url' => 'http://localhost:4444' // If you want to use local chromedriver
         'close_when_done' => true // --> Only for local signing <-- Set to true if you want to quit the browser after making the request (default true)
     ]
-], $cacheEngine);
+], $legacy, $cacheEngine);
 
-$hashtag_feed = $api->getHashtagFeed();
-echo $hashtag_feed->ToJSON(true);
+$hashtag = $api->hashtag();
+echo $hashtag->feed()->getFull()->toJson();
 ```
 
-### Legacy mode
-This mode is way faster to setup, it does not require any sort of signing but it may (or may not) be deleted in the future by TikTok. It also has some issues, like not being able to retrieve hashtag data past the first page
-```php
-$api = new \TikScraper\Legacy([
-    'user_agent' => 'YOUR_CUSTOM_USER_AGENT_HERE',
-    'proxy' => [
-        'host' => 'EXAMPLE_HOST',
-        'port' => 8080,
-        'user' => 'EXAMPLE_USER',
-        'password' => 'EXAMPLE_PASSWORD'
-    ],
-], $cacheEngine);
+### Modes
+This wrapper allows both legacy (/node endpoints) and standard (/api endpoints).
 
-$hashtag_feed = $api->getHashtagFeed();
-echo $hashtag_feed->ToJSON(true);
-```
+Standard mode is recommended, but that requires signing, you can sign your requests using a [remote server](https://github.com/carcabot/tiktok-signature) or having a chromedriver running locally.
 
 ## TODO
 * Search

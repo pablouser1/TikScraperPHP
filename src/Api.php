@@ -2,224 +2,49 @@
 
 namespace TikScraper;
 
-use TikScraper\Helpers\Curl;
-use TikScraper\Helpers\Misc;
+use TikScraper\Items\User;
+use TikScraper\Items\Hashtag;
+use TikScraper\Items\Music;
+use TikScraper\Items\Video;
+use TikScraper\Items\Trending;
 use TikScraper\Models\Discover;
-use TikScraper\Models\Feed;
-use TikScraper\Models\Info;
-use TikScraper\Models\Response;
 
 class Api {
-    const MODE = 'STANDARD';
-    protected Sender $sender;
-    protected Cache $cache;
+    private Sender $sender;
+    private Cache $cache;
+    private bool $legacy;
 
-    function __construct(array $config = [], $cache_engine = null) {
+    function __construct(array $config = [], bool $legacy, $cache_engine = null) {
+        $this->legacy = $legacy;
         $this->sender = new Sender($config);
         $this->cache = new Cache($cache_engine);
     }
 
-    public function getTrending($cursor = ''): Feed {
-        if (!$cursor) {
-            $cursor = $this->__getTtwid();
-        }
-
-        $query = [
-            "count" => 30,
-            "id" => 1,
-            "sourceType" => 12,
-            "itemID" => 1,
-            "insertedItemID" => ""
-        ];
-
-        $req = $this->sender->sendApi('/api/recommend/item_list', 'm', $query, '', false, $cursor);
-        $response = new Feed;
-        $response->fromReq($req, null, $cursor);
-        return $response;
-    }
-
     // -- Main methods -- //
-    public function getUser(string $username): Info {
-        $username = urlencode($username);
-        $cache_key = 'user-' . $username;
-        if ($this->cache->exists($cache_key)) return $this->cache->handleInfo($cache_key);
-
-        $req = $this->sender->sendHTML("/@{$username}", 'www', [
-            'lang' => 'en'
-        ]);
-        $response = new Info;
-        $response->setMeta($req);
-        if ($response->meta->success) {
-            $jsonData = Misc::extractSigi($req->data);
-            if (isset($jsonData->UserModule)) {
-                $response->setDetail($jsonData->UserModule->users->{$username});
-                $response->setStats($jsonData->UserModule->stats->{$username});
-                $this->cache->set($cache_key, $response->ToJson());
-            }
-        }
-        return $response;
+    public function user(string $term): User {
+        return new User($term, $this->legacy, $this->sender, $this->cache);
     }
 
-    public function getUserFeed(string $username, int $cursor = 0): Feed {
-        $cache_key = 'user-' . $username . '-feed-' . $cursor;
-        if ($this->cache->exists($cache_key)) return $this->cache->handleFeed($cache_key);
-
-        $user = $this->getUser($username);
-        if ($user->meta->success) {
-            $id = $user->detail->id;
-            $secUid = $user->detail->secUid;
-            $query = [
-                "count" => 30,
-                "id" => $id,
-                "cursor" => $cursor,
-                "type" => 1,
-                "secUid" => $secUid,
-                "sourceType" => 8,
-                "appId" => 1233
-            ];
-
-            $req = $this->sender->sendApi('/api/post/item_list', 'm', $query, StaticUrls::USER_FEED, true);
-            $response = new Feed;
-            $response->fromReq($req, $cursor);
-            $response->setInfo($user);
-
-            if ($response->meta->success) {
-                $this->cache->set($cache_key, $response->ToJson());
-            }
-
-            return $response;
-        }
-        return $this->__buildErrorFeed($user);
+    public function hashtag(string $term): Hashtag {
+        return new Hashtag($term, $this->legacy, $this->sender, $this->cache);
     }
 
-    public function getHashtag(string $hashtag): Info {
-        $cache_key = 'hashtag-' . $hashtag;
-        if ($this->cache->exists($cache_key)) return $this->cache->handleInfo($cache_key);
-
-        $req = $this->sender->sendHTML('/tag/' . $hashtag, 'www', [
-            'lang' => 'en'
-        ]);
-        $response = new Info;
-        $response->setMeta($req);
-        if ($response->meta->success) {
-            $jsonData = Misc::extractSigi($req->data);
-            if (isset($jsonData->ChallengePage)) {
-                $response->setDetail($jsonData->ChallengePage->challengeInfo->challenge);
-                $response->setStats($jsonData->ChallengePage->challengeInfo->stats);
-                $this->cache->set($cache_key, $response->ToJson());
-            }
-        }
-        return $response;
+    public function music(string $term): Music {
+        return new Music($term, $this->legacy, $this->sender, $this->cache);
     }
 
-    public function getHashtagFeed(string $hashtag, int $cursor = 0): Feed {
-        $cache_key = 'hashtag-' . $hashtag . '-feed-' . $cursor;
-        if ($this->cache->exists($cache_key)) return $this->cache->handleFeed($cache_key);
-
-        $hashtag = $this->getHashtag($hashtag);
-        if ($hashtag->meta->success) {
-            $id = $hashtag->detail->id;
-            $query = [
-                "count" => 30,
-                "challengeID" => $id,
-                "cursor" => $cursor
-            ];
-            $req = $this->sender->sendApi('/api/challenge/item_list', 'm', $query);
-            $response = new Feed;
-            $response->fromReq($req, $cursor);
-            $response->setInfo($hashtag);
-
-            if ($response->meta->success) {
-                $this->cache->set($cache_key, $response->ToJson());
-            }
-            return $response;
-        }
-        return $this->__buildErrorFeed($hashtag);
+    public function video(string $term): Video {
+        return new Video($term, $this->legacy, $this->sender, $this->cache);
     }
 
-    public function getMusic(string $music_id): Info {
-        $cache_key = 'music- ' . $music_id;
-        if ($this->cache->exists($cache_key)) return $this->cache->handleInfo($cache_key);
-
-        $req = $this->sender->sendApi("/node/share/music/{$music_id}", 'm');
-        $result = new Info;
-        $result->setMeta($req);
-        if ($result->meta->success) {
-            $result->setDetail($req->data->musicInfo->music);
-            $result->setStats($req->data->musicInfo->stats);
-
-            $this->cache->set($cache_key, $result->ToJson());
-        }
-        return $result;
+    public function trending(): Trending {
+        return new Trending($this->legacy, $this->sender, $this->cache);
     }
 
-    public function getMusicFeed(string $music_id, int $cursor = 0): Feed {
-        $cache_key = 'music' . $music_id . '-feed-' . $cursor;
-        if ($this->cache->exists($cache_key)) return $this->cache->handleFeed($cache_key);
-
-        $music = $this->getMusic($music_id);
-        if ($music->meta->success) {
-            $query = [
-                "secUid" => "",
-                "musicID" => $music->detail->id,
-                "cursor" => $cursor,
-                "shareUid" => "",
-                "count" => 30,
-            ];
-            $req = $this->sender->sendApi('/api/music/item_list', 'm', $query, '', true);
-            $response = new Feed;
-            $response->fromReq($req, $cursor);
-            $response->setInfo($music);
-            if ($response->meta->success) {
-                $this->cache->set($cache_key, $response->ToJson());
-            }
-
-            return $response;
-
-        }
-        return $this->__buildErrorFeed($music);
-    }
     /**
-     * Get video by video id
-     * Accept video ID and returns video detail object
+     * Discover is a (very) special case, does not follow the normal structure
      */
-    public function getVideoByID(string $video_id): Feed {
-        $cache_key = 'video-' . $video_id;
-        if ($this->cache->exists($cache_key)) return $this->cache->handleFeed($cache_key);
-
-        $subdomain = '';
-        $endpoint = '';
-        if (is_numeric($video_id)) {
-            $subdomain = 'm';
-            $endpoint = '/v/' . $video_id;
-        } else {
-            $subdomain = 'vm';
-            $endpoint = '/' . $video_id;
-        }
-
-        $req = $this->sender->sendHTML($endpoint, $subdomain, []);
-        $response = new Feed;
-        $response->setMeta($req);
-        if ($response->meta->success) {
-            $jsonData = Misc::extractSigi($req->data, "window['SIGI_STATE']=", ";window['SIGI_RETRY']=");
-            if (isset($jsonData->ItemModule, $jsonData->ItemList, $jsonData->UserModule)) {
-                $id = $jsonData->ItemList->video->keyword;
-                $item = $jsonData->ItemModule->{$id};
-                $username = $item->author;
-
-                $response->setItems([$item]);
-                $response->setNav(false, null, '');
-                $info = new Info;
-                $info->setDetail($jsonData->UserModule->users->{$username});
-                $info->setStats($item->stats);
-                $response->setInfo($info);
-                $this->cache->set($cache_key, $response->ToJson());
-            }
-        }
-        return $response;
-    }
-
-    public function getDiscover(): Discover {
+    public function discover(): Discover {
         $cacheKey = 'discover';
         if ($this->cache->exists($cacheKey)) return $this->cache->handleDiscover($cacheKey);
         $query = [
@@ -238,22 +63,5 @@ class Api {
             $this->cache->set($cacheKey, $response->ToJson());
         }
         return $response;
-    }
-
-    // Misc
-    protected function __buildErrorFeed(Info $info): Feed {
-        $meta = $info->meta;
-        $req = new Response($meta->success, $meta->http_code, (object) [
-            'statusCode' => $meta->tiktok_code
-        ]);
-        $feed = new Feed;
-        $feed->fromReq($req);
-        return $feed;
-    }
-
-    private function __getTtwid(): string {
-        $res = $this->sender->sendHead('https://www.tiktok.com');
-        $cookies = Curl::extractCookies($res['data']);
-        return $cookies['ttwid'] ?? '';
     }
 }

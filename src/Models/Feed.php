@@ -5,7 +5,6 @@ use TikScraper\Helpers\Misc;
 
 class Feed extends Base {
     public Meta $meta;
-    public Info $info;
     public array $items = [];
     public bool $hasMore = false;
     public ?int $minCursor = 0;
@@ -13,10 +12,6 @@ class Feed extends Base {
 
     public function setMeta(Response $req) {
         $this->meta = new Meta($req->http_success, $req->code, $req->data);
-    }
-
-    public function setInfo(Info $info) {
-        $this->info = $info;
     }
 
     public function setNav(bool $hasMore, ?int $minCursor, string $maxCursor) {
@@ -74,6 +69,5 @@ class Feed extends Base {
         $info->fromCache($cache->info);
         $this->setItems($cache->items);
         $this->setNav($cache->hasMore, $cache->minCursor, $cache->maxCursor);
-        $this->setInfo($info);
     }
 }

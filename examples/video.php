@@ -1,6 +1,7 @@
 <?php
-require __DIR__ . '/common.php';
+require __DIR__ . '/../vendor/autoload.php';
 header('Content-Type: application/json');
-$api = getStandardApi();
-$trending = $api->getVideoByID("7062801547058515206");
-echo $trending->ToJson(true);
+$api = new \TikScraper\Api([], true);
+$item = $api->video('iggers_fromafrica', 7100576199444925702);
+$full = $item->feed()->getFull();
+echo $full->toJson();

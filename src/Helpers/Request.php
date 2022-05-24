@@ -1,7 +1,7 @@
 <?php
 namespace TikScraper\Helpers;
 
-use TikScraper\Common;
+use TikScraper\Constants\UserAgents;
 
 class Request {
     static public function getCookies(string $device_id, string $csrf_session_id): string {
@@ -29,7 +29,7 @@ class Request {
             "browser_name" => "Mozilla",
             "browser_online" => true,
             "browser_platform" => "iPhone",
-            "browser_version" => urlencode(Common::DEFAULT_USERAGENT),
+            "browser_version" => urlencode(UserAgents::DEFAULT),
             "channel" => "tiktok_web",
             "cookie_enabled" => true,
             "device_platform" => "web_mobile",

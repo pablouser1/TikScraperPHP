@@ -8,10 +8,11 @@ use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 use SapiStudio\SeleniumStealth\SeleniumStealth;
-use TikScraper\Common;
+use TikScraper\Constants\UserAgents;
 
 class Signer {
     const DEFAULT_URL = 'https://tiktok.com/@tiktok';
+    const PASSWORD = 'webapp1.0+202106';
     // Remote signing
     private $remote_url = '';
     // Selenium
@@ -55,7 +56,7 @@ class Signer {
                 '--disable-gpu',
                 '--no-sandbox',
                 '--disable-blink-features=AutomationControlled',
-                '--user-agent=' . Common::DEFAULT_USERAGENT
+                '--user-agent=' . UserAgents::DEFAULT
             ]);
             $chromeOptions->setExperimentalOption('excludeSwitches', ['enable-automation']);
 
@@ -72,9 +73,7 @@ class Signer {
 
             // Load scripts
             $signature = file_get_contents(__DIR__ . '/../../js/signature.js');
-            $xttparams = file_get_contents(__DIR__ . '/../../js/xttparams.js');
             $this->driver->executeScript($signature);
-            $this->driver->executeScript($xttparams);
         }
     }
 
@@ -96,7 +95,7 @@ class Signer {
     /**
      * Sign url using local chromedriver
      */
-    private function browser(string $url): ?object {
+    private function browser(string $url): object {
         $verifyfp = Misc::verify_fp();
         $url .= '&verifyFp=' . $verifyfp;
 
@@ -105,11 +104,9 @@ class Signer {
         ]);
 
         $signed_url = $url . '&_signature=' . $signature;
-        # Get params of url as dict
-        $params = [];
+        # Get params of url as string
         $params_str = parse_url($signed_url, PHP_URL_QUERY);
-        parse_str($params_str, $params);
-        $xttparams = $this->driver->executeScript('return window.genXTTParams(arguments[0])', [$params]);
+        $xttparams = $this->xttparams($params_str);
         return (object) [
             'status' => 'ok',
             'data' => (object) [
@@ -146,6 +143,11 @@ class Signer {
             return $data_json;
         }
         return null;
+    }
+
+    private function xttparams(string $params): string {
+        $crypt = openssl_encrypt($params, 'aes-128-cbc', self::PASSWORD, 0, self::PASSWORD);
+        return $crypt;
     }
 
     /**

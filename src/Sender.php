@@ -1,6 +1,7 @@
 <?php
 namespace TikScraper;
 
+use TikScraper\Constants\UserAgents;
 use TikScraper\Helpers\Curl;
 use TikScraper\Helpers\Misc;
 use TikScraper\Helpers\Request;
@@ -26,7 +27,7 @@ class Sender {
     private Signer $signer;
     private $proxy = [];
     private $use_test_endpoints = false;
-    private $useragent = Common::DEFAULT_USERAGENT;
+    private $useragent = UserAgents::DEFAULT;
     private $cookie_file = '';
 
     function __construct(array $config) {

@@ -1,6 +1,7 @@
 <?php
-require __DIR__ . '/common.php';
+require __DIR__ . '/../vendor/autoload.php';
 header('Content-Type: application/json');
-$api = getStandardApi();
-$hashtag = $api->getMusic('Epic-Music-863502-6873501791145691137');
-echo $hashtag->ToJson(true);
+$api = new \TikScraper\Api([], true);
+$item = $api->music('Epic-Music-863502-6873501791145691137');
+$full = $item->feed()->getFull();
+echo $full->toJson();
