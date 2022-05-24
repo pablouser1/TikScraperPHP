@@ -9,8 +9,8 @@ use TikScraper\Models\Info;
 use TikScraper\Sender;
 
 class Hashtag extends Base {
-    function __construct(string $term, bool $legacy = false, Sender $sender, Cache $cache) {
-        parent::__construct($term, 'hashtag', $legacy, $sender, $cache);
+    function __construct(string $term, Sender $sender, Cache $cache, bool $legacy = false) {
+        parent::__construct($term, 'hashtag', $sender, $cache, $legacy);
         if (!isset($this->info)) {
             $this->info();
         }

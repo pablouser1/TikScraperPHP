@@ -22,23 +22,23 @@ class Api {
 
     // -- Main methods -- //
     public function user(string $term): User {
-        return new User($term, $this->legacy, $this->sender, $this->cache);
+        return new User($term, $this->sender, $this->cache, $this->legacy);
     }
 
     public function hashtag(string $term): Hashtag {
-        return new Hashtag($term, $this->legacy, $this->sender, $this->cache);
+        return new Hashtag($term, $this->sender, $this->cache, $this->legacy);
     }
 
     public function music(string $term): Music {
-        return new Music($term, $this->legacy, $this->sender, $this->cache);
+        return new Music($term, $this->sender, $this->cache, $this->legacy);
     }
 
     public function video(string $term): Video {
-        return new Video($term, $this->legacy, $this->sender, $this->cache);
+        return new Video($term, $this->sender, $this->cache, $this->legacy);
     }
 
     public function trending(): Trending {
-        return new Trending($this->legacy, $this->sender, $this->cache);
+        return new Trending($this->sender, $this->cache, $this->legacy);
     }
 
     /**

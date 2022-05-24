@@ -10,8 +10,8 @@ use TikScraper\Sender;
 
 class Video extends Base {
     private object $item;
-    function __construct(string $term, bool $legacy = false, Sender $sender, Cache $cache) {
-        parent::__construct($term, 'video', $legacy, $sender, $cache);
+    function __construct(string $term, Sender $sender, Cache $cache, bool $legacy = false) {
+        parent::__construct($term, 'video', $sender, $cache, $legacy);
         if (!isset($this->info)) {
             $this->info();
         }

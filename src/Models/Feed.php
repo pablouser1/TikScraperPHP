@@ -59,7 +59,10 @@ class Feed extends Base {
             } elseif (isset($data->body->hasMore)) {
                 $hasMore = $data->body->hasMore;
             }
-            $this->setNav($hasMore, $minCursor, $maxCursor);
+
+            if ($maxCursor) {
+                $this->setNav($hasMore, $minCursor, $maxCursor);
+            }
         }
     }
 

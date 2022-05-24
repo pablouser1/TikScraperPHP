@@ -9,8 +9,8 @@ use TikScraper\Models\Info;
 use TikScraper\Sender;
 
 class Music extends Base {
-    function __construct(string $name, bool $legacy = false, Sender $sender, Cache $cache) {
-        parent::__construct($name, 'music', $legacy, $sender, $cache);
+    function __construct(string $name, Sender $sender, Cache $cache, bool $legacy = false) {
+        parent::__construct($name, 'music', $sender, $cache, $legacy);
         if (!isset($this->info)) {
             $this->info();
         }

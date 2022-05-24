@@ -21,12 +21,12 @@ class Base {
     protected Info $info;
     protected Feed $feed;
 
-    function __construct(string $term, string $type, bool $legacy = false, Sender $sender, Cache $cache) {
+    function __construct(string $term, string $type, Sender $sender, Cache $cache, bool $legacy = false) {
         $this->term = $term;
         $this->type = $type;
-        $this->legacy = $legacy;
         $this->sender = $sender;
         $this->cache = $cache;
+        $this->legacy = $legacy;
 
         $key = $this->getCacheKey();
         if ($this->cache->exists($key)) $this->info = $this->cache->handleInfo($key);

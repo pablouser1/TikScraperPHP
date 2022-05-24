@@ -10,8 +10,8 @@ use TikScraper\Sender;
 use TikScraper\Constants\StaticUrls;
 
 class User extends Base {
-    function __construct(string $term, bool $legacy = false, Sender $sender, Cache $cache) {
-        parent::__construct($term, 'user', $legacy, $sender, $cache);
+    function __construct(string $term, Sender $sender, Cache $cache, bool $legacy = false) {
+        parent::__construct($term, 'user', $sender, $cache, $legacy);
         if (!isset($this->info)) {
             $this->info();
         }

@@ -8,8 +8,8 @@ use TikScraper\Models\Feed;
 use TikScraper\Sender;
 
 class Trending extends Base {
-    function __construct(bool $legacy = false, Sender $sender, Cache $cache) {
-        parent::__construct('', 'trending', $legacy, $sender, $cache);
+    function __construct(Sender $sender, Cache $cache, bool $legacy = false) {
+        parent::__construct('', 'trending', $sender, $cache, $legacy);
     }
 
     public function feed($cursor = 0): self {
