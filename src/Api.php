@@ -14,7 +14,7 @@ class Api {
     private Cache $cache;
     private bool $legacy;
 
-    function __construct(array $config = [], bool $legacy, $cache_engine = null) {
+    function __construct(array $config = [], bool $legacy = false, $cache_engine = null) {
         $this->legacy = $legacy;
         $this->sender = new Sender($config);
         $this->cache = new Cache($cache_engine);
