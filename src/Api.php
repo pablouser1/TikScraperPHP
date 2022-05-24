@@ -64,4 +64,8 @@ class Api {
         }
         return $response;
     }
+
+    public function isLegacy(): bool {
+        return $this->legacy;
+    }
 }

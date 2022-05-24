@@ -33,8 +33,8 @@ class User extends Base {
 
     public function feed(int $cursor = 0): self {
         $this->cursor = $cursor;
-        $this->handleFeedCache();
-        if (!isset($this->feed)) {
+        $cached = $this->handleFeedCache();
+        if (!$cached && $this->canSendFeed()) {
             if ($this->legacy) {
                 $this->feedLegacy($cursor);
             } else {

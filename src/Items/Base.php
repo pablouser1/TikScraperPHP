@@ -5,6 +5,7 @@ use TikScraper\Cache;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Full;
 use TikScraper\Models\Info;
+use TikScraper\Models\Meta;
 use TikScraper\Sender;
 
 class Base {
@@ -54,14 +55,39 @@ class Base {
         return new Full($this->info, $this->feed);
     }
 
+    public function ok(): bool {
+        $info_ok = $this->info->meta->success;
+        $feed_ok = true;
+
+        if (isset($this->feed)) {
+            $feed_ok = $this->feed->meta->success;
+        }
+        return $info_ok && $feed_ok;
+    }
+
+    public function error(): Meta {
+        return isset($this->feed) ? $this->feed->meta : $this->info->meta;
+    }
+
     private function getCacheKey(bool $addCursor = false): string {
         $key = $this->type . '-' . $this->term;
         if ($addCursor) $key .= '-' . $this->cursor;
         return $key;
     }
 
-    protected function handleFeedCache() {
+    protected function handleFeedCache(): bool {
         $key = $this->getCacheKey(true);
-        if ($this->cache->exists($key)) $this->feed = $this->cache->handleFeed($key);
+        if ($this->cache->exists($key)) {
+            $this->feed = $this->cache->handleFeed($key);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Make sure there is a valid info and there isn't a
+     */
+    protected function canSendFeed(): bool {
+        return isset($this->info) && $this->info->meta->success;
     }
 }

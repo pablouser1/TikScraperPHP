@@ -5,6 +5,7 @@ use TikScraper\Cache;
 use TikScraper\Helpers\Misc;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
+use TikScraper\Models\Response;
 use TikScraper\Sender;
 
 class Video extends Base {
@@ -46,6 +47,7 @@ class Video extends Base {
         $response = new Feed;
         $response->setItems([$this->item]);
         $response->setNav(false, null, '');
+        $response->setMeta(new Response(true, 200, null));
         $this->feed = $response;
         return $this;
     }
