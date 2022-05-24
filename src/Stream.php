@@ -1,7 +1,7 @@
 <?php
 namespace TikScraper;
 
-use TikScraper\Common;
+use TikScraper\Constants\UserAgents;
 
 class Stream {
     private $buffer_size = 256 * 1024;
@@ -21,7 +21,7 @@ class Stream {
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_RETURNTRANSFER => false,
             CURLOPT_HEADER => false,
-            CURLOPT_USERAGENT => Common::DEFAULT_USERAGENT,
+            CURLOPT_USERAGENT => UserAgents::DEFAULT,
             CURLOPT_REFERER => "https://www.tiktok.com/discover"
         ]);
         curl_exec($ch);

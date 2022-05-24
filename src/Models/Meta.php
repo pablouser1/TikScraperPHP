@@ -1,7 +1,7 @@
 <?php
 namespace TikScraper\Models;
 
-use TikScraper\Codes;
+use TikScraper\Constants\Codes;
 
 class Meta {
     public bool $success = false;

@@ -1,10 +1,10 @@
 <?php
-namespace TikScraper;
+namespace TikScraper\Constants;
 
 class Codes {
     const list = [
         0 => "OK",
-        // 10 to 100 are PROXITOK ONLY errors
+        // 10 to 100 are SCRAPER ONLY errors
         10 => 'CURL_ERROR',
         20 => 'SIGNATURE_CONNECTION_ERROR',
         450 => "CLIENT_PAGE_ERROR",
