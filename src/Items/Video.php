@@ -46,11 +46,14 @@ class Video extends Base {
 
     public function feed(): self {
         $this->cursor = 0;
-        $response = new Feed;
-        $response->setItems([$this->item]);
-        $response->setNav(false, null, '');
-        $response->setMeta(new Response(true, 200, null));
-        $this->feed = $response;
+        $cached = $this->handleFeedCache();
+        if (!$cached && $this->canSendFeed()) {
+            $response = new Feed;
+            $response->setItems([$this->item]);
+            $response->setNav(false, null, '');
+            $response->setMeta(new Response(true, 200, null));
+            $this->feed = $response;
+        }
         return $this;
     }
 }
