@@ -12,7 +12,7 @@ class Feed extends Base {
         $this->meta = new Meta($req->http_success, $req->code, $req->data);
     }
 
-    public function setNav(bool $hasMore, ?int $minCursor = 0, string $maxCursor) {
+    public function setNav(bool $hasMore, ?int $minCursor, string $maxCursor) {
         $this->hasMore = $hasMore;
         $this->minCursor = $minCursor;
         $this->maxCursor = $maxCursor;
