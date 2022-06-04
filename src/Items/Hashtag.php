@@ -2,7 +2,6 @@
 namespace TikScraper\Items;
 
 use TikScraper\Cache;
-use TikScraper\Constants\TypeLegacy;
 use TikScraper\Helpers\Misc;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
@@ -36,38 +35,16 @@ class Hashtag extends Base {
         $this->cursor = $cursor;
         $cached = $this->handleFeedCache();
         if (!$cached && $this->canSendFeed()) {
-            if ($this->legacy) {
-                $this->feedLegacy($cursor);
-            } else {
-                $this->feedStandard($cursor);
-            }
+            $query = [
+                "count" => 30,
+                "challengeID" => $this->info->detail->id,
+                "cursor" => $cursor
+            ];
+            $req = $this->sender->sendApi('/api/challenge/item_list', 'm', $query);
+            $response = new Feed;
+            $response->fromReq($req, $cursor);
+            $this->feed = $response;
         }
         return $this;
-    }
-
-    private function feedStandard(int $cursor = 0) {
-        $query = [
-            "count" => 30,
-            "challengeID" => $this->info->detail->id,
-            "cursor" => $cursor
-        ];
-        $req = $this->sender->sendApi('/api/challenge/item_list', 'm', $query);
-        $response = new Feed;
-        $response->fromReq($req, $cursor);
-        $this->feed = $response;
-    }
-
-    private function feedLegacy(int $cursor = 0) {
-        $query = [
-            "type" => TypeLegacy::HASHTAG,
-            "id" => $this->info->detail->id,
-            "count" => 30,
-            "minCursor" => 0,
-            "maxCursor" => $cursor
-        ];
-        $req = $this->sender->sendApi('/node/video/feed', 'm', $query, '', false, '', false);
-        $response = new Feed;
-        $response->fromReq($req, $cursor);
-        $this->feed = $response;
     }
 }

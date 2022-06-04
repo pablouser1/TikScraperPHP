@@ -26,6 +26,5 @@ class Meta {
     private function getCode(object $data): int {
         if (isset($data->statusCode)) return (int) $data->statusCode;
         if (isset($data->status_code)) return (int) $data->status_code;
-        if (isset($data->code)) return (int) $data->code;
     }
 }

@@ -2,15 +2,14 @@
 namespace TikScraper\Items;
 
 use TikScraper\Cache;
-use TikScraper\Constants\TypeLegacy;
 use TikScraper\Helpers\Misc;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
 use TikScraper\Sender;
 
 class Music extends Base {
-    function __construct(string $name, Sender $sender, Cache $cache, bool $legacy = false) {
-        parent::__construct($name, 'music', $sender, $cache, $legacy);
+    function __construct(string $name, Sender $sender, Cache $cache) {
+        parent::__construct($name, 'music', $sender, $cache);
         if (!isset($this->info)) {
             $this->info();
         }
@@ -36,40 +35,18 @@ class Music extends Base {
         $this->cursor = $cursor;
         $cached = $this->handleFeedCache();
         if (!$cached && $this->canSendFeed()) {
-            if ($this->legacy) {
-                $this->feedLegacy($cursor);
-            } else {
-                $this->feedStandard($cursor);
-            }
+            $query = [
+                "secUid" => "",
+                "musicID" => $this->info->detail->id,
+                "cursor" => $cursor,
+                "shareUid" => "",
+                "count" => 30,
+            ];
+            $req = $this->sender->sendApi('/api/music/item_list', 'm', $query, '', true);
+            $response = new Feed;
+            $response->fromReq($req, $cursor);
+            $this->feed = $response;
         }
         return $this;
-    }
-
-    private function feedStandard(int $cursor = 0) {
-        $query = [
-            "secUid" => "",
-            "musicID" => $this->info->detail->id,
-            "cursor" => $cursor,
-            "shareUid" => "",
-            "count" => 30,
-        ];
-        $req = $this->sender->sendApi('/api/music/item_list', 'm', $query, '', true);
-        $response = new Feed;
-        $response->fromReq($req, $cursor);
-        $this->feed = $response;
-    }
-
-    private function feedLegacy(int $cursor = 0) {
-        $query = [
-            "type" => TypeLegacy::MUSIC,
-            "id" => $this->info->detail->id,
-            "count" => 30,
-            "minCursor" => 0,
-            "maxCursor" => $cursor
-        ];
-        $req = $this->sender->sendApi('/node/video/feed', 'm', $query, '', false, '', false);
-        $response = new Feed;
-        $response->fromReq($req, $cursor);
-        $this->feed = $response;
     }
 }

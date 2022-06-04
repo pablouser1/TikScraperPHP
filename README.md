@@ -16,18 +16,16 @@ $api = new \TikScraper\Api([
         'browser_url' => 'http://localhost:4444' // If you want to use local chromedriver
         'close_when_done' => true // --> Only for local signing <-- Set to true if you want to quit the browser after making the request (default true)
     ]
-], $legacy, $cacheEngine);
+], $cacheEngine);
 
 $hashtag = $api->hashtag();
 echo $hashtag->feed()->getFull()->toJson();
 ```
 
-### Modes
-This wrapper allows both legacy (/node endpoints) and standard (/api endpoints).
-
-Standard mode is recommended, but that requires signing, you can sign your requests using a [remote server](https://github.com/carcabot/tiktok-signature) or having a chromedriver running locally.
+For using this program you need to have a signing service, you can sign your requests using a [remote server](https://github.com/carcabot/tiktok-signature) or having a chromedriver running locally.
 
 ## TODO
+* Detect captcha and handle error
 * Search
 
 ## Credits

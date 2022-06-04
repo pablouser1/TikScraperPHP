@@ -2,34 +2,20 @@
 namespace TikScraper\Items;
 
 use TikScraper\Cache;
-use TikScraper\Constants\TypeLegacy;
 use TikScraper\Helpers\Curl;
 use TikScraper\Models\Feed;
 use TikScraper\Sender;
 
 class Trending extends Base {
-    function __construct(Sender $sender, Cache $cache, bool $legacy = false) {
-        parent::__construct('', 'trending', $sender, $cache, $legacy);
+    function __construct(Sender $sender, Cache $cache) {
+        parent::__construct('', 'trending', $sender, $cache);
     }
 
-    public function feed($cursor = 0): self {
+    public function feed($cursor = ""): self {
         $this->cursor = $cursor;
-        if ($this->legacy) {
-            // Cache works for legacy mode only
-            $cached = $this->handleFeedCache();
-            if (!$cached) {
-                $this->feedLegacy($this->cursor);
-            }
-        } else {
-            if (!$this->cursor) {
-                $this->cursor = $this->__getTtwid();
-            }
-            $this->feedStandard($this->cursor);
+        if (!$this->cursor) {
+            $this->cursor = $this->__getTtwid();
         }
-        return $this;
-    }
-
-    private function feedStandard(string $cursor = "") {
         $query = [
             "count" => 30,
             "id" => 1,
@@ -38,25 +24,11 @@ class Trending extends Base {
             "insertedItemID" => ""
         ];
 
-        $req = $this->sender->sendApi('/api/recommend/item_list', 'm', $query, '', false, $cursor);
+        $req = $this->sender->sendApi('/api/recommend/item_list', 'm', $query, '', false, $this->cursor);
         $response = new Feed;
         $response->fromReq($req, null, $cursor);
         $this->feed = $response;
-    }
-
-    private function feedLegacy(int $cursor = 0) {
-        $query = [
-            "type" => TypeLegacy::TRENDING,
-            "id" => 1,
-            "count" => 30,
-            "minCursor" => 0,
-            "maxCursor" => $cursor
-        ];
-
-        $req = $this->sender->sendApi('/node/video/feed', 'm', $query, '', false, '', false);
-        $response = new Feed;
-        $response->fromReq($req, $cursor);
-        $this->feed = $response;
+        return $this;
     }
 
     private function __getTtwid(): string {

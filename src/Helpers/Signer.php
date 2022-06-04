@@ -153,12 +153,12 @@ class Signer {
     /**
      * Picks remote or local signing depending on the config passed to this class
      */
-    public function run(string $url): object {
+    public function run(string $url): ?object {
         if ($this->remote_url) {
             return $this->remote($url);
         } elseif ($this->browser_url) {
             return $this->browser($url);
         }
-        throw new \Exception('You are running this wrapper on Standard mode without a local or remote signer!', 500);
+        return null;
     }
 }

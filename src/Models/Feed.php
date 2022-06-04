@@ -1,8 +1,6 @@
 <?php
 namespace TikScraper\Models;
 
-use TikScraper\Helpers\Misc;
-
 class Feed extends Base {
     public Meta $meta;
     public array $items = [];
@@ -14,7 +12,7 @@ class Feed extends Base {
         $this->meta = new Meta($req->http_success, $req->code, $req->data);
     }
 
-    public function setNav(bool $hasMore, ?int $minCursor, string $maxCursor) {
+    public function setNav(bool $hasMore, ?int $minCursor = 0, string $maxCursor) {
         $this->hasMore = $hasMore;
         $this->minCursor = $minCursor;
         $this->maxCursor = $maxCursor;
@@ -22,10 +20,6 @@ class Feed extends Base {
 
     public function setItems(array $items) {
         $this->items = $items;
-    }
-
-    public function setItemsLegacy(array $items) {
-        $this->items = Misc::parseLegacyItems($items);
     }
 
     public function fromReq(Response $req, ?int $minCursor = 0, string $ttwid = '') {
@@ -40,15 +34,11 @@ class Feed extends Base {
             } else {
                 if (isset($data->cursor)) {
                     $maxCursor = $data->cursor;
-                } elseif (isset($data->body->maxCursor)) {
-                    $maxCursor = (int) $data->body->maxCursor;
                 }
             }
 
             // Items
-            if (isset($data->body->itemListData)) {
-                $this->setItemsLegacy($data->body->itemListData);
-            } elseif (isset($data->itemList)) {
+            if (isset($data->itemList)) {
                 $this->setItems($data->itemList);
             }
 
@@ -56,8 +46,6 @@ class Feed extends Base {
             $hasMore = false;
             if (isset($data->hasMore)) {
                 $hasMore = $data->hasMore;
-            } elseif (isset($data->body->hasMore)) {
-                $hasMore = $data->body->hasMore;
             }
 
             if ($maxCursor) {

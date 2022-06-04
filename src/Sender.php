@@ -32,8 +32,11 @@ class Sender {
 
     function __construct(array $config) {
         // Signing
-        $signer = [];
-        if (isset($config['signer'])) $signer = $config['signer'];
+        if (!isset($config['signer'])) {
+            throw new \Exception("You need to send a signer config! Please check the README for more info");
+        }
+
+        $signer = $config['signer'];
 
         $this->signer = new Signer($signer);
 
@@ -102,8 +105,7 @@ class Sender {
         array $query = [],
         string $static_url = '',
         bool $send_tt_params = false,
-        string $ttwid = '',
-        bool $sign = true
+        string $ttwid = ''
     ): Response {
         if ($this->use_test_endpoints && $subdomain === 'm') {
             $subdomain = 't';
@@ -118,26 +120,21 @@ class Sender {
         $headers[] = "Path: {$endpoint}";
         $url .= Request::buildQuery($query) . '&device_id=' . $device_id;
         $headers = array_merge($headers, self::DEFAULT_API_HEADERS);
-        if ($sign) {
-            // URL to send to signer
-            $signer_res = $this->signer->run($url);
-            if ($signer_res && $signer_res->status === 'ok') {
-                $url = $signer_res->data->signed_url;
-                $useragent = $signer_res->data->navigator->user_agent;
-                if ($send_tt_params) {
-                    $headers[] = 'x-tt-params: ' . $signer_res->data->{'x-tt-params'};
-                }
-                if ($ttwid) {
-                    $cookies .= 'ttwid=' . $ttwid . ';';
-                }
-            } else {
-                return new Response(false, 500, (object) [
-                    'statusCode' => 20
-                ]);
+        // URL to send to signer
+        $signer_res = $this->signer->run($url);
+        if ($signer_res && $signer_res->status === 'ok') {
+            $url = $signer_res->data->signed_url;
+            $useragent = $signer_res->data->navigator->user_agent;
+            if ($send_tt_params) {
+                $headers[] = 'x-tt-params: ' . $signer_res->data->{'x-tt-params'};
+            }
+            if ($ttwid) {
+                $cookies .= 'ttwid=' . $ttwid . ';';
             }
         } else {
-            $verify_fp = Misc::verify_fp();
-            $url .= '&verifyFp=' . $verify_fp;
+            return new Response(false, 500, (object) [
+                'statusCode' => 20
+            ]);
         }
 
         $extra = $this->getInfo($url, $useragent);
