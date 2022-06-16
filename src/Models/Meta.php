@@ -13,7 +13,15 @@ class Meta {
         $keys = array_keys(Codes::list);
         $http_success = $http_success;
         $http_code = $code;
-        $tiktok_code = is_object($data) ? $this->getCode($data) : 0;
+
+        if (is_object($data)) {
+            $tiktok_code = $this->getCode($data);
+        } elseif ($data === "") {
+            $tiktok_code = -1;
+        } else {
+            $tiktok_code = 0;
+        }
+
         $tiktok_msg = in_array($tiktok_code, $keys) ? Codes::list[$tiktok_code] : 'Unknown error';
 
         // Setting values

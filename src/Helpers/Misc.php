@@ -31,12 +31,15 @@ class Misc {
         return $randomString;
     }
 
-    public static function extractSigi(string $string): ?object {
-        $dom = new \DomDocument();
-        @$dom->loadHTML($string);
-        $script = $dom->getElementById('SIGI_STATE');
-        if ($script) {
-            return json_decode($script->textContent);
+    public static function extractSigi(string $doc): ?object {
+        // Disallow empty strings
+        if ($doc !== "") {
+            $dom = new \DomDocument();
+            @$dom->loadHTML($doc);
+            $script = $dom->getElementById('SIGI_STATE');
+            if ($script) {
+                return json_decode($script->textContent);
+            }
         }
         return null;
     }

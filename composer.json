@@ -9,19 +9,23 @@
 			"php": "7.4"
 		}
 	},
-    "require": {
-        "php": ">=7.4|^8.0",
-        "php-webdriver/webdriver": "^1.12",
-        "sapistudio/seleniumstealth": "^1.0"
-    },
+    "authors": [
+        {
+            "name": "Pablo Ferreiro"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "TikScraper\\": "src/"
         }
     },
-    "authors": [
-        {
-            "name": "Pablo Ferreiro"
-        }
-    ]
+    "require": {
+        "php": ">=7.4|^8.0",
+        "ext-xml": "*",
+        "php-webdriver/webdriver": "^1.12",
+        "sapistudio/seleniumstealth": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
+    }
 }

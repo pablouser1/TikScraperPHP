@@ -58,12 +58,12 @@ class Base {
 
     public function ok(): bool {
         $info_ok = $this->info->meta->success;
-        $feed_ok = true;
 
         if (isset($this->feed)) {
             $feed_ok = $this->feed->meta->success;
+            return $info_ok && $feed_ok;
         }
-        return $info_ok && $feed_ok;
+        return $info_ok;
     }
 
     public function error(): Meta {
@@ -78,15 +78,15 @@ class Base {
 
     protected function handleFeedCache(): bool {
         $key = $this->getCacheKey(true);
-        if ($this->cache->exists($key)) {
+        $exists = $this->cache->exists($key);
+        if ($exists) {
             $this->feed = $this->cache->handleFeed($key);
-            return true;
         }
-        return false;
+        return $exists;
     }
 
     /**
-     * Make sure there is a valid info and there isn't a
+     * Make sure there is valid info first (exists and it went ok)
      */
     protected function canSendFeed(): bool {
         return isset($this->info) && $this->info->meta->success;
