@@ -3,7 +3,7 @@ use PHPUnit\Framework\TestCase;
 use TikScraper\Api;
 
 class DefaultTest extends TestCase {
-    const DEFAULT_SIGNER = 'https://signtok.herokuapp.com';
+    const DEFAULT_SIGNER = 'https://signtok.vercel.app/api/signature';
     protected Api $api;
 
     function __construct(?string $name = null, array $data = [], $dataName = '') {

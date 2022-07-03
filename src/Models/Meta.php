@@ -3,6 +3,13 @@ namespace TikScraper\Models;
 
 use TikScraper\Constants\Codes;
 
+/**
+ * Has information about how the request went
+ * @param bool $success Request was successfull or not. True if $http_code is >= 200 and < 300 and $tiktok_code is 0
+ * @param int $http_code HTTP Code response
+ * @param int $tiktok_code TikTok's own error codes for their own API
+ * @param string $tiktok_msg Detailed error message for $tiktok_code
+ */
 class Meta {
     public bool $success = false;
     public int $http_code = 503;
@@ -10,19 +17,21 @@ class Meta {
     public string $tiktok_msg = '';
 
     function __construct(bool $http_success, int $code, $data) {
-        $keys = array_keys(Codes::list);
         $http_success = $http_success;
         $http_code = $code;
 
-        if (is_object($data)) {
-            $tiktok_code = $this->getCode($data);
-        } elseif ($data === "") {
+        if (empty($data)) {
+            // *Something* went wrong
             $tiktok_code = -1;
+        } elseif (is_object($data)) {
+            // JSON
+            $tiktok_code = $this->getCode($data);
         } else {
+            // HTML
             $tiktok_code = 0;
         }
 
-        $tiktok_msg = in_array($tiktok_code, $keys) ? Codes::list[$tiktok_code] : 'Unknown error';
+        $tiktok_msg = Codes::fromId($tiktok_code);
 
         // Setting values
         $this->success = $http_success && $tiktok_code === 0;

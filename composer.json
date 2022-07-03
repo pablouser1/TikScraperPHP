@@ -3,12 +3,12 @@
     "description": "Get data from TikTok API",
     "type": "library",
     "license": "MIT",
-	"config": {
-		"optimize-autoloader": true,
-		"platform": {
-			"php": "7.4"
-		}
-	},
+    "config": {
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "7.4"
+        }
+    },
     "authors": [
         {
             "name": "Pablo Ferreiro"
@@ -21,7 +21,9 @@
     },
     "require": {
         "php": ">=7.4|^8.0",
+        "ext-curl": "*",
         "ext-xml": "*",
+        "ext-json": "*",
         "php-webdriver/webdriver": "^1.12",
         "sapistudio/seleniumstealth": "^1.0"
     },

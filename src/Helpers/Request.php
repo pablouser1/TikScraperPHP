@@ -20,6 +20,9 @@ class Request {
         return $cookies;
     }
 
+    /**
+     * Builds query for TikTok Api
+     */
     static public function buildQuery(array $query = []): string {
         $query_merged = array_merge($query, [
             "aid" => 1988,

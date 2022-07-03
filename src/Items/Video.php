@@ -29,7 +29,7 @@ class Video extends Base {
             $endpoint = '/' . $this->term;
         }
 
-        $req = $this->sender->sendHTML($endpoint, $subdomain, []);
+        $req = $this->sender->sendHTML($endpoint, $subdomain);
         $response = new Info;
         $response->setMeta($req);
         if ($response->meta->success) {
@@ -48,11 +48,11 @@ class Video extends Base {
     public function feed(): self {
         $this->cursor = 0;
         $cached = $this->handleFeedCache();
-        if (!$cached && $this->canSendFeed()) {
+        if (!$cached && $this->infoOk()) {
             $response = new Feed;
             $response->setItems([$this->item]);
             $response->setNav(false, null, '');
-            $response->setMeta(new Response(true, 200, null));
+            $response->setMeta(new Response(true, 200, "PLACEHOLDER"));
             $this->feed = $response;
         }
         return $this;

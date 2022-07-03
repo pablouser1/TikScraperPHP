@@ -45,4 +45,12 @@ class Codes {
         10231 => "VIDEO_GEOFENCE_BLOCK",
         10404 => "FYP_VIDEO_LIST_LIMIT"
     ];
+
+    /**
+     * Get status message from ID
+     */
+    public static function fromId(int $id): string {
+        $keys = array_keys(Codes::list);
+        return in_array($id, $keys) ? Codes::list[$id] : "UNKNOWN_ERROR";
+    }
 }

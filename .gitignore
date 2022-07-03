@@ -1,3 +1,4 @@
 /.vscode
 /vendor
+.phpdoc
 .phpunit.result.cache

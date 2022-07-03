@@ -26,9 +26,9 @@ class Sender {
 
     private Signer $signer;
     private $proxy = [];
-    private $use_test_endpoints = false;
+    private bool $use_test_endpoints = false;
     private $useragent = UserAgents::DEFAULT;
-    private $cookie_file = '';
+    private string $cookie_file = '';
 
     function __construct(array $config) {
         // Signing
@@ -46,8 +46,7 @@ class Sender {
         $this->cookie_file = sys_get_temp_dir() . '/tiktok.txt';
     }
 
-    // -- Extra -- //
-    public function sendHead(string $url, array $req_headers = [], string $useragent = '') {
+    public function sendHead(string $url, array $req_headers = [], string $useragent = ''): array {
         if (!$useragent) {
             $useragent = $this->useragent;
         }
@@ -82,23 +81,16 @@ class Sender {
         ];
     }
 
-    public function getInfo(string $url, string $useragent): array {
-        $res = $this->sendHead($url, [
-            "x-secsdk-csrf-version: 1.2.5",
-            "x-secsdk-csrf-request: 1"
-        ], $useragent);
-        $headers = $res['headers'];
-        $cookies = Curl::extractCookies($res['data']);
-
-        $csrf_session_id = $cookies['csrf_session_id'] ?? '';
-        $csrf_token = isset($headers['x-ware-csrf-token'][0]) ? explode(',', $headers['x-ware-csrf-token'][0])[1] : '';
-
-        return [
-            'csrf_session_id' => $csrf_session_id,
-            'csrf_token' => $csrf_token
-        ];
-    }
-
+    /**
+     * Send request to TikTok's API
+     * @param string $endpoint
+     * @param string $subdomain subdomain to be used, may be m, t or www
+     * @param array $query custom query to be sent, later to me merged with some default values
+     * @param string $static_url URL to be used instead of $endpoint to bypass some captchas
+     * @param bool $send_tt_params send or not x-tt-params header, some endpoints use it
+     * @param string $ttwid send or not ttwid cookie, only used with trending
+     * @param bool $sign sign or not the request, discover doesn't need it
+     */
     public function sendApi(
         string $endpoint,
         string $subdomain = 'm',
@@ -108,6 +100,7 @@ class Sender {
         string $ttwid = '',
         bool $sign = true
     ): Response {
+        // Use test subdomain if test endpoints are enabled
         if ($this->use_test_endpoints && $subdomain === 'm') {
             $subdomain = 't';
         }
@@ -118,7 +111,7 @@ class Sender {
         $useragent = $this->useragent;
         $device_id = Misc::makeId();
 
-        $headers[] = "Path: {$endpoint}";
+        $headers[] = "Path: $endpoint";
         $url .= Request::buildQuery($query) . '&device_id=' . $device_id;
         $headers = array_merge($headers, self::DEFAULT_API_HEADERS);
         if ($sign) {
@@ -143,12 +136,13 @@ class Sender {
             $url .= '&verifyFp=' . $verify_fp;
         }
 
-        $extra = $this->getInfo($url, $useragent);
+        // Get csrf cookie and header, useful for avoiding captchas
+        $extra = $this->__getCsrf($url, $useragent);
         $headers[] = 'x-secsdk-csrf-token:' . $extra['csrf_token'];
         $cookies .= Request::getCookies($device_id, $extra['csrf_session_id']);
 
         curl_setopt_array($ch, [
-            CURLOPT_URL => $static_url ? $static_url : $url,
+            CURLOPT_URL => $static_url ?: $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HEADER => false,
             CURLOPT_FOLLOWLOCATION => true,
@@ -175,6 +169,8 @@ class Sender {
             // Request sent
             return new Response($code >= 200 && $code < 400, $code, json_decode($data));
         }
+
+        // Return an error if the request didn't happen (timeouts for example)
         return new Response(false, 503, (object) [
             'statusCode' => 10
         ]);
@@ -215,5 +211,22 @@ class Sender {
             return new Response($code >= 200 && $code < 400, $code, $data);
         }
         return new Response(false, 503, '');
+    }
+
+    private function __getCsrf(string $url, string $useragent): array {
+        $res = $this->sendHead($url, [
+            "x-secsdk-csrf-version: 1.2.5",
+            "x-secsdk-csrf-request: 1"
+        ], $useragent);
+        $headers = $res['headers'];
+        $cookies = Curl::extractCookies($res['data']);
+
+        $csrf_session_id = $cookies['csrf_session_id'] ?? '';
+        $csrf_token = isset($headers['x-ware-csrf-token'][0]) ? explode(',', $headers['x-ware-csrf-token'][0])[1] : '';
+
+        return [
+            'csrf_session_id' => $csrf_session_id,
+            'csrf_token' => $csrf_token
+        ];
     }
 }

@@ -40,8 +40,8 @@ class Api {
     }
 
     /**
-     * Discover is a (very) special case, does not follow the normal structure
-     * By the way, for some reason all /node endpoints are dead EXCEPT this one
+     * Discover does not follow the same structure.
+     * For some reason all /node endpoints are dead EXCEPT this one
      */
     public function discover(): Discover {
         $cacheKey = 'discover';
@@ -59,7 +59,7 @@ class Api {
                 $req->data->body[1]->exploreList,
                 $req->data->body[2]->exploreList
             );
-            $this->cache->set($cacheKey, $response->ToJson());
+            $this->cache->set($cacheKey, $response->toJson());
         }
         return $response;
     }

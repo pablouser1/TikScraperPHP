@@ -24,8 +24,9 @@ echo $hashtag->feed()->getFull()->toJson();
 
 For using this program you need to have a signing service, you can sign your requests using a [remote server](https://github.com/carcabot/tiktok-signature) or having a chromedriver running locally.
 
+You can also generate the documentation available using PHPDoc
+
 ## TODO
-* Detect captcha and handle error
 * Search
 
 ## Credits

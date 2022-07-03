@@ -35,7 +35,7 @@ class User extends Base {
     public function feed(int $cursor = 0): self {
         $this->cursor = $cursor;
         $cached = $this->handleFeedCache();
-        if (!$cached && $this->canSendFeed()) {
+        if (!$cached && $this->infoOk()) {
             $query = [
                 "count" => 30,
                 "id" => $this->info->detail->id,

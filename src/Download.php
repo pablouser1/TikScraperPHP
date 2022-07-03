@@ -6,7 +6,7 @@ use TikScraper\Constants\UserAgents;
 class Download {
     protected $buffer_size = 256 * 1024;
 
-    public function file_size($url) {
+    public function file_size($url): int {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HEADER, true);

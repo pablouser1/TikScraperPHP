@@ -16,12 +16,15 @@ class Misc {
         return $randomString;
     }
 
+    /**
+     * Generates verifyFp strings
+     * @todo ADD PROPER VERIFYFP METHOD
+     */
     public static function verify_fp(): string {
-        // TODO, ADD PROPER VERIFY_FP METHOD
         return 'verify_e6d8d4a90c859dfc33feefc618ea6c33';
     }
 
-    static public function generateRandomString($length = 10): string {
+    public static function generateRandomString($length = 10): string {
         $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $charactersLength = strlen($characters);
         $randomString = '';
