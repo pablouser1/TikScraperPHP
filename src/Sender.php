@@ -95,7 +95,6 @@ class Sender {
         string $endpoint,
         string $subdomain = 'm',
         array $query = [],
-        string $static_url = '',
         bool $send_tt_params = false,
         string $ttwid = '',
         bool $sign = true
@@ -142,7 +141,7 @@ class Sender {
         $cookies .= Request::getCookies($device_id, $extra['csrf_session_id']);
 
         curl_setopt_array($ch, [
-            CURLOPT_URL => $static_url ?: $url,
+            CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HEADER => false,
             CURLOPT_FOLLOWLOCATION => true,

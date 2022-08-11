@@ -28,6 +28,8 @@ You can also generate the documentation available using PHPDoc
 
 ## TODO
 * Search
+* Discover does not work
+* Add X-Bogus support
 
 ## Credits
 HUGE thanks to the following projects, this wouldn't be possible without their help

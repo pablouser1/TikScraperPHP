@@ -13,7 +13,7 @@ use TikScraper\Constants\Codes;
 class Meta {
     public bool $success = false;
     public int $http_code = 503;
-    public int $tiktok_code = 0;
+    public int $tiktok_code = -1;
     public string $tiktok_msg = '';
 
     function __construct(bool $http_success, int $code, $data) {
@@ -43,5 +43,6 @@ class Meta {
     private function getCode(object $data): int {
         if (isset($data->statusCode)) return (int) $data->statusCode;
         if (isset($data->status_code)) return (int) $data->status_code;
+        if (isset($data->type) && $data->type === "verify") return 10000; // Check verify
     }
 }

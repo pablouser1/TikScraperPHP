@@ -6,7 +6,6 @@ use TikScraper\Helpers\Misc;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
 use TikScraper\Sender;
-use TikScraper\Constants\StaticUrls;
 
 class User extends Base {
     function __construct(string $term, Sender $sender, Cache $cache) {
@@ -46,7 +45,7 @@ class User extends Base {
                 "appId" => 1233
             ];
 
-            $req = $this->sender->sendApi('/api/post/item_list', 'm', $query, StaticUrls::USER_FEED, true);
+            $req = $this->sender->sendApi('/api/post/item_list', 'm', $query, true);
             $response = new Feed;
             $response->fromReq($req, $cursor);
             $this->feed = $response;

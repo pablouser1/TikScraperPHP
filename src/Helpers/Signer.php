@@ -107,6 +107,7 @@ class Signer {
         # Get params of url as string
         $params_str = parse_url($signed_url, PHP_URL_QUERY);
         $xttparams = $this->xttparams($params_str);
+
         return (object) [
             'status' => 'ok',
             'data' => (object) [

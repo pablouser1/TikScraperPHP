@@ -50,7 +50,7 @@ class Api {
             'userCount' => 30,
             'from_page' => 'discover'
         ];
-        $req = $this->sender->sendApi('/node/share/discover', 'm', $query, '', false, '', false);
+        $req = $this->sender->sendApi('/node/share/discover', 'm', $query, false, '', false);
         $response = new Discover;
         $response->setMeta($req);
         if ($response->meta->success) {

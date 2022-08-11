@@ -42,7 +42,7 @@ class Music extends Base {
                 "shareUid" => "",
                 "count" => 30,
             ];
-            $req = $this->sender->sendApi('/api/music/item_list', 'm', $query, '', true);
+            $req = $this->sender->sendApi('/api/music/item_list', 'm', $query, true);
             $response = new Feed;
             $response->fromReq($req, $cursor);
             $this->feed = $response;

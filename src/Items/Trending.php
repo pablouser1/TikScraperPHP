@@ -24,7 +24,7 @@ class Trending extends Base {
             "insertedItemID" => ""
         ];
 
-        $req = $this->sender->sendApi('/api/recommend/item_list', 'm', $query, '', false, $this->cursor);
+        $req = $this->sender->sendApi('/api/recommend/item_list', 'm', $query, false, $this->cursor);
         $response = new Feed;
         $response->fromReq($req, null, $cursor);
         $this->feed = $response;
