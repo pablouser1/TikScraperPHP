@@ -11,25 +11,45 @@ $api = new \TikScraper\Api([
         'user' => 'EXAMPLE_USER',
         'password' => 'EXAMPLE_PASSWORD'
     ],
+    // More info about signing below
     'signer' => [
-        'remote_url' => 'http://localhost:8080/signature', // If you want to use remote signing
-        'browser_url' => 'http://localhost:4444' // If you want to use local chromedriver
-        'close_when_done' => true // --> Only for local signing <-- Set to true if you want to quit the browser after making the request (default true)
+        'method' => 'remote',
+        'url' => 'http://localhost:8080/signature',
+        'close_when_done' => true // --> Only for browser signing <-- Set to true if you want to quit the browser after making the request (default true)
     ]
 ], $cacheEngine);
 
-$hashtag = $api->hashtag();
+$hashtag = $api->hashtag('funny');
 echo $hashtag->feed()->getFull()->toJson();
 ```
 
-For using this program you need to have a signing service, you can sign your requests using a [remote server](https://github.com/carcabot/tiktok-signature) or having a chromedriver running locally.
+## Signing
+For using TikScrapperPHP you need to use a signing service. There are multiple available:
+
+### Remote signing
+This method involves using an external signer.
+* Set 'method' to `remote`
+* Set 'url' to the signing endpoint
+
+Currently supported:
+* [tiktok-signature](https://github.com/carcabot/tiktok-signature)
+* [SignTok](https://github.com/pablouser1/SignTok)
+
+### Browser
+This method involves using a chromedriver instance.
+* Set 'method' to `browser`
+* Set 'url' to the chromedriver endpoint (usually http://localhost:4444)
 
 You can also generate the documentation available using PHPDoc
 
+## Caching
+TikScrapperPHP supports caching requests, to use it you need to implement [CacheInterface.php](https://github.com/pablouser1/TikScraperPHP/blob/master/src/CacheInterface.php)
+
 ## TODO
 * Search
+* Comments
 * Discover does not work
-* Add X-Bogus support
+* X-Bogus support for ChromeDriver
 
 ## Credits
 HUGE thanks to the following projects, this wouldn't be possible without their help

@@ -47,10 +47,12 @@ class Api {
         $cacheKey = 'discover';
         if ($this->cache->exists($cacheKey)) return $this->cache->handleDiscover($cacheKey);
         $query = [
-            'userCount' => 30,
-            'from_page' => 'discover'
+            'count' => 30,
+            'from_page' => 'fyp',
+            'noUser' => 0,
+            'userId' => ''
         ];
-        $req = $this->sender->sendApi('/node/share/discover', 'm', $query, false, '', false);
+        $req = $this->sender->sendApi('/node/share/discover', 'www', $query);
         $response = new Discover;
         $response->setMeta($req);
         if ($response->meta->success) {

@@ -25,9 +25,9 @@ class Sender {
     ];
 
     private Signer $signer;
-    private $proxy = [];
+    private array $proxy = [];
     private bool $use_test_endpoints = false;
-    private $useragent = UserAgents::DEFAULT;
+    private string $useragent = UserAgents::DEFAULT;
     private string $cookie_file = '';
 
     function __construct(array $config) {
@@ -36,13 +36,13 @@ class Sender {
             throw new \Exception("You need to send a signer config! Please check the README for more info");
         }
 
-        $signer = $config['signer'];
+        $signer_config = $config['signer'];
 
-        $this->signer = new Signer($signer);
+        $this->signer = new Signer($signer_config);
 
-        if (isset($config['proxy'])) $this->proxy = $config['proxy'];
+        $this->proxy = $config['proxy'] ?? [];
         if (isset($config['use_test_endpoints']) && $config['use_test_endpoints']) $this->use_test_endpoints = true;
-        if (isset($config['user_agent'])) $this->useragent = $config['user_agent'];
+        $this->useragent = $config['user_agent'] ?? UserAgents::DEFAULT;
         $this->cookie_file = sys_get_temp_dir() . '/tiktok.txt';
     }
 
@@ -96,8 +96,7 @@ class Sender {
         string $subdomain = 'm',
         array $query = [],
         bool $send_tt_params = false,
-        string $ttwid = '',
-        bool $sign = true
+        string $ttwid = ''
     ): Response {
         // Use test subdomain if test endpoints are enabled
         if ($this->use_test_endpoints && $subdomain === 'm') {
@@ -113,26 +112,21 @@ class Sender {
         $headers[] = "Path: $endpoint";
         $url .= Request::buildQuery($query) . '&device_id=' . $device_id;
         $headers = array_merge($headers, self::DEFAULT_API_HEADERS);
-        if ($sign) {
-            // URL to send to signer
-            $signer_res = $this->signer->run($url);
-            if ($signer_res && $signer_res->status === 'ok') {
-                $url = $signer_res->data->signed_url;
-                $useragent = $signer_res->data->navigator->user_agent;
-                if ($send_tt_params) {
-                    $headers[] = 'x-tt-params: ' . $signer_res->data->{'x-tt-params'};
-                }
-                if ($ttwid) {
-                    $cookies .= 'ttwid=' . $ttwid . ';';
-                }
-            } else {
-                return new Response(false, 500, (object) [
-                    'statusCode' => 20
-                ]);
+        // URL to send to signer
+        $signer_res = $this->signer->run($url);
+        if ($signer_res && $signer_res->status === 'ok') {
+            $url = $signer_res->data->signed_url;
+            $useragent = $signer_res->data->navigator->user_agent;
+            if ($send_tt_params) {
+                $headers[] = 'x-tt-params: ' . $signer_res->data->{'x-tt-params'};
+            }
+            if ($ttwid) {
+                $cookies .= 'ttwid=' . $ttwid . ';';
             }
         } else {
-            $verify_fp = Misc::verify_fp();
-            $url .= '&verifyFp=' . $verify_fp;
+            return new Response(false, 500, (object) [
+                'statusCode' => 20
+            ]);
         }
 
         // Get csrf cookie and header, useful for avoiding captchas
