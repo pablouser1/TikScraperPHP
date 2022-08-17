@@ -86,17 +86,17 @@ class Sender {
      * @param string $endpoint
      * @param string $subdomain subdomain to be used, may be m, t or www
      * @param array $query custom query to be sent, later to me merged with some default values
-     * @param string $static_url URL to be used instead of $endpoint to bypass some captchas
      * @param bool $send_tt_params send or not x-tt-params header, some endpoints use it
      * @param string $ttwid send or not ttwid cookie, only used with trending
-     * @param bool $sign sign or not the request, discover doesn't need it
+     * @param string $static_url URL to be used instead of $endpoint to bypass some captchas
      */
     public function sendApi(
         string $endpoint,
         string $subdomain = 'm',
         array $query = [],
         bool $send_tt_params = false,
-        string $ttwid = ''
+        string $ttwid = '',
+        string $static_url = ''
     ): Response {
         // Use test subdomain if test endpoints are enabled
         if ($this->use_test_endpoints && $subdomain === 'm') {
@@ -135,7 +135,7 @@ class Sender {
         $cookies .= Request::getCookies($device_id, $extra['csrf_session_id']);
 
         curl_setopt_array($ch, [
-            CURLOPT_URL => $url,
+            CURLOPT_URL => $static_url ? $static_url : $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HEADER => false,
             CURLOPT_FOLLOWLOCATION => true,
