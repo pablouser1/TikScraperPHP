@@ -158,7 +158,7 @@ class Sender {
         $error = curl_errno($ch);
         $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         curl_close($ch);
-        if (!$error) {
+        if ($data && !$error) {
             // Request sent
             return new Response($code >= 200 && $code < 400, $code, json_decode($data));
         }
