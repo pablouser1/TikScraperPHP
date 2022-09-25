@@ -7,4 +7,4 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $downloader = new Download(DownloadMethods::TTDOWN);
 
-$downloader->run("https://www.tiktok.com/@willsmith/video/7079929224945093934", "example", false);
+$downloader->url("https://www.tiktok.com/@willsmith/video/7079929224945093934", "example", false);

@@ -3,6 +3,7 @@ namespace TikScraper\Items;
 
 use TikScraper\Cache;
 use TikScraper\Helpers\Curl;
+use TikScraper\Helpers\Request;
 use TikScraper\Models\Feed;
 use TikScraper\Sender;
 
@@ -33,7 +34,7 @@ class Trending extends Base {
 
     private function __getTtwid(): string {
         $res = $this->sender->sendHead('https://www.tiktok.com');
-        $cookies = Curl::extractCookies($res['data']);
+        $cookies = Request::extractCookies($res['data']);
         return $cookies['ttwid'] ?? '';
     }
 }
