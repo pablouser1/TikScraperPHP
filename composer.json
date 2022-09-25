@@ -9,16 +9,17 @@
             "php": "7.4"
         }
     },
-    "authors": [
-        {
-            "name": "Pablo Ferreiro"
-        }
-    ],
     "autoload": {
         "psr-4": {
             "TikScraper\\": "src/"
         }
     },
+    "authors": [
+        {
+            "name": "Pablo Ferreiro",
+            "homepage": "https://pabloferreiro.es"
+        }
+    ],
     "require": {
         "php": ">=7.4|^8.0",
         "ext-curl": "*",

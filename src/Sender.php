@@ -2,10 +2,8 @@
 namespace TikScraper;
 
 use TikScraper\Constants\UserAgents;
-use TikScraper\Helpers\Curl;
-use TikScraper\Helpers\Misc;
+use TikScraper\Helpers\Algorithm;
 use TikScraper\Helpers\Request;
-use TikScraper\Helpers\Signer;
 use TikScraper\Models\Response;
 
 class Sender {
@@ -71,7 +69,7 @@ class Sender {
             return $len;
         });
 
-        Curl::handleProxy($ch, $this->proxy);
+        Request::handleProxy($ch, $this->proxy);
 
         $data = curl_exec($ch);
         curl_close($ch);
@@ -107,7 +105,7 @@ class Sender {
         $ch = curl_init();
         $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint;
         $useragent = $this->useragent;
-        $device_id = Misc::makeId();
+        $device_id = Algorithm::deviceId();
 
         $headers[] = "Path: $endpoint";
         $url .= Request::buildQuery($query) . '&device_id=' . $device_id;
@@ -153,7 +151,7 @@ class Sender {
             curl_setopt($ch, CURLOPT_COOKIE, $cookies);
         }
 
-        Curl::handleProxy($ch, $this->proxy);
+        Request::handleProxy($ch, $this->proxy);
         $data = curl_exec($ch);
         $error = curl_errno($ch);
         $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
@@ -194,7 +192,7 @@ class Sender {
             CURLOPT_COOKIEFILE => $this->cookie_file,
             CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4
         ]);
-        Curl::handleProxy($ch, $this->proxy);
+        Request::handleProxy($ch, $this->proxy);
         $data = curl_exec($ch);
         $error = curl_errno($ch);
         $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
@@ -212,7 +210,7 @@ class Sender {
             "x-secsdk-csrf-request: 1"
         ], $useragent);
         $headers = $res['headers'];
-        $cookies = Curl::extractCookies($res['data']);
+        $cookies = Request::extractCookies($res['data']);
 
         $csrf_session_id = $cookies['csrf_session_id'] ?? '';
         $csrf_token = isset($headers['x-ware-csrf-token'][0]) ? explode(',', $headers['x-ware-csrf-token'][0])[1] : '';

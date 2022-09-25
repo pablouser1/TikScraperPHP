@@ -1,7 +1,7 @@
 <?php
 namespace TikScraper\Constants;
 
-class SignMethods {
+abstract class SignMethods {
     const BROWSER = 'browser';
     const REMOTE = 'remote';
 }

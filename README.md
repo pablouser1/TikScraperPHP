@@ -43,12 +43,11 @@ This method involves using a chromedriver instance.
 You can also generate the documentation available using PHPDoc
 
 ## Caching
-TikScrapperPHP supports caching requests, to use it you need to implement [CacheInterface.php](https://github.com/pablouser1/TikScraperPHP/blob/master/src/CacheInterface.php)
+TikScrapperPHP supports caching requests, to use it you need to implement [CacheInterface.php](https://github.com/pablouser1/TikScraperPHP/blob/master/src/Interfaces/CacheInterface.php)
 
 ## TODO
 * Search
 * Comments
-* Discover does not work
 * X-Bogus support for ChromeDriver
 
 ## Credits

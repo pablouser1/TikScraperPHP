@@ -1,5 +1,5 @@
 <?php
-namespace TikScraper;
+namespace TikScraper\Interfaces;
 
 interface CacheInterface {
     public function get(string $cache_key): ?object;

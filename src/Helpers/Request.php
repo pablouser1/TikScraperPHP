@@ -4,13 +4,33 @@ namespace TikScraper\Helpers;
 use TikScraper\Constants\UserAgents;
 
 class Request {
+    static public function extractCookies(string $data): array {
+        $cookies = [];
+        preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $data, $matches);
+        foreach($matches[1] as $item) {
+            parse_str($item, $cookie);
+            $cookies = array_merge($cookies, $cookie);
+        }
+        return $cookies;
+    }
+
+    static public function handleProxy(&$ch, array $proxy) {
+        if (isset($proxy['host'], $proxy['port'])) {
+            curl_setopt($ch, CURLOPT_PROXY, $proxy['host'] . ":" . $proxy['port']);
+            if (isset($proxy['username'], $proxy['password'])) {
+                curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxy['username'] . ":" . $proxy['password']);
+            }
+            curl_setopt($ch, CURLOPT_NOPROXY, '127.0.0.1,localhost');
+        }
+    }
+
     static public function getCookies(string $device_id, string $csrf_session_id): string {
         $cookies = '';
         $cookies_array = [
             'tt_webid' => $device_id,
             'tt_webid_v2' => $device_id,
             "csrf_session_id" => $csrf_session_id,
-            "tt_csrf_token" => Misc::generateRandomString(16)
+            "tt_csrf_token" => Algorithm::randomString(16)
         ];
 
         foreach ($cookies_array as $key => $value) {

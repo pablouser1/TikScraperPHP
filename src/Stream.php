@@ -4,7 +4,7 @@ namespace TikScraper;
 use TikScraper\Constants\UserAgents;
 
 class Stream {
-    private $buffer_size = 256 * 1024;
+    private int $buffer_size = 256 * 1024;
     // Headers to forward back to client, to be filled with response header values from TikTok
     private array $headers_to_forward = [
         'Content-Type' => null,
@@ -14,7 +14,7 @@ class Stream {
         'Accept-Ranges' => 'bytes'
     ];
 
-    public function url($url) {
+    public function url(string $url) {
         $ch = curl_init($url);
 
         $headers_to_send = [];

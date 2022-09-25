@@ -2,6 +2,7 @@
 
 namespace TikScraper;
 
+use TikScraper\Interfaces\CacheInterface;
 use TikScraper\Items\User;
 use TikScraper\Items\Hashtag;
 use TikScraper\Items\Music;

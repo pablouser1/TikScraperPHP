@@ -4,6 +4,7 @@ namespace TikScraper;
 use TikScraper\Models\Discover;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
+use TikScraper\Interfaces\CacheInterface;
 
 class Cache {
     const TIMEOUT = 3600;
