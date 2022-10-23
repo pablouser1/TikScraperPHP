@@ -2,7 +2,6 @@
 namespace TikScraper\Items;
 
 use TikScraper\Cache;
-use TikScraper\Helpers\Curl;
 use TikScraper\Helpers\Request;
 use TikScraper\Models\Feed;
 use TikScraper\Sender;
