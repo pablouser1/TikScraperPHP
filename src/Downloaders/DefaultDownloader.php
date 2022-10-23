@@ -72,7 +72,7 @@ class DefaultDownloader implements DownloaderInterface {
             $nowatermark_url = $json->aweme_list[0]->video->play_addr->url_list[0];
             curl_setopt($ch, CURLOPT_URL, $nowatermark_url);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-            curl_setopt($ch, CURLOPT_BUFFERSIZE, $this->buffer_size);
+            curl_setopt($ch, CURLOPT_BUFFERSIZE, self::BUFFER_SIZE);
             curl_exec($ch);
             curl_close($ch);
         } else {
