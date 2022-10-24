@@ -32,8 +32,8 @@ This method involves using an external signer.
 * Set 'url' to the signing endpoint
 
 Currently supported:
-* [tiktok-signature](https://github.com/carcabot/tiktok-signature)
-* [SignTok](https://github.com/pablouser1/SignTok)
+* [tiktok-signature](https://github.com/carcabot/tiktok-signature) (uses headless Chrome browser)
+* [SignTok](https://github.com/pablouser1/SignTok) (uses JSDOM)
 
 ### Browser
 This method involves using a chromedriver instance.

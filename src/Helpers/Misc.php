@@ -2,6 +2,9 @@
 namespace TikScraper\Helpers;
 
 class Misc {
+    /**
+     * Get Sigi State from HTML string
+     */
     public static function extractSigi(string $doc): ?object {
         // Disallow empty strings
         if ($doc !== "") {

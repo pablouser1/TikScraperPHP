@@ -41,8 +41,15 @@ class Meta {
     }
 
     private function getCode(object $data): int {
-        if (isset($data->statusCode)) return (int) $data->statusCode;
-        if (isset($data->status_code)) return (int) $data->status_code;
-        if (isset($data->type) && $data->type === "verify") return 10000; // Check verify
+        $code = -1;
+        if (isset($data->statusCode)) {
+            $code = intval($data->statusCode);
+        } elseif (isset($data->status_code)) {
+            $code = intval($data->status_code);
+        } elseif (isset($data->type) && $data->type === "verify") {
+            // Check verify
+            $code = 10000;
+        }
+        return $code;
     }
 }

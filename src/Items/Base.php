@@ -6,6 +6,7 @@ use TikScraper\Models\Feed;
 use TikScraper\Models\Full;
 use TikScraper\Models\Info;
 use TikScraper\Models\Meta;
+use TikScraper\Models\Response;
 use TikScraper\Sender;
 
 abstract class Base {
@@ -19,6 +20,8 @@ abstract class Base {
 
     protected Info $info;
     protected Feed $feed;
+
+    protected object $sigi;
 
     function __construct(string $term, string $type, Sender $sender, Cache $cache) {
         $this->term = urlencode($term);
@@ -105,8 +108,12 @@ abstract class Base {
     }
 
     /**
-     * Sets feed if it already exists on cache
+     * Try to fetch feed from Cache or from Sigi State
      */
+    protected function handleFeedPreload(string $key): bool {
+        return $this->handleFeedCache() || $this->handleFeedZero($key);
+    }
+
     protected function handleFeedCache(): bool {
         $key = $this->getCacheKey(true);
         $exists = $this->cache->exists($key);
@@ -114,5 +121,33 @@ abstract class Base {
             $this->feed = $this->cache->handleFeed($key);
         }
         return $exists;
+    }
+
+    private function handleFeedZero(string $key): bool {
+        // We must be on cursor 0 and have Sigi properly set
+        if ($this->cursor === 0 && isset($this->sigi, $this->sigi->ItemModule, $this->sigi->UserModule)) {
+            $users = $this->sigi->UserModule->users; // Get all users that made the posts
+
+            $items = [];
+
+            foreach ($this->sigi->ItemModule as $item) {
+                $uniqueId = $item->author;
+                $item->author = $users->{$uniqueId};
+                $items[] = $item;
+            }
+
+            $nav = $this->sigi->ItemList->{$key}; // Get navigation state
+
+            // Building Feed
+            $realCursor = $nav->cursor === 0 ? count($items) : $nav->cursor; // Fixes bug that sets cursor to 0 even then there are multiple posts already
+            $feed = new Feed;
+            $feed->setMeta(new Response(200, 0, "PLACEHOLDER"));
+            $feed->setItems($items);
+            $feed->setNav($nav->hasMore, 0, $realCursor);
+
+            $this->feed = $feed;
+            return true;
+        }
+        return false;
     }
 }

@@ -24,6 +24,7 @@ class Music extends Base {
         if ($response->meta->success) {
             $jsonData = Misc::extractSigi($req->data);
             if (isset($jsonData->MusicModule)) {
+                $this->sigi = $jsonData;
                 $response->setDetail($jsonData->MusicModule->musicInfo->music);
                 $response->setStats($jsonData->MusicModule->musicInfo->stats);
             }
@@ -33,19 +34,22 @@ class Music extends Base {
 
     public function feed(int $cursor = 0): self {
         $this->cursor = $cursor;
-        $cached = $this->handleFeedCache();
-        if (!$cached && $this->infoOk()) {
-            $query = [
-                "secUid" => "",
-                "musicID" => $this->info->detail->id,
-                "cursor" => $cursor,
-                "shareUid" => "",
-                "count" => 30,
-            ];
-            $req = $this->sender->sendApi('/api/music/item_list', 'm', $query, true);
-            $response = new Feed;
-            $response->fromReq($req, $cursor);
-            $this->feed = $response;
+
+        if ($this->infoOk()) {
+            $preloaded = $this->handleFeedPreload('music');
+            if (!$preloaded) {
+                $query = [
+                    "secUid" => "",
+                    "musicID" => $this->info->detail->id,
+                    "cursor" => $cursor,
+                    "shareUid" => "",
+                    "count" => 30,
+                ];
+                $req = $this->sender->sendApi('/api/music/item_list', 'm', $query, true);
+                $response = new Feed;
+                $response->fromReq($req, $cursor);
+                $this->feed = $response;
+            }
         }
         return $this;
     }

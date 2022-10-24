@@ -2,32 +2,34 @@
 namespace TikScraper\Helpers;
 
 class Algorithm {
-    static public function deviceId(): string {
-        $characters = '0123456789';
-        $randomString = '';
-        $n = 19;
-        for ($i = 0; $i < $n; $i++) {
-            $index = rand(0, strlen($characters) - 1);
-            $randomString .= $characters[$index];
-        }
-        return $randomString;
-    }
-
+    // -- TikTok-focused -- //
     /**
-     * Generates verifyFp strings
+     * Generates verifyFp
      * @todo ADD PROPER VERIFYFP METHOD
      */
     static public function verifyFp(): string {
         return 'verify_e6d8d4a90c859dfc33feefc618ea6c33';
     }
 
-    static public function randomString(int $length = 8): string {
-        $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $charactersLength = strlen($characters);
+    /**
+     * Generates random device ID
+     */
+    static public function deviceId(): string {
+        return strval(self::randomNumber(19));
+    }
+
+    // -- Generic -- //
+    static public function randomNumber(int $digits = 8): string {
+        $characters = '0123456789';
         $randomString = '';
-        for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        for ($i = 0; $i < $digits; $i++) {
+            $index = rand(0, strlen($characters) - 1);
+            $randomString .= $characters[$index];
         }
         return $randomString;
+    }
+
+    static public function randomString(int $length = 8): string {
+        return bin2hex(random_bytes($length / 2));
     }
 }

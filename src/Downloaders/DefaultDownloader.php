@@ -2,6 +2,7 @@
 namespace TikScraper\Downloaders;
 
 use TikScraper\Constants\UserAgents;
+use TikScraper\Helpers\Algorithm;
 use TikScraper\Helpers\Converter;
 use TikScraper\Interfaces\DownloaderInterface;
 
@@ -33,8 +34,8 @@ class DefaultDownloader implements DownloaderInterface {
             'build_number' => '26.1.3',
             'manifest_version_code' => 2613,
             'update_version_code' => 2613,
-            'openudid' => bin2hex(random_bytes(8)),
-            'uuid' => bin2hex(random_bytes(8)),
+            'openudid' => Algorithm::randomString(8),
+            'uuid' => Algorithm::randomString(8),
             '_rticket' => $time,
             'ts' => $time * 1000,
             'device_brand' => 'Google',

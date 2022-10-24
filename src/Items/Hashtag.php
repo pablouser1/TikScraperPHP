@@ -8,8 +8,8 @@ use TikScraper\Models\Info;
 use TikScraper\Sender;
 
 class Hashtag extends Base {
-    function __construct(string $term, Sender $sender, Cache $cache, bool $legacy = false) {
-        parent::__construct($term, 'hashtag', $sender, $cache, $legacy);
+    function __construct(string $term, Sender $sender, Cache $cache) {
+        parent::__construct($term, 'hashtag', $sender, $cache);
         if (!isset($this->info)) {
             $this->info();
         }
@@ -24,6 +24,7 @@ class Hashtag extends Base {
         if ($response->meta->success) {
             $jsonData = Misc::extractSigi($req->data);
             if (isset($jsonData->ChallengePage)) {
+                $this->sigi = $jsonData;
                 $response->setDetail($jsonData->ChallengePage->challengeInfo->challenge);
                 $response->setStats($jsonData->ChallengePage->challengeInfo->stats);
             }
@@ -33,17 +34,20 @@ class Hashtag extends Base {
 
     public function feed(int $cursor = 0): self {
         $this->cursor = $cursor;
-        $cached = $this->handleFeedCache();
-        if (!$cached && $this->infoOk()) {
-            $query = [
-                "count" => 30,
-                "challengeID" => $this->info->detail->id,
-                "cursor" => $cursor
-            ];
-            $req = $this->sender->sendApi('/api/challenge/item_list', 'm', $query);
-            $response = new Feed;
-            $response->fromReq($req, $cursor);
-            $this->feed = $response;
+
+        if ($this->infoOk()) {
+            $preloaded = $this->handleFeedPreload('challenge');
+            if (!$preloaded) {
+                $query = [
+                    "count" => 30,
+                    "challengeID" => $this->info->detail->id,
+                    "cursor" => $cursor
+                ];
+                $req = $this->sender->sendApi('/api/challenge/item_list', 'm', $query);
+                $response = new Feed;
+                $response->fromReq($req, $cursor);
+                $this->feed = $response;
+            }
         }
         return $this;
     }
