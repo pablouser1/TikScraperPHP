@@ -7,7 +7,7 @@ use TikScraper\Helpers\Request;
 use TikScraper\Models\Response;
 
 class Sender {
-    private const REFERER = 'https://www.tiktok.com';
+    private const REFERER = 'https://www.tiktok.com/';
 
     private const DEFAULT_API_HEADERS = [
         "authority: m.tiktok.com",

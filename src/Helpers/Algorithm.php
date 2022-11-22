@@ -4,14 +4,6 @@ namespace TikScraper\Helpers;
 class Algorithm {
     // -- TikTok-focused -- //
     /**
-     * Generates verifyFp
-     * @todo ADD PROPER VERIFYFP METHOD
-     */
-    static public function verifyFp(): string {
-        return 'verify_e6d8d4a90c859dfc33feefc618ea6c33';
-    }
-
-    /**
      * Generates random device ID
      */
     static public function deviceId(): string {

@@ -29,9 +29,6 @@ class BrowserSigner implements SignerInterface {
     }
 
     public function run(string $unsigned_url): ?object {
-        $verifyfp = Algorithm::verifyFp();
-        $unsigned_url .= '&verifyFp=' . $verifyfp;
-
         $signature = $this->driver->executeScript('return window.byted_acrawler.sign(arguments[0])', [
             ['url' => $unsigned_url]
         ]);
@@ -45,7 +42,6 @@ class BrowserSigner implements SignerInterface {
             'status' => 'ok',
             'data' => (object) [
                 'signature' => $signature,
-                'verify_fp' => $verifyfp,
                 'signed_url' => $signed_url,
                 'x-tt-params' => $xttparams,
                 'navigator' => $this->__navigator()
