@@ -25,8 +25,8 @@ class Video extends Base {
             $subdomain = 'm';
             $endpoint = '/v/' . $this->term;
         } else {
-            $subdomain = 'vm';
-            $endpoint = '/' . $this->term;
+            $subdomain = 'www';
+            $endpoint = '/t/' . $this->term;
         }
 
         $req = $this->sender->sendHTML($endpoint, $subdomain);

@@ -43,7 +43,8 @@ class Codes {
         10229 => "VIDEO_R_MASK",
         1023 => "VIDEO_RISK_MASK",
         10231 => "VIDEO_GEOFENCE_BLOCK",
-        10404 => "FYP_VIDEO_LIST_LIMIT"
+        10404 => "FYP_VIDEO_LIST_LIMIT",
+        10239 => "IMAGE_NOT_SUPPORTED"
     ];
 
     /**

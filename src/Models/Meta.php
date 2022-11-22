@@ -2,6 +2,7 @@
 namespace TikScraper\Models;
 
 use TikScraper\Constants\Codes;
+use TikScraper\Helpers\Misc;
 
 /**
  * Has information about how the request went
@@ -29,6 +30,11 @@ class Meta {
         } else {
             // HTML
             $tiktok_code = 0;
+            // Check that we are NOT trying to parse a photo
+            $sigi = Misc::extractSigi($data);
+            if ($sigi && isset($sigi->VideoPage, $sigi->VideoPage->statusCode)) {
+                $tiktok_code = $sigi->VideoPage->statusCode;
+            }
         }
 
         $tiktok_msg = Codes::fromId($tiktok_code);
