@@ -37,7 +37,7 @@ class Video extends Base {
             if (isset($jsonData->SharingVideoModule)) {
                 $this->item = $jsonData->SharingVideoModule->videoData->itemInfo->itemStruct;
                 $response->setDetail($this->item->author);
-                $response->setStats($this->item->stats);
+                $response->setStats($this->item->authorStats);
             }
         }
         $this->info = $response;
