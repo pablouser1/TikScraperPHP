@@ -34,11 +34,9 @@ class Video extends Base {
         $response->setMeta($req);
         if ($response->meta->success) {
             $jsonData = Misc::extractSigi($req->data);
-            if (isset($jsonData->ItemModule, $jsonData->ItemList, $jsonData->UserModule)) {
-                $this->term = $jsonData->ItemList->video->keyword;
-                $this->item = $jsonData->ItemModule->{$this->term};
-                $author = $this->item->author;
-                $response->setDetail($jsonData->UserModule->users->{$author});
+            if (isset($jsonData->SharingVideoModule)) {
+                $this->item = $jsonData->SharingVideoModule->videoData->itemInfo->itemStruct;
+                $response->setDetail($this->item->author);
                 $response->setStats($this->item->stats);
             }
         }
