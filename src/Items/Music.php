@@ -23,10 +23,10 @@ class Music extends Base {
         $response->setMeta($req);
         if ($response->meta->success) {
             $jsonData = Misc::extractSigi($req->data);
-            if (isset($jsonData->MusicModule)) {
+            if (isset($jsonData->MobileMusicModule)) {
                 $this->sigi = $jsonData;
-                $response->setDetail($jsonData->MusicModule->musicInfo->music);
-                $response->setStats($jsonData->MusicModule->musicInfo->stats);
+                $response->setDetail($jsonData->MobileMusicModule->musicInfo->music);
+                $response->setStats($jsonData->MobileMusicModule->musicInfo->stats);
             }
         }
         $this->info = $response;

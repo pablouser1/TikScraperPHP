@@ -24,10 +24,10 @@ class User extends Base {
         $info->setMeta($req);
         if ($info->meta->success) {
             $jsonData = Misc::extractSigi($req->data);
-            if (isset($jsonData->UserModule)) {
+            if (isset($jsonData->MobileUserModule)) {
                 $this->sigi = $jsonData;
-                $info->setDetail($jsonData->UserModule->users->{$this->term});
-                $info->setStats($jsonData->UserModule->stats->{$this->term});
+                $info->setDetail($jsonData->MobileUserModule->users->{$this->term});
+                $info->setStats($jsonData->MobileUserModule->stats->{$this->term});
             }
         }
         $this->info = $info;

@@ -23,10 +23,10 @@ class Hashtag extends Base {
         $response->setMeta($req);
         if ($response->meta->success) {
             $jsonData = Misc::extractSigi($req->data);
-            if (isset($jsonData->ChallengePage)) {
+            if (isset($jsonData->MobileChallengePage)) {
                 $this->sigi = $jsonData;
-                $response->setDetail($jsonData->ChallengePage->challengeInfo->challenge);
-                $response->setStats($jsonData->ChallengePage->challengeInfo->stats);
+                $response->setDetail($jsonData->MobileChallengePage->challengeInfo->challenge);
+                $response->setStats($jsonData->MobileChallengePage->challengeInfo->stats);
             }
         }
         $this->info = $response;

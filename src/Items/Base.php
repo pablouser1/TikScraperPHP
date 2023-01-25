@@ -125,18 +125,18 @@ abstract class Base {
 
     private function handleFeedZero(string $key): bool {
         // We must be on cursor 0 and have Sigi properly set
-        if ($this->cursor === 0 && isset($this->sigi, $this->sigi->ItemModule, $this->sigi->UserModule)) {
-            $users = $this->sigi->UserModule->users; // Get all users that made the posts
+        if ($this->cursor === 0 && isset($this->sigi, $this->sigi->MobileItemModule, $this->sigi->MobileUserModule)) {
+            $users = $this->sigi->MobileUserModule->users; // Get all users that made the posts
 
             $items = [];
 
-            foreach ($this->sigi->ItemModule as $item) {
+            foreach ($this->sigi->MobileItemModule as $item) {
                 $uniqueId = $item->author;
                 $item->author = $users->{$uniqueId};
                 $items[] = $item;
             }
 
-            $nav = $this->sigi->ItemList->{$key}; // Get navigation state
+            $nav = $this->sigi->MobileItemList->{$key}; // Get navigation state
 
             // Building Feed
             $realCursor = $nav->cursor === 0 ? count($items) : $nav->cursor; // Fixes bug that sets cursor to 0 even then there are multiple posts already
