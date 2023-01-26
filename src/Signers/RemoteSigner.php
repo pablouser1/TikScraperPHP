@@ -13,6 +13,7 @@ class RemoteSigner implements SignerInterface {
     public function run(string $unsigned_url): ?object {
         $ch = curl_init($this->url);
         curl_setopt_array($ch, [
+            CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HEADER => false,
             CURLOPT_POST => true,
