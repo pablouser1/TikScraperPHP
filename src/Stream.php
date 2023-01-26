@@ -2,6 +2,7 @@
 namespace TikScraper;
 
 use TikScraper\Constants\UserAgents;
+use TikScraper\Helpers\Request;
 
 class Stream {
     private int $buffer_size = 256 * 1024;
@@ -30,7 +31,7 @@ class Stream {
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HEADER => false,
             CURLOPT_USERAGENT => UserAgents::DEFAULT,
-            CURLOPT_REFERER => "https://www.tiktok.com/discover",
+            CURLOPT_REFERER => "https://www.tiktok.com/",
             CURLOPT_HEADERFUNCTION => function ($curl, $header) {
                 $len = strlen($header);
                 $header = explode(':', $header, 2);
@@ -50,5 +51,26 @@ class Stream {
         }
         echo $response;
         curl_close($ch);
+    }
+
+    private function getChainToken(): ?string {
+        $ch = curl_init("https://www.tiktok.com/");
+
+        curl_setopt_array($ch, [
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HEADER => true,
+            CURLOPT_USERAGENT => UserAgents::DEFAULT
+        ]);
+
+        $data = curl_exec($ch);
+
+        $cookies = Request::extractCookies($data);
+
+        if (isset($cookies['tt_chain_token'])) {
+            return $cookies['tt_chain_token'];
+        }
+
+        return null;
     }
 }
