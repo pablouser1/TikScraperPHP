@@ -14,16 +14,6 @@ class Request {
         return $cookies;
     }
 
-    static public function handleProxy(&$ch, array $proxy): void {
-        if (isset($proxy['host'], $proxy['port'])) {
-            curl_setopt($ch, CURLOPT_PROXY, $proxy['host'] . ":" . $proxy['port']);
-            if (isset($proxy['username'], $proxy['password'])) {
-                curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxy['username'] . ":" . $proxy['password']);
-            }
-            curl_setopt($ch, CURLOPT_NOPROXY, '127.0.0.1,localhost');
-        }
-    }
-
     /**
      * Builds query for TikTok Api
      */

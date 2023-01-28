@@ -6,8 +6,8 @@ class Response {
     public int $code;
     public $data;
 
-    function __construct(bool $http_success, int $code, $data) {
-        $this->http_success = $http_success;
+    function __construct(int $code, $data) {
+        $this->http_success = $code >= 200 && $code < 400;
         $this->code = $code;
         $this->data = $data;
     }

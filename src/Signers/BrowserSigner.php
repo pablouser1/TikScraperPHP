@@ -2,7 +2,6 @@
 namespace TikScraper\Signers;
 
 use TikScraper\Constants\UserAgents;
-use TikScraper\Helpers\Algorithm;
 use TikScraper\Interfaces\SignerInterface;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
@@ -15,17 +14,17 @@ class BrowserSigner implements SignerInterface {
     const DEFAULT_URL = 'https://tiktok.com/@tiktok';
     const PASSWORD = 'webapp1.0+202106';
     private string $url = '';
-    private bool $close_when_done = true;
+    private bool $closeWhenDone = true;
     private RemoteWebDriver $driver;
 
     function __construct(array $config = []) {
         $this->url = $config['url'] ?? '';
-        $this->close_when_done = $config['close_when_done'] ?? true;
+        $this->closeWhenDone = $config['close_when_done'] ?? true;
         $this->__setupSelenium($this->url);
     }
 
     function __destruct() {
-        if ($this->close_when_done) $this->driver->quit();
+        if ($this->closeWhenDone) $this->driver->quit();
     }
 
     public function run(string $unsigned_url): ?object {
@@ -101,7 +100,6 @@ class BrowserSigner implements SignerInterface {
     }
 
     private function __xttparams(string $params): string {
-        $crypt = openssl_encrypt($params, 'aes-128-cbc', self::PASSWORD, 0, self::PASSWORD);
-        return $crypt;
+        return openssl_encrypt($params, 'aes-128-cbc', self::PASSWORD, 0, self::PASSWORD);
     }
 }

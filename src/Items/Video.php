@@ -50,7 +50,7 @@ class Video extends Base {
             $response = new Feed;
             $response->setItems([$this->item]);
             $response->setNav(false, null, '');
-            $response->setMeta(new Response(true, 200, "PLACEHOLDER"));
+            $response->setMeta(new Response(200, "PLACEHOLDER"));
             $this->feed = $response;
         }
         return $this;

@@ -1,20 +1,33 @@
 <?php
 namespace TikScraper\Downloaders;
 
-use TikScraper\Constants\UserAgents;
 use TikScraper\Helpers\Algorithm;
 use TikScraper\Helpers\Converter;
 use TikScraper\Interfaces\DownloaderInterface;
+use TikScraper\Traits\CookieTrait;
 
-class DefaultDownloader implements DownloaderInterface {
+class DefaultDownloader extends BaseDownloader implements DownloaderInterface {
+    use CookieTrait;
+
+    public function __construct(array $config = []) {
+        parent::__construct($config);
+        $this->initCookies();
+    }
+
     public function watermark(string $url) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        curl_setopt($ch, CURLOPT_USERAGENT, UserAgents::DEFAULT);
-        curl_setopt($ch, CURLOPT_REFERER, "https://www.tiktok.com/");
-        curl_setopt($ch, CURLOPT_BUFFERSIZE, self::BUFFER_SIZE);
+        $ch = curl_init($url);
+
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => false,
+            CURLOPT_HEADER => false,
+            CURLOPT_USERAGENT => $this->userAgent,
+            CURLOPT_COOKIEFILE => $this->cookieFile,
+            CURLOPT_REFERER => "https://www.tiktok.com/",
+            CURLOPT_BUFFERSIZE => self::BUFFER_SIZE
+        ]);
+
+        $this->setProxy($ch);
+
         curl_exec($ch);
         curl_close($ch);
     }
@@ -64,9 +77,14 @@ class DefaultDownloader implements DownloaderInterface {
         ];
 
         $ch = curl_init('https://api-h2.tiktokv.com/aweme/v1/feed/?' . http_build_query($query));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, UserAgents::DOWNLOAD);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        $this->setProxy($ch);
+
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_USERAGENT => $this->userAgent,
+            CURLOPT_FOLLOWLOCATION => true
+        ]);
+
         $data = curl_exec($ch);
         if (!curl_errno($ch)) {
             $json = json_decode($data);

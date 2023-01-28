@@ -141,7 +141,7 @@ abstract class Base {
             // Building Feed
             $realCursor = $nav->cursor === 0 ? count($items) : $nav->cursor; // Fixes bug that sets cursor to 0 even then there are multiple posts already
             $feed = new Feed;
-            $feed->setMeta(new Response(200, 0, "PLACEHOLDER"));
+            $feed->setMeta(new Response(200, "PLACEHOLDER"));
             $feed->setItems($items);
             $feed->setNav($nav->hasMore, 0, $realCursor);
 

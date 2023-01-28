@@ -1,14 +1,13 @@
 <?php
-
 namespace TikScraper;
 
-use TikScraper\Interfaces\CacheInterface;
 use TikScraper\Items\User;
 use TikScraper\Items\Hashtag;
 use TikScraper\Items\Music;
 use TikScraper\Items\Video;
 use TikScraper\Items\Trending;
 use TikScraper\Models\Discover;
+use TikScraper\Interfaces\CacheInterface;
 
 class Api {
     private Sender $sender;
