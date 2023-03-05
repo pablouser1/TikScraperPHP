@@ -29,7 +29,8 @@
         "ext-xml": "*",
         "ext-json": "*",
         "php-webdriver/webdriver": "^1.12",
-        "sapistudio/seleniumstealth": "^1.0"
+        "sapistudio/seleniumstealth": "^1.0",
+        "deemon47/user-agent-generator": "^1.0"
     },
     "require-dev": {
         "pestphp/pest": "^1.22"

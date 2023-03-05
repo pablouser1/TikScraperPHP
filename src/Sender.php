@@ -1,6 +1,7 @@
 <?php
 namespace TikScraper;
 
+use Deemon47\UserAgent;
 use TikScraper\Constants\UserAgents;
 use TikScraper\Helpers\Algorithm;
 use TikScraper\Helpers\Request;
@@ -28,7 +29,7 @@ class Sender {
 
     private Signer $signer;
     private bool $testEndpoints = false;
-    private string $userAgent = UserAgents::DEFAULT;
+    private string $userAgent;
 
     function __construct(array $config) {
         // Signing
@@ -38,7 +39,8 @@ class Sender {
 
         $this->signer = new Signer($config['signer']);
         if (isset($config['use_test_endpoints']) && $config['use_test_endpoints']) $this->testEndpoints = true;
-        $this->userAgent = $config['user_agent'] ?? UserAgents::DEFAULT;
+
+        $this->userAgent = $config['user_agent'] ?? (new UserAgent)->generate('android');
 
         $this->initProxy($config['proxy'] ?? []);
         $this->initCookies();
