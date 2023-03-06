@@ -39,6 +39,10 @@ class Video extends Base {
                 $response->setDetail($this->item->author);
                 $response->setStats($this->item->authorStats);
             }
+
+            if (isset($jsonData->MobileSharingComment)) {
+                $this->item->comments = $jsonData->MobileSharingComment->comments;
+            }
         }
         $this->info = $response;
     }
