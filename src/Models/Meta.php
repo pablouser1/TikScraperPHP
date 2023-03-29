@@ -38,8 +38,8 @@ class Meta {
                     $tiktok_code = $sigi->VideoPage->statusCode;
                 }
                 $this->og = new \stdClass;
-                $this->og->title = $sigi->SEO->metaParams->title;
-                $this->og->description = $sigi->SEO->metaParams->description;
+                $this->og->title = $sigi->SEOState->metaParams->title;
+                $this->og->description = $sigi->SEOState->metaParams->description;
             }
         }
 
