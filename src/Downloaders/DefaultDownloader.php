@@ -23,7 +23,9 @@ class DefaultDownloader extends BaseDownloader implements DownloaderInterface {
             CURLOPT_USERAGENT => $this->userAgent,
             CURLOPT_COOKIEFILE => $this->cookieFile,
             CURLOPT_REFERER => "https://www.tiktok.com/",
-            CURLOPT_BUFFERSIZE => self::BUFFER_SIZE
+            CURLOPT_BUFFERSIZE => self::BUFFER_SIZE,
+            CURLOPT_CONNECTTIMEOUT => 15,
+            CURLOPT_TIMEOUT => 15
         ]);
 
         $this->setProxy($ch);

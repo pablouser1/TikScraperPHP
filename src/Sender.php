@@ -2,7 +2,6 @@
 namespace TikScraper;
 
 use Deemon47\UserAgent;
-use TikScraper\Constants\UserAgents;
 use TikScraper\Helpers\Algorithm;
 use TikScraper\Helpers\Request;
 use TikScraper\Models\Response;
@@ -108,8 +107,8 @@ class Sender {
             CURLOPT_AUTOREFERER => true,
             CURLOPT_USERAGENT => $useragent,
             CURLOPT_ENCODING => 'utf-8',
-            CURLOPT_CONNECTTIMEOUT => 30,
-            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+            CURLOPT_TIMEOUT => 15,
             CURLOPT_MAXREDIRS => 5
         ]);
 
@@ -157,8 +156,8 @@ class Sender {
             CURLOPT_USERAGENT => $this->userAgent,
             CURLOPT_ENCODING => 'utf-8',
             CURLOPT_AUTOREFERER => true,
-            CURLOPT_CONNECTTIMEOUT => 30,
-            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CONNECTTIMEOUT => 15,
+            CURLOPT_TIMEOUT => 15,
             CURLOPT_MAXREDIRS => 5,
         ]);
         $this->setProxy($ch);

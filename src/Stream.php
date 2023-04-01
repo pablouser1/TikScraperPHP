@@ -46,6 +46,8 @@ class Stream {
             CURLOPT_HEADER => false,
             CURLOPT_USERAGENT => $this->userAgent,
             CURLOPT_REFERER => "https://www.tiktok.com/",
+            CURLOPT_CONNECTTIMEOUT => 15,
+            CURLOPT_TIMEOUT => 15,
             CURLOPT_HEADERFUNCTION => function ($curl, $header) {
                 $len = strlen($header);
                 $header = explode(':', $header, 2);

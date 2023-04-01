@@ -32,11 +32,7 @@ class Meta {
             // HTML
             $sigi = Misc::extractSigi($data);
             $tiktok_code = 0;
-            // Check that we are NOT trying to parse a photo
             if ($sigi) {
-                if (isset($sigi->VideoPage, $sigi->VideoPage->statusCode)) {
-                    $tiktok_code = $sigi->VideoPage->statusCode;
-                }
                 $this->og = new \stdClass;
                 $this->og->title = $sigi->SEOState->metaParams->title;
                 $this->og->description = $sigi->SEOState->metaParams->description;
