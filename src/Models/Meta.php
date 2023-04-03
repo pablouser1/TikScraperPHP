@@ -33,6 +33,9 @@ class Meta {
             $sigi = Misc::extractSigi($data);
             $tiktok_code = 0;
             if ($sigi) {
+                if (isset($sigi->MobileUserPage)) {
+                    $tiktok_code = $sigi->MobileUserPage->statusCode;
+                }
                 $this->og = new \stdClass;
                 $this->og->title = $sigi->SEOState->metaParams->title;
                 $this->og->description = $sigi->SEOState->metaParams->description;
