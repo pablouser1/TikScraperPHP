@@ -63,10 +63,14 @@ class Stream {
         $this->setProxy($ch);
 
         $response = curl_exec($ch);
+        $responseStatusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         foreach ($this->headers_to_forward as $header_key => $header_value) {
             if ($header_value != null) {
                 header($header_key . ': ' . $header_value);
             }
+        }
+        if ($responseStatusCode >= 400 && $responseStatusCode < 500) {
+            http_response_code($responseStatusCode);
         }
         echo $response;
         curl_close($ch);
