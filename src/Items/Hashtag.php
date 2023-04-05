@@ -23,10 +23,20 @@ class Hashtag extends Base {
         $response->setMeta($req);
         if ($response->meta->success) {
             $jsonData = Misc::extractSigi($req->data);
+
+            $challengePage = null;
+
+            // Get hashtag data from SIGI JSON, support both mobile and desktop User-Agents
             if (isset($jsonData->MobileChallengePage)) {
+                $challengePage = $jsonData->MobileChallengePage;
+            } elseif (isset($jsonData->ChallengePage)) {
+                $challengePage = $jsonData->ChallengePage;
+            }
+
+            if ($challengePage) {
                 $this->sigi = $jsonData;
-                $response->setDetail($jsonData->MobileChallengePage->challengeInfo->challenge);
-                $response->setStats($jsonData->MobileChallengePage->challengeInfo->stats);
+                $response->setDetail($challengePage->challengeInfo->challenge);
+                $response->setStats($challengePage->challengeInfo->stats);
             }
         }
         $this->info = $response;

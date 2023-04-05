@@ -24,10 +24,19 @@ class User extends Base {
         $info->setMeta($req);
         if ($info->meta->success) {
             $jsonData = Misc::extractSigi($req->data);
+            $userModule = null;
+
+            // Get user data from SIGI JSON, support both mobile and desktop User-Agents
             if (isset($jsonData->MobileUserModule)) {
+                $userModule = $jsonData->MobileUserModule;
+            } elseif (isset($jsonData->UserModule)) {
+                $userModule = $jsonData->UserModule;
+            }
+
+            if ($userModule) {
                 $this->sigi = $jsonData;
-                $info->setDetail($jsonData->MobileUserModule->users->{$this->term});
-                $info->setStats($jsonData->MobileUserModule->stats->{$this->term});
+                $info->setDetail($userModule->users->{$this->term});
+                $info->setStats($userModule->stats->{$this->term});
             }
         }
         $this->info = $info;

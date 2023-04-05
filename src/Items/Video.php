@@ -40,8 +40,17 @@ class Video extends Base {
                 $response->setStats($this->item->authorStats);
             }
 
+            $sharingComment = null;
+
+            // Get video comments data from SIGI JSON, support both mobile and desktop User-Agents
             if (isset($jsonData->MobileSharingComment)) {
-                $this->item->comments = $jsonData->MobileSharingComment->comments;
+                $sharingComment = $jsonData->MobileSharingComment;
+            } elseif (isset($jsonData->SharingComment)) {
+                $sharingComment = $jsonData->SharingComment;
+            }
+
+            if (isset($sharingComment)) {
+                $this->item->comments = $sharingComment->comments;
             }
         }
         $this->info = $response;
