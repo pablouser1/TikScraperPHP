@@ -25,6 +25,8 @@ class Info extends Base {
             $this->meta->og = $cache->meta->og;
         }
         $this->setDetail($cache->detail);
-        $this->setStats($cache->stats);
+        if (isset($cache->stats)) {
+            $this->setStats($cache->stats);
+        }
     }
 }
