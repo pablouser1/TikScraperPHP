@@ -2,8 +2,8 @@ name: Create Tag
 
 on:
   push:
-    paths:
-      - './VERSION'
+    branches:
+      - master
 
 jobs:
   build:
