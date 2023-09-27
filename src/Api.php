@@ -57,9 +57,9 @@ class Api {
         $response->setMeta($req);
         if ($response->meta->success) {
             $response->setItems(
-                $req->data->body[0]->exploreList,
-                $req->data->body[1]->exploreList,
-                $req->data->body[2]->exploreList
+                $req->jsonBody->body[0]->exploreList,
+                $req->jsonBody->body[1]->exploreList,
+                $req->jsonBody->body[2]->exploreList
             );
             $this->cache->set($cacheKey, $response->toJson());
         }

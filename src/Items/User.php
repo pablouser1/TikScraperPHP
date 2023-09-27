@@ -3,7 +3,6 @@ namespace TikScraper\Items;
 
 use TikScraper\Cache;
 use TikScraper\Constants\StaticUrls;
-use TikScraper\Helpers\Misc;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
 use TikScraper\Sender;
@@ -23,20 +22,26 @@ class User extends Base {
         $info = new Info;
         $info->setMeta($req);
         if ($info->meta->success) {
-            $jsonData = Misc::extractSigi($req->data);
             $userModule = null;
 
-            // Get user data from SIGI JSON, support both mobile and desktop User-Agents
-            if (isset($jsonData->MobileUserModule)) {
-                $userModule = $jsonData->MobileUserModule;
-            } elseif (isset($jsonData->UserModule)) {
-                $userModule = $jsonData->UserModule;
-            }
+            if ($req->hasSigi) {
+                // Get user data from SIGI JSON, support both mobile and desktop User-Agents
+                if (isset($req->sigiState->MobileUserModule)) {
+                    $userModule = $req->sigiState->MobileUserModule;
+                } elseif (isset($req->sigiState->UserModule)) {
+                    $userModule = $req->sigiState->UserModule;
+                }
 
-            if ($userModule) {
-                $this->sigi = $jsonData;
-                $info->setDetail($userModule->users->{$this->term});
-                $info->setStats($userModule->stats->{$this->term});
+                if ($userModule) {
+                    $this->state = $req->sigiState;
+                    $info->setDetail($userModule->users->{$this->term});
+                    $info->setStats($userModule->stats->{$this->term});    
+                }
+
+            } elseif ($userModule === null && $req->hasRehidrate && isset($req->state->__DEFAULT_SCOPE__->{"webapp.user-detail"}->userInfo)) {
+                $userModule = $req->rehidrateState->__DEFAULT_SCOPE__->{"webapp.user-detail"}->userInfo;
+                $info->setDetail($userModule->user);
+                $info->setStats($userModule->stats);
             }
         }
         $this->info = $info;
@@ -50,16 +55,14 @@ class User extends Base {
 
             if (!$preloaded) {
                 $query = [
+                    "WebIdLastTime" => time(),
                     "count" => 30,
-                    "id" => $this->info->detail->id,
+                    "coverFormat" => 2,
                     "cursor" => $cursor,
-                    "type" => 1,
-                    "secUid" => $this->info->detail->secUid,
-                    "sourceType" => 8,
-                    "appId" => 1233
+                    "secUid" => $this->info->detail->secUid
                 ];
 
-                $req = $this->sender->sendApi('/api/post/item_list', 'm', $query, true, '', StaticUrls::USER_FEED);
+                $req = $this->sender->sendApi('/api/post/item_list', 'm', $query, true, null, StaticUrls::USER_FEED);
                 $response = new Feed;
                 $response->fromReq($req, $cursor);
                 $this->feed = $response;

@@ -1,5 +1,7 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/common.php';
+
 header('Content-Type: application/json');
 $api = new \TikScraper\Api([
     'signer' => [
@@ -8,5 +10,10 @@ $api = new \TikScraper\Api([
     ]
 ]);
 $item = $api->trending();
-$full = $item->feed()->getFeed();
-echo $full->toJson();
+$item->feed();
+
+if ($item->feedOk()) {
+    echo $item->getFeed()->toJson(true);
+} else {
+    printError($item->error());
+}

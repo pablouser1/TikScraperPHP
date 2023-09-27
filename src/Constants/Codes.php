@@ -5,9 +5,14 @@ class Codes {
     const list = [
         0 => "OK",
         // 10 to 100 are SCRAPER ONLY errors
-        10 => 'CURL_ERROR',
+        10 => 'EMPTY_RESPONSE',
+        11 => 'JSON_DECODE_ERROR',
+        12 => 'STATE_DECODE_ERROR',
+        13 => 'COULD_NOT_SOLVE_CHALLENGE',
         20 => 'SIGNATURE_CONNECTION_ERROR',
+        21 => 'NETWORK_ERROR',
         450 => "CLIENT_PAGE_ERROR",
+        // TikTok errors begin here
         10000 => "VERIFY_CODE",
         10101 => "SERVER_ERROR_NOT_500",
         10102 => "USER_NOT_LOGIN",

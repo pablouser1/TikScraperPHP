@@ -1,17 +1,13 @@
 <?php
 namespace TikScraper\Downloaders;
 
-use TikScraper\Constants\UserAgents;
-use TikScraper\Traits\ProxyTrait;
+use TikScraper\HTTPClient;
 
 abstract class BaseDownloader {
-    use ProxyTrait;
-
-    protected const BUFFER_SIZE = 256 * 1024;
-    protected string $userAgent;
+    protected const BUFFER_SIZE = 1024;
+    protected HTTPClient $httpClient;
 
     function __construct(array $config = []) {
-        $this->initProxy($config['proxy'] ?? []);
-        $this->userAgent = $config['user_agent'] ?? UserAgents::DEFAULT;
+        $this->httpClient = new HTTPClient($config);
     }
 }

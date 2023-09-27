@@ -1,5 +1,7 @@
 <?php
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/common.php';
+
 header('Content-Type: application/json');
 $api = new \TikScraper\Api([
     'signer' => [
@@ -8,5 +10,10 @@ $api = new \TikScraper\Api([
     ]
 ]);
 $item = $api->music('Epic-Music-863502-6873501791145691137');
-$full = $item->feed()->getFull();
-echo $full->toJson();
+$item->feed();
+
+if ($item->ok()) {
+    echo $item->getFull()->toJson(true);
+} else {
+    printError($item->error());
+}

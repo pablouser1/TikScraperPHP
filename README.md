@@ -5,22 +5,24 @@ A Wrapper for the TikTok API made with PHP
 ```php
 $api = new \TikScraper\Api([
     'user_agent' => 'YOUR_CUSTOM_USER_AGENT_HERE',
-    'proxy' => [
-        'host' => 'EXAMPLE_HOST',
-        'port' => 8080,
-        'user' => 'EXAMPLE_USER',
-        'password' => 'EXAMPLE_PASSWORD'
-    ],
+    'cookie_path' => 'PATH_HERE', // Path to store TikTok's cookies, defaults to /tmp/tiktok.json
+    'proxy' => 'http://user:password@hostname:port',
     // More info about signing below
     'signer' => [
         'method' => 'remote',
         'url' => 'http://localhost:8080/signature',
-        'close_when_done' => true // --> Only for browser signing <-- Set to true if you want to quit the browser after making the request (default true)
+        'close_when_done' => true // ONLY FOR BROWSER SIGNING, set to true if you want to quit the browser after making the request (default true)
     ]
 ], $cacheEngine);
 
 $hashtag = $api->hashtag('funny');
-echo $hashtag->feed()->getFull()->toJson();
+$hashtag->feed();
+
+if ($hastag->ok()) {
+    echo $hashtag->getFull()->toJson(true);
+} else {
+    print_r($hashtag->error());
+}
 ```
 
 ## Signing

@@ -1,5 +1,6 @@
 <?php
 namespace TikScraper\Models;
+use TikScraper\Constants\Responses;
 
 class Feed extends Base {
     public Meta $meta;
@@ -9,7 +10,7 @@ class Feed extends Base {
     public string $maxCursor = '0';
 
     public function setMeta(Response $req) {
-        $this->meta = new Meta($req->http_success, $req->code, $req->data);
+        $this->meta = new Meta($req);
     }
 
     public function setNav(bool $hasMore, ?int $minCursor, string $maxCursor) {
@@ -23,9 +24,9 @@ class Feed extends Base {
     }
 
     public function fromReq(Response $req, ?int $minCursor = 0, string $ttwid = '') {
-        $this->meta = new Meta($req->http_success, $req->code, $req->data);
+        $this->meta = new Meta($req);
         if ($this->meta->success) {
-            $data = $req->data;
+            $data = $req->jsonBody;
 
             // Cursor
             $maxCursor = null;
@@ -55,7 +56,7 @@ class Feed extends Base {
     }
 
     public function fromCache(object $cache) {
-        $this->meta = new Meta(true, 200, 'PLACEHOLDER');
+        $this->meta = new Meta(Responses::ok());
         $this->setItems($cache->items);
         $this->setNav($cache->hasMore, $cache->minCursor, $cache->maxCursor);
     }

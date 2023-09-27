@@ -2,7 +2,6 @@
 namespace TikScraper\Items;
 
 use TikScraper\Cache;
-use TikScraper\Helpers\Misc;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
 use TikScraper\Sender;
@@ -22,21 +21,23 @@ class Music extends Base {
         $response = new Info;
         $response->setMeta($req);
         if ($response->meta->success) {
-            $jsonData = Misc::extractSigi($req->data);
-
             $musicModule = null;
 
-            // Get music data from SIGI JSON, support both mobile and desktop User-Agents
-            if (isset($jsonData->MobileMusicModule)) {
-                $musicModule = $jsonData->MobileMusicModule;
-            } elseif (isset($jsonData->MusicModule)) {
-                $musicModule = $jsonData->MusicModule;
-            }
-
-            if ($musicModule) {
-                $this->sigi = $jsonData;
-                $response->setDetail($musicModule->musicInfo->music);
-                $response->setStats($musicModule->musicInfo->stats);
+            // Get hashtag data from both SIGI and new Rehidrate
+            if ($req->hasSigi || $req->hasRehidrate) {
+                if (isset($req->sigiState->MobileMusicModule)) {
+                    $musicModule = $req->sigiState->MobileMusicModule;
+                } elseif (isset($req->sigiState->MusicModule)) {
+                    $musicModule = $req->sigiState->MusicModule;
+                } elseif (isset($req->rehidrateState->__DEFAULT_SCOPE__->{"desktop.musicPage.musicDetail"})) {
+                    $musicModule = $req->rehidrateState->__DEFAULT_SCOPE__->{"desktop.musicPage.musicDetail"};
+                }
+    
+                if ($musicModule) {
+                    $this->state = $musicModule;
+                    $response->setDetail($musicModule->musicInfo->music);
+                    $response->setStats($musicModule->musicInfo->stats);
+                }
             }
         }
         $this->info = $response;

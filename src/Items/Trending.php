@@ -1,6 +1,8 @@
 <?php
 namespace TikScraper\Items;
 
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
 use TikScraper\Cache;
 use TikScraper\Models\Feed;
 use TikScraper\Sender;
@@ -12,9 +14,12 @@ class Trending extends Base {
 
     public function feed($cursor = ""): self {
         $this->cursor = $cursor;
+        $cookie = null;
         if (!$this->cursor) {
-            $this->cursor = $this->__getTtwid();
+            $cookie = $this->__getTtwid();
+            $this->cursor = $cookie->getValue();
         }
+
         $query = [
             "count" => 30,
             "id" => 1,
@@ -23,15 +28,18 @@ class Trending extends Base {
             "insertedItemID" => ""
         ];
 
-        $req = $this->sender->sendApi('/api/recommend/item_list', 'm', $query, false, $this->cursor);
+        $req = $this->sender->sendApi('/api/recommend/item_list', 'm', $query, false, $cookie);
         $response = new Feed;
         $response->fromReq($req, null, $this->cursor);
         $this->feed = $response;
         return $this;
     }
 
-    private function __getTtwid(): string {
-        $res = $this->sender->sendHead('https://www.tiktok.com/');
-        return $res['cookies']['ttwid'] ?? '';
+    private function __getTtwid(): ?SetCookie {
+        $jar = new CookieJar;
+        $this->sender->sendHead('https://www.tiktok.com/', $jar);
+        $cookie = $jar->getCookieByName("ttwid");
+
+        return $cookie;
     }
 }

@@ -2,14 +2,13 @@
 namespace TikScraper\Items;
 
 use TikScraper\Cache;
-use TikScraper\Helpers\Misc;
+use TikScraper\Constants\Responses;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
-use TikScraper\Models\Response;
 use TikScraper\Sender;
 
 class Video extends Base {
-    private object $item;
+    private ?object $item = null;
 
     function __construct(string $term, Sender $sender, Cache $cache) {
         parent::__construct($term, 'video', $sender, $cache);
@@ -33,24 +32,30 @@ class Video extends Base {
         $response = new Info;
         $response->setMeta($req);
         if ($response->meta->success) {
-            $jsonData = Misc::extractSigi($req->data);
-            if (isset($jsonData->SharingVideoModule)) {
-                $this->item = $jsonData->SharingVideoModule->videoData->itemInfo->itemStruct;
-                $response->setDetail($this->item->author);
-                $response->setStats($this->item->authorStats);
-            }
+            if ($req->hasSigi) {
+                // Try to get video info from exclusive SharingVideoModule
+                if (isset($req->sigiState->SharingVideoModule)) {
+                    $this->state = $req->sigiState;
+                    $this->item = $req->sigiState->SharingVideoModule->videoData->itemInfo->itemStruct;
+                    $response->setDetail($this->item->author);
+                    $response->setStats($this->item->authorStats);
+                // Try to get video info from common UserModule
+                } else {
+                    $userModule = null;
+                    if (isset($req->sigiState->UserModule)) {
+                        $userModule = $req->sigiState->UserModule;
+                    } elseif (isset($req->sigiState->MobileUserModule)) {
+                        $userModule = $req->sigiState->MobileUserModule;
+                    }
 
-            $sharingComment = null;
-
-            // Get video comments data from SIGI JSON, support both mobile and desktop User-Agents
-            if (isset($jsonData->MobileSharingComment)) {
-                $sharingComment = $jsonData->MobileSharingComment;
-            } elseif (isset($jsonData->SharingComment)) {
-                $sharingComment = $jsonData->SharingComment;
-            }
-
-            if (isset($sharingComment)) {
-                $this->item->comments = $sharingComment->comments;
+                    if ($userModule !== null) {
+                        $this->state = $req->sigiState;
+                        $objIterator = new \ArrayIterator($userModule->users);
+                        $user = $objIterator->current();
+                        $response->setDetail($user);
+                        // $response->setStats... is not used, for some reason $userModule->stats is empty (at least for now)
+                    }
+                }
             }
         }
         $this->info = $response;
@@ -58,13 +63,16 @@ class Video extends Base {
 
     public function feed(): self {
         $this->cursor = 0;
-        $cached = $this->handleFeedCache();
-        if (!$cached && $this->infoOk()) {
+        if ($this->item !== null) {
+            // Get feed using SharingVideoModule method
             $response = new Feed;
             $response->setItems([$this->item]);
             $response->setNav(false, null, '');
-            $response->setMeta(new Response(200, "PLACEHOLDER"));
+            $response->setMeta(Responses::ok());
             $this->feed = $response;
+        } else {
+            // Get feed using standard UserModule / ItemModule method
+            $this->handleFeedPreload("video");
         }
         return $this;
     }

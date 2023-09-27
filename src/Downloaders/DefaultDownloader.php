@@ -4,34 +4,28 @@ namespace TikScraper\Downloaders;
 use TikScraper\Helpers\Algorithm;
 use TikScraper\Helpers\Converter;
 use TikScraper\Interfaces\DownloaderInterface;
-use TikScraper\Traits\CookieTrait;
 
+/**
+ * Video downloader using TikTok's own mobile API
+ */
 class DefaultDownloader extends BaseDownloader implements DownloaderInterface {
-    use CookieTrait;
-
     public function __construct(array $config = []) {
         parent::__construct($config);
-        $this->initCookies();
     }
 
     public function watermark(string $url) {
-        $ch = curl_init($url);
+        $client = $this->httpClient->getClient();
 
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => false,
-            CURLOPT_HEADER => false,
-            CURLOPT_USERAGENT => $this->userAgent,
-            CURLOPT_COOKIEFILE => $this->cookieFile,
-            CURLOPT_REFERER => "https://www.tiktok.com/",
-            CURLOPT_BUFFERSIZE => self::BUFFER_SIZE,
-            CURLOPT_CONNECTTIMEOUT => 15,
-            CURLOPT_TIMEOUT => 15
+        $res = $client->get($url, [
+            "stream" => true,
+            "http_errors" => false
         ]);
 
-        $this->setProxy($ch);
+        $body = $res->getBody();
 
-        curl_exec($ch);
-        curl_close($ch);
+        while (!$body->eof()) {
+            echo $body->read(self::BUFFER_SIZE);
+        }
     }
 
     /**
@@ -78,26 +72,28 @@ class DefaultDownloader extends BaseDownloader implements DownloaderInterface {
             'cp' => 'cbfhckdckkde1'
         ];
 
-        $ch = curl_init('https://api-h2.tiktokv.com/aweme/v1/feed/?' . http_build_query($query));
-        $this->setProxy($ch);
+        $client = $this->httpClient->getClient();
 
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_USERAGENT => $this->userAgent,
-            CURLOPT_FOLLOWLOCATION => true
+        $data = $client->get('https://api-h2.tiktokv.com/aweme/v1/feed/?' . http_build_query($query), [
+            "http_errors" => false
         ]);
 
-        $data = curl_exec($ch);
-        if (!curl_errno($ch)) {
-            $json = json_decode($data);
+        if ($data->getStatusCode() === 200) {
+            $json = json_decode($data->getBody());
             $nowatermark_url = $json->aweme_list[0]->video->play_addr->url_list[0];
-            curl_setopt($ch, CURLOPT_URL, $nowatermark_url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-            curl_setopt($ch, CURLOPT_BUFFERSIZE, self::BUFFER_SIZE);
-            curl_exec($ch);
-            curl_close($ch);
+
+            $res = $client->get($nowatermark_url, [
+                "stream" => true,
+                "http_errors" => false
+            ]);
+
+            $body = $res->getBody();
+
+            while (!$body->eof()) {
+                echo $body->read(self::BUFFER_SIZE);
+            }
         } else {
-            die('Eror while fetching data!');
+            die("Error while fetching data");
         }
     }
 }

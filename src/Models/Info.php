@@ -1,5 +1,6 @@
 <?php
 namespace TikScraper\Models;
+use TikScraper\Constants\Responses;
 
 class Info extends Base {
     public Meta $meta;
@@ -7,7 +8,7 @@ class Info extends Base {
     public object $stats;
 
     public function setMeta(Response $req) {
-        $this->meta = new Meta($req->http_success, $req->code, $req->data);
+        $this->meta = new Meta($req);
     }
 
     public function setDetail(object $detail) {
@@ -19,7 +20,7 @@ class Info extends Base {
     }
 
     public function fromCache(object $cache) {
-        $this->setMeta(new Response(200, 'PLACEHOLDER'));
+        $this->meta = new Meta(Responses::ok());
         if (isset($cache->meta->og)) {
             $this->meta->og = $cache->meta->og;
         }

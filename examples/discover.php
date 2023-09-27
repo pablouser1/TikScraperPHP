@@ -8,4 +8,4 @@ $api = new \TikScraper\Api([
     ]
 ]);
 $item = $api->discover();
-echo $item->toJson();
+echo $item->toJson(true);

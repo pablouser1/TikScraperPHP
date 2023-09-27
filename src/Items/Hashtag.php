@@ -2,7 +2,6 @@
 namespace TikScraper\Items;
 
 use TikScraper\Cache;
-use TikScraper\Helpers\Misc;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
 use TikScraper\Sender;
@@ -22,21 +21,23 @@ class Hashtag extends Base {
         $response = new Info;
         $response->setMeta($req);
         if ($response->meta->success) {
-            $jsonData = Misc::extractSigi($req->data);
-
             $challengePage = null;
 
-            // Get hashtag data from SIGI JSON, support both mobile and desktop User-Agents
-            if (isset($jsonData->MobileChallengePage)) {
-                $challengePage = $jsonData->MobileChallengePage;
-            } elseif (isset($jsonData->ChallengePage)) {
-                $challengePage = $jsonData->ChallengePage;
-            }
-
-            if ($challengePage) {
-                $this->sigi = $jsonData;
-                $response->setDetail($challengePage->challengeInfo->challenge);
-                $response->setStats($challengePage->challengeInfo->stats);
+            // Get hashtag data from both SIGI and new Rehidrate
+            if ($req->hasSigi || $req->hasRehidrate) {
+                if (isset($req->sigiState->MobileChallengePage)) {
+                    $challengePage = $req->sigiState->MobileChallengePage;
+                } elseif (isset($req->sigiState->ChallengePage)) {
+                    $challengePage = $req->sigiState->ChallengePage;
+                } elseif (isset($req->rehidrateState->__DEFAULT_SCOPE__->{"desktop.challengePage.challengeDetail"})) {
+                    $challengePage = $req->rehidrateState->__DEFAULT_SCOPE__->{"desktop.challengePage.challengeDetail"};
+                }
+    
+                if ($challengePage) {
+                    $this->state = $challengePage;
+                    $response->setDetail($challengePage->challengeInfo->challenge);
+                    $response->setStats($challengePage->challengeInfo->stats);
+                }
             }
         }
         $this->info = $response;

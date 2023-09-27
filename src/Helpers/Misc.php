@@ -1,17 +1,35 @@
 <?php
 namespace TikScraper\Helpers;
 
+use Psr\Http\Message\StreamInterface;
+
 class Misc {
-    /**
-     * Get Sigi State from HTML string
-     */
-    public static function extractSigi(string $doc): ?object {
+    public static function getDoc(StreamInterface $body): ?\DOMDocument {
         // Disallow empty strings
-        if ($doc !== "") {
+        if ($body->getSize() > 0) {
             $dom = new \DomDocument();
-            @$dom->loadHTML($doc);
-            $script = $dom->getElementById('SIGI_STATE');
-            if ($script) {
+            @$dom->loadHTML($body);
+            return $dom;
+        }
+        return null;
+    }
+    /**
+     * Get JSON data from HTML string
+     */
+    public static function extractHydra(StreamInterface $body, ?\DOMDocument $dom = null): ?object {
+        return self::__extractByTagName("__UNIVERSAL_DATA_FOR_REHYDRATION__", $body, $dom);
+    }
+
+    public static function extractSigi(StreamInterface $body, ?\DOMDocument $dom = null): ?object {
+        return self::__extractByTagName("SIGI_STATE", $body, $dom);
+    }
+
+    private static function __extractByTagName(string $tagName, StreamInterface $body, ?\DOMDocument $dom = null): ?object {
+        // Disallow empty strings
+        $dom = $dom !== null ? $dom : self::getDoc($body);
+        if ($dom !== null) {
+            $script = $dom->getElementById($tagName);
+            if ($script !== null) {
                 return json_decode($script->textContent);
             }
         }

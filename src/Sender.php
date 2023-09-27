@@ -1,48 +1,44 @@
 <?php
 namespace TikScraper;
 
-use Deemon47\UserAgent;
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
+use TikScraper\Constants\Responses;
 use TikScraper\Helpers\Algorithm;
+use TikScraper\Helpers\Misc;
 use TikScraper\Helpers\Request;
 use TikScraper\Models\Response;
-use TikScraper\Traits\ProxyTrait;
-use TikScraper\Traits\CookieTrait;
 
 class Sender {
-    use ProxyTrait;
-    use CookieTrait;
-
-    private const REFERER = 'https://www.tiktok.com/';
-    private const DEFAULT_API_HEADERS = [
-        "authority: m.tiktok.com",
-        "method: GET",
-        "scheme: https",
-        "accept: application/json, text/plain, */*",
-        "accept-encoding: gzip, deflate, br",
-        "accept-language: en-US,en;q=0.9",
-        "sec-fetch-dest: empty",
-        "sec-fetch-mode: cors",
-        "sec-fetch-site: same-site",
-        "sec-gpc: 1"
-    ];
-
+    private HTTPClient $httpClient;
     private Signer $signer;
     private bool $testEndpoints = false;
     private string $userAgent;
 
+    private const DEFAULT_API_HEADERS = [
+        "authority" => "m.tiktok.com",
+        "method" => "GET",
+        "scheme" => "https",
+        "accept" => "application/json, text/plain, */*",
+        "accept-encoding" => "gzip, deflate, br",
+        "accept-language" => "en-US,en;q=0.9",
+        "sec-fetch-dest" => "empty",
+        "sec-fetch-mode" => "cors",
+        "sec-fetch-site" => "same-site",
+        "sec-gpc" => "1"
+    ];
+
     function __construct(array $config) {
         // Signing
         if (!isset($config['signer'])) {
-            throw new \Exception("You need to send a signer config! Please check the README for more info");
+            throw new \Exception("You need to set a signer config! Please check the README for more info");
         }
-
-        $this->signer = new Signer($config['signer']);
         if (isset($config['use_test_endpoints']) && $config['use_test_endpoints']) $this->testEndpoints = true;
 
-        $this->userAgent = $config['user_agent'] ?? (new UserAgent)->generate('android');
-
-        $this->initProxy($config['proxy'] ?? []);
-        $this->initCookies();
+        $this->httpClient = new HTTPClient($config);
+        $this->signer = new Signer($config['signer']);
     }
 
     /**
@@ -51,7 +47,7 @@ class Sender {
      * @param string $subdomain Subdomain to be used, may be m, t or www
      * @param array $query Custom query to be sent, later to me merged with some default values
      * @param bool $send_tt_params Send or not x-tt-params header, some endpoints use it
-     * @param string $ttwid Send or not ttwid cookie, only used for trending
+     * @param ?SetCookie $ttwid Send or not ttwid cookie, only used for trending
      * @param string $static_url URL to be used instead of $endpoint to bypass some captchas
      */
     public function sendApi(
@@ -59,18 +55,20 @@ class Sender {
         string $subdomain = 'm',
         array $query = [],
         bool $send_tt_params = false,
-        string $ttwid = '',
+        ?SetCookie $ttwid = null,
         string $static_url = ''
     ): Response {
+        $client = $this->httpClient->getClient();
+        $useragent = $this->httpClient->getUserAgent();
+        $jar = $this->httpClient->getJar();
+
         // Use test subdomain if test endpoints are enabled
         if ($this->testEndpoints && $subdomain === 'm') {
             $subdomain = 't';
         }
+
         $headers = [];
-        $cookies = '';
-        $ch = curl_init();
         $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint;
-        $useragent = $this->userAgent;
         $device_id = Algorithm::deviceId();
 
         $headers[] = "Path: $endpoint";
@@ -84,51 +82,35 @@ class Sender {
             if ($send_tt_params) {
                 $headers[] = 'x-tt-params: ' . $signer_res->data->{'x-tt-params'};
             }
-            if ($ttwid) {
-                $cookies .= 'ttwid=' . $ttwid . ';';
+            if ($ttwid !== null) {
+                $jar = new CookieJar(false, $jar->toArray());
+                $jar->setCookie($ttwid);
             }
         } else {
             // Signing error
-            return new Response(500, (object) [
-                'statusCode' => 20
+            return Responses::badSign();
+        }
+
+        $httpRes = null;
+
+        try {
+            $res = $client->get($static_url ? $static_url : $url, [
+                'jar' => $jar,
+                'headers' => [
+                    $headers,
+                    ...['User-Agent' => $useragent]
+                ]
             ]);
+            $httpRes = $res;
+        } catch (RequestException $e) {
+            // The server responded a bad code (403, 500...)
+            $httpRes = $e->getResponse();
+        } catch (ConnectException $e) {
+            // The server does not respond
+            $httpRes = null;
         }
 
-        $this->setProxy($ch);
-        curl_setopt_array($ch, [
-            CURLOPT_URL => $static_url ? $static_url : $url,
-            CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_COOKIEJAR => $this->cookieFile,
-            CURLOPT_COOKIEFILE => $this->cookieFile,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HEADER => false,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_REFERER => self::REFERER,
-            CURLOPT_AUTOREFERER => true,
-            CURLOPT_USERAGENT => $useragent,
-            CURLOPT_ENCODING => 'utf-8',
-            CURLOPT_CONNECTTIMEOUT => 15,
-            CURLOPT_TIMEOUT => 15,
-            CURLOPT_MAXREDIRS => 5
-        ]);
-
-        if ($cookies) {
-            curl_setopt($ch, CURLOPT_COOKIE, $cookies);
-        }
-
-        $data = curl_exec($ch);
-        $error = curl_errno($ch);
-        $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-        curl_close($ch);
-        if (!$error && $data) {
-            // Request sent
-            return new Response($code, json_decode($data));
-        }
-
-        // Request went bad (timeouts, empty responses...)
-        return new Response(503, (object) [
-            'statusCode' => 10
-        ]);
+        return new Response($httpRes);
     }
 
     /**
@@ -140,72 +122,82 @@ class Sender {
     public function sendHTML(
         string $endpoint,
         string $subdomain = 'www',
-        array $query = []
+        array $query = [],
+        bool $solvedChallenge = false
     ): Response {
-        $ch = curl_init();
+        $client = $this->httpClient->getClient();
+
         $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint;
         // Add query
         if (!empty($query)) $url .= '?' . http_build_query($query);
-        curl_setopt_array($ch, [
-            CURLOPT_URL => $url,
-            CURLOPT_COOKIEJAR => $this->cookieFile,
-            CURLOPT_COOKIEFILE => $this->cookieFile,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HEADER => false,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_USERAGENT => $this->userAgent,
-            CURLOPT_ENCODING => 'utf-8',
-            CURLOPT_AUTOREFERER => true,
-            CURLOPT_CONNECTTIMEOUT => 15,
-            CURLOPT_TIMEOUT => 15,
-            CURLOPT_MAXREDIRS => 5,
-        ]);
-        $this->setProxy($ch);
-        $data = curl_exec($ch);
-        $error = curl_errno($ch);
-        $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-        curl_close($ch);
-        if (!$error && $data) {
-            // Request sent
-            return new Response($code, $data);
+        $httpRes = null;
+
+        try {
+            $res = $client->get($url);
+            $httpRes = $res;
+        } catch (RequestException $e) {
+            // The server responded a bad code (403, 500...)
+            $httpRes = $e->getResponse();
+        } catch (ConnectException $e) {
+            // The server does not respond
+            $httpRes = null;
         }
-        return new Response(503, '');
+
+        $res = new Response($httpRes);
+        if ($res->isChallenge) {
+            // Drop if got another challenge after properly solving one
+            if ($solvedChallenge) {
+                return Responses::badChallenge();
+            }
+
+            // Make challenge and resend
+            $solved = $this->__solveInitialChallenge($res);
+            return $solved ? $this->sendHTML($endpoint, $subdomain, $query, true) : $res;
+        }
+
+        return $res;
     }
 
     /**
      * Sends a GET/HEAD request to TikTok, usually used to get some required cookies/headers for later
      * @param $url URL to be used
-     * @param $headMethod Send a HEAD request if true or a GET request if false
      * @return array 'cookies' and 'headers'
      */
-    public function sendHead(string $url, bool $headMethod = false): array {
-        $resHeaders = [];
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_NOBODY => $headMethod,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HEADER => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_USERAGENT => $this->userAgent,
-            CURLOPT_ENCODING => 'utf-8',
-            CURLOPT_AUTOREFERER => true
+    public function sendHead(string $url, CookieJar $jar): array {
+        $client = $this->httpClient->getClient();
+
+        $res = $client->head($url, [
+            'cookies' => $jar
         ]);
 
-        curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($curl, $header) use (&$resHeaders) {
-            $len = strlen($header);
-            $header = explode(':', $header, 2);
-            if (count($header) < 2) return $len;
-            $resHeaders[strtolower(trim($header[0]))][] = trim($header[1]);
-            return $len;
-        });
+        return $res->getHeaders();
+    }
 
-        $this->setProxy($ch);
+    /**
+     * Solves TikTok's own challenge to avoid bots with a JS crypto solve
+     */
+    private function __solveInitialChallenge(Response $res): bool {
+        if ($res->http_success && $res->isHtml) {
+            $dom = Misc::getDoc($res->origRes->getBody());
+            if ($dom !== null) {
+                $type = $dom->getElementById("wci");
+                $key = $dom->getElementById("cs");
+                if ($type !== null && $key !== null) {
+                    $typeName = $type->getAttribute('class');
+                    $cookieValue = Algorithm::challenge($typeName, $key->getAttribute('class'));
 
-        $data = curl_exec($ch);
-        curl_close($ch);
-        return [
-            'cookies' => Request::extractCookies($data),
-            'headers' => $resHeaders
-        ];
+                    $cookie = new SetCookie;
+                    $cookie->setName($typeName);
+                    $cookie->setValue($cookieValue);
+                    $cookie->setDomain("www.tiktok.com");
+                    $cookie->setPath("/");
+                    $cookie->setMaxAge(1);
+                    $this->httpClient->getJar()->setCookie($cookie);
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

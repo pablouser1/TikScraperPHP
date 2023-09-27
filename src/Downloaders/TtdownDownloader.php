@@ -3,6 +3,10 @@ namespace TikScraper\Downloaders;
 
 use TikScraper\Constants\UserAgents;
 
+/**
+ * Video downloader using service ttdown
+ * @todo Port to GuzzleHTTP
+ */
 class TtdownDownloader extends DefaultDownloader {
     public function noWatermark(string $url) {
         $ch = curl_init();

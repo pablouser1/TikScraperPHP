@@ -2,53 +2,76 @@
 namespace TikScraper\Models;
 
 use TikScraper\Constants\Codes;
-use TikScraper\Helpers\Misc;
 
 /**
  * Has information about how the request went
  * @param bool $success Request was successfull or not. True if $http_code is >= 200 and < 300 and $tiktok_code is 0
- * @param int $http_code HTTP Code response
- * @param int $tiktok_code TikTok's own error codes for their own API
- * @param string $tiktok_msg Detailed error message for $tiktok_code
+ * @param int $httpCode HTTP Code response
+ * @param int $proxitokCode TikTok/ProxiTok's own error messages
+ * @param string $proxitokMsg Detailed error message for $proxitokCode
  */
 class Meta {
     public bool $success = false;
-    public int $http_code = 503;
-    public int $tiktok_code = -1;
-    public string $tiktok_msg = '';
+    public int $httpCode = 503;
+    public int $proxitokCode = -1;
+    public string $proxitokMsg = '';
     public object $og;
 
-    function __construct(bool $http_success, int $code, $data) {
-        $http_success = $http_success;
-        $http_code = $code;
-
-        if (empty($data)) {
-            // *Something* went wrong
-            $tiktok_code = -1;
-        } elseif (is_object($data)) {
-            // JSON
-            $tiktok_code = $this->getCode($data);
-        } else {
-            // HTML
-            $sigi = Misc::extractSigi($data);
-            $tiktok_code = 0;
-            if ($sigi) {
-                if (isset($sigi->MobileUserPage)) {
-                    $tiktok_code = $sigi->MobileUserPage->statusCode;
+    function __construct(Response $res) {
+        $proxitokCode = -1;
+        $proxitokMsg = '';
+        if ($res->origRes !== null) {
+            // Request was at least made by now
+            $body = $res->origRes->getBody();
+            if ($body->getSize() === 0) {
+                // Response is empty
+                $proxitokCode = 10;
+            } elseif ($res->isJson) {
+                // JSON Data
+                if ($res->jsonBody !== null) {
+                    $proxitokCode = $this->getCode($res->jsonBody);
+                    $proxitokMsg = $this->getMsg($res->jsonBody);
+                } else {
+                    // Couldn't decode JSON
+                    $proxitokCode = 11;
                 }
-                $this->og = new \stdClass;
-                $this->og->title = $sigi->SEOState->metaParams->title;
-                $this->og->description = $sigi->SEOState->metaParams->description;
+            } elseif ($res->isHtml) {
+                // HTML Data
+                $proxitokCode = 0;
+
+                // Setting og
+                if ($res->hasSigi) {
+                    $this->og = new \stdClass;
+                    $this->og->title = $res->sigiState->SEOState->metaParams->title;
+                    $this->og->description = $res->sigiState->SEOState->metaParams->description;    
+                } elseif ($res->hasRehidrate) {
+                    $shareRoot = null;
+                    if (isset($res->state->__DEFAULT_SCOPE__->{"webapp.user-detail"})) {
+                        $shareRoot = $res->rehidrateState->__DEFAULT_SCOPE__->{"webapp.user-detail"};
+                    } elseif (isset($res->state->__DEFAULT_SCOPE__->{"webapp.music-detail"})) {
+                        $shareRoot = $res->rehidrateState->__DEFAULT_SCOPE__->{"webapp.music-detail"};
+                    }
+
+                    if ($shareRoot) {
+                        $this->og = new \stdClass;
+                        $this->og->title = $shareRoot->shareMeta->title;
+                        $this->og->description = $shareRoot->shareMeta->desc;
+                    }
+                } else {
+                    // Request doesn't have state data
+                    $proxitokCode = 12;
+                }
             }
+        } else {
+            // Couldn't make the request
+            $proxitokCode = 21;
         }
 
-        $tiktok_msg = Codes::fromId($tiktok_code);
-
         // Setting values
-        $this->success = $http_success && $tiktok_code === 0;
-        $this->http_code = $http_code;
-        $this->tiktok_code = $tiktok_code;
-        $this->tiktok_msg = $tiktok_msg;
+        $this->success = $res->http_success && $proxitokCode === 0;
+        $this->httpCode = $res->code;
+        $this->proxitokCode = $proxitokCode;
+        $this->proxitokMsg = $proxitokMsg === '' ? Codes::fromId($proxitokCode) : $proxitokMsg;
     }
 
     private function getCode(object $data): int {
@@ -62,5 +85,15 @@ class Meta {
             $code = 10000;
         }
         return $code;
+    }
+
+    private function getMsg(object $data): string {
+        $msg = '';
+        if (isset($data->statusMsg)) {
+            $msg = $data->statusMsg;
+        } elseif (isset($data->status_msg)) {
+            $msg = $data->status_msg;
+        }
+        return $msg;
     }
 }
