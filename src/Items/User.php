@@ -23,19 +23,24 @@ class User extends Base {
         $info->setMeta($req);
         if ($info->meta->success) {
             $userModule = null;
+            $uniqueId = null;
 
             if ($req->hasSigi) {
                 // Get user data from SIGI JSON, support both mobile and desktop User-Agents
-                if (isset($req->sigiState->MobileUserModule)) {
+                if (isset($req->sigiState->MobileUserModule, $req->sigiState->MobileUserPage)) {
                     $userModule = $req->sigiState->MobileUserModule;
-                } elseif (isset($req->sigiState->UserModule)) {
+                    $uniqueId = $req->sigiState->MobileUserPage->uniqueId;
+                } elseif (isset($req->sigiState->UserModule, $req->sigiState->UserPage)) {
                     $userModule = $req->sigiState->UserModule;
+                    $uniqueId = $req->sigiState->UserPage->uniqueId;
                 }
 
                 if ($userModule) {
+                    $finalUniqueId = $uniqueId ?? $this->term; // Use the user-provided term as fallback
+                    $this->term = $finalUniqueId;
                     $this->state = $req->sigiState;
-                    $info->setDetail($userModule->users->{$this->term});
-                    $info->setStats($userModule->stats->{$this->term});    
+                    $info->setDetail($userModule->users->{$finalUniqueId});
+                    $info->setStats($userModule->stats->{$finalUniqueId});
                 }
 
             } elseif ($userModule === null && $req->hasRehidrate && isset($req->state->__DEFAULT_SCOPE__->{"webapp.user-detail"}->userInfo)) {
