@@ -46,43 +46,43 @@ class Sender {
      * @param string $endpoint
      * @param string $subdomain Subdomain to be used, may be m, t or www
      * @param array $query Custom query to be sent, later to me merged with some default values
-     * @param bool $send_tt_params Send or not x-tt-params header, some endpoints use it
      * @param ?SetCookie $ttwid Send or not ttwid cookie, only used for trending
-     * @param string $static_url URL to be used instead of $endpoint to bypass some captchas
      */
     public function sendApi(
         string $endpoint,
         string $subdomain = 'm',
         array $query = [],
-        bool $send_tt_params = false,
-        ?SetCookie $ttwid = null,
-        string $static_url = ''
+        ?SetCookie $ttwid = null
     ): Response {
         $client = $this->httpClient->getClient();
         $useragent = $this->httpClient->getUserAgent();
         $jar = $this->httpClient->getJar();
+        $msToken = '';
 
         // Use test subdomain if test endpoints are enabled
         if ($this->testEndpoints && $subdomain === 'm') {
             $subdomain = 't';
         }
 
+        // Get msToken used for signing
+        $msTokenCookie = $jar->getCookieByName("msToken");
+        if ($msTokenCookie !== null) {
+            $msToken = $msTokenCookie->getValue();
+        }
+
         $headers = [];
         $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint;
         $device_id = Algorithm::deviceId();
-
         $headers[] = "Path: $endpoint";
-        $url .= Request::buildQuery($query) . '&device_id=' . $device_id;
+        $url .= Request::buildQuery($query, $msToken) . '&device_id=' . $device_id;
         $headers = array_merge($headers, self::DEFAULT_API_HEADERS);
         // URL to send to signer
         $signer_res = $this->signer->run($url);
         if ($signer_res && $signer_res->status === 'ok') {
             $url = $signer_res->data->signed_url;
             $useragent = $signer_res->data->navigator->user_agent;
-            if ($send_tt_params) {
-                $headers[] = 'x-tt-params: ' . $signer_res->data->{'x-tt-params'};
-            }
             if ($ttwid !== null) {
+                // Add ttwid to ram-only CookieJar for request
                 $jar = new CookieJar(false, $jar->toArray());
                 $jar->setCookie($ttwid);
             }
@@ -94,7 +94,7 @@ class Sender {
         $httpRes = null;
 
         try {
-            $res = $client->get($static_url ? $static_url : $url, [
+            $res = $client->get($url, [
                 'jar' => $jar,
                 'headers' => [
                     $headers,

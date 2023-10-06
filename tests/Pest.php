@@ -1,6 +1,8 @@
 <?php
+const DEFAULT_SIGNER = "https://signtok.pabloferreiro.es";
+
 function initApi(): \TikScraper\Api {
-    $signer = isset($_ENV['API_SIGNER_URL']) ? $_ENV['API_SIGNER_URL'] : "http://localhost:8080/signature";
+    $signer = isset($_ENV['API_SIGNER_URL']) ? $_ENV['API_SIGNER_URL'] : DEFAULT_SIGNER;
     $api = new \TikScraper\Api([
         'signer' => [
             'method' => 'remote',

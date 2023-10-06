@@ -9,15 +9,18 @@ use TikScraper\Constants\Codes;
  * @param int $httpCode HTTP Code response
  * @param int $proxitokCode TikTok/ProxiTok's own error messages
  * @param string $proxitokMsg Detailed error message for $proxitokCode
+ * @param Response $response Original response for debugging purposes
  */
 class Meta {
     public bool $success = false;
     public int $httpCode = 503;
     public int $proxitokCode = -1;
     public string $proxitokMsg = '';
+    public Response $response;
     public object $og;
 
     function __construct(Response $res) {
+        $this->response = $res;
         $proxitokCode = -1;
         $proxitokMsg = '';
         if ($res->origRes !== null) {
@@ -43,7 +46,7 @@ class Meta {
                 if ($res->hasSigi) {
                     $this->og = new \stdClass;
                     $this->og->title = $res->sigiState->SEOState->metaParams->title;
-                    $this->og->description = $res->sigiState->SEOState->metaParams->description;    
+                    $this->og->description = $res->sigiState->SEOState->metaParams->description;
                 } elseif ($res->hasRehidrate) {
                     $shareRoot = null;
                     if (isset($res->state->__DEFAULT_SCOPE__->{"webapp.user-detail"})) {

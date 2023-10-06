@@ -23,6 +23,9 @@
             "homepage": "https://pabloferreiro.es"
         }
     ],
+    "scripts": {
+        "test": "pest"
+    },
     "require": {
         "php": ">=7.4|^8.0",
         "ext-curl": "*",

@@ -32,7 +32,7 @@ class Hashtag extends Base {
                 } elseif (isset($req->rehidrateState->__DEFAULT_SCOPE__->{"desktop.challengePage.challengeDetail"})) {
                     $challengePage = $req->rehidrateState->__DEFAULT_SCOPE__->{"desktop.challengePage.challengeDetail"};
                 }
-    
+
                 if ($challengePage) {
                     $this->state = $challengePage;
                     $response->setDetail($challengePage->challengeInfo->challenge);
@@ -52,9 +52,11 @@ class Hashtag extends Base {
                 $query = [
                     "count" => 30,
                     "challengeID" => $this->info->detail->id,
-                    "cursor" => $cursor
+                    "coverFormat" => 2,
+                    "cursor" => $cursor,
+                    "from_page" => "hashtag"
                 ];
-                $req = $this->sender->sendApi('/api/challenge/item_list', 'm', $query);
+                $req = $this->sender->sendApi('/api/challenge/item_list', 'www', $query);
                 $response = new Feed;
                 $response->fromReq($req, $cursor);
                 $this->feed = $response;

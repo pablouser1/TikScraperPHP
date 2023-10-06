@@ -23,8 +23,17 @@ class Stream {
     public function url(string $url) {
         $client = $this->httpClient->getClient();
 
-        $headers_to_send = [];
-
+        $headers_to_send = [
+            "Accept" => "video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5",
+            "Accept-Language" => "en-US",
+            "Referer" => "https://www.tiktok.com/",
+            "Origin" => "https://www.tiktok.com",
+            "DNT" => "1",
+            "Sec-Fetch-Dest" => "video",
+            "Sec-Fetch-Mode" => "cors",
+            "Sec-Fetch-Site" => "same-site",
+            "Accept-Encoding" => "identity"
+        ];
         if (isset($_SERVER['HTTP_RANGE'])) {
             $headers_to_send['Range'] = $_SERVER['HTTP_RANGE'];
             http_response_code(206);
@@ -44,9 +53,9 @@ class Stream {
                 },
                 "stream" => true
             ]);
-    
+
             $code = $res->getStatusCode();
-    
+
             foreach ($this->headers_to_forward as $key => $value) {
                 if ($value !== null) {
                     if (is_array($value)) {
@@ -58,11 +67,11 @@ class Stream {
                     }
                 }
             }
-    
+
             if ($code >= 400 && $code < 500) {
                 http_response_code($code);
             }
-    
+
             $body = $res->getBody();
             while (!$body->eof()) {
                 echo $body->read(self::BUFFER_SIZE);

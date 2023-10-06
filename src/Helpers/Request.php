@@ -7,8 +7,9 @@ class Request {
     /**
      * Builds query for TikTok Api
      */
-    static public function buildQuery(array $query = []): string {
+    static public function buildQuery(array $query = [], string $msToken = ''): string {
         $query_merged = array_merge($query, [
+            "WebIdLastTime" => time(),
             "aid" => 1988,
             "app_language" => 'en',
             "app_name" => "tiktok_web",
@@ -24,14 +25,16 @@ class Request {
             "history_len" => rand(1, 5),
             "is_fullscreen" => false,
             "is_page_visible" => true,
+            "language" => "en",
             "os" => "ios",
             "priority_region" => "",
             "referer" => '',
             "region" => "us",
             "screen_width" => 1920,
             "screen_height" => 1080,
-            "timezone_name" => "America/Chicago",
-            "webcast_language" => "en"
+            "tz_name" => "America/Chicago",
+            "webcast_language" => "en",
+            "msToken" => $msToken
         ]);
         return '?' . http_build_query($query_merged);
     }

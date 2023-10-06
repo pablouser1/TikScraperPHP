@@ -32,7 +32,7 @@ class Music extends Base {
                 } elseif (isset($req->rehidrateState->__DEFAULT_SCOPE__->{"desktop.musicPage.musicDetail"})) {
                     $musicModule = $req->rehidrateState->__DEFAULT_SCOPE__->{"desktop.musicPage.musicDetail"};
                 }
-    
+
                 if ($musicModule) {
                     $this->state = $musicModule;
                     $response->setDetail($musicModule->musicInfo->music);
@@ -56,7 +56,7 @@ class Music extends Base {
                     "shareUid" => "",
                     "count" => 30,
                 ];
-                $req = $this->sender->sendApi('/api/music/item_list', 'm', $query, true);
+                $req = $this->sender->sendApi('/api/music/item_list', 'www', $query);
                 $response = new Feed;
                 $response->fromReq($req, $cursor);
                 $this->feed = $response;

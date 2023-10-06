@@ -7,7 +7,7 @@ class Algorithm {
      * Generates random device ID
      */
     static public function deviceId(): string {
-        return strval(self::randomNumber(19));
+        return strval(self::randomNumber(9));
     }
 
     /**
@@ -18,7 +18,7 @@ class Algorithm {
         $prefix = base64_decode($c->v->a); // var prefix
 
         $expect = bin2hex(base64_decode($c->v->c)); // var expect
-        
+
         $i = 0;
         $result = '';
         while ($i < 1000000 && $result === '') {
@@ -41,7 +41,7 @@ class Algorithm {
 
                 array_push($res, implode($tmp));
             }
-            
+
             $hashFinal = implode($res);
 
             // Check if the challenge is completed

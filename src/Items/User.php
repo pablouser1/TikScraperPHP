@@ -60,14 +60,14 @@ class User extends Base {
 
             if (!$preloaded) {
                 $query = [
-                    "WebIdLastTime" => time(),
                     "count" => 30,
                     "coverFormat" => 2,
                     "cursor" => $cursor,
+                    "from_page" => "user",
                     "secUid" => $this->info->detail->secUid
                 ];
 
-                $req = $this->sender->sendApi('/api/post/item_list', 'm', $query, true, null, StaticUrls::USER_FEED);
+                $req = $this->sender->sendApi('/api/post/item_list', 'www', $query);
                 $response = new Feed;
                 $response->fromReq($req, $cursor);
                 $this->feed = $response;

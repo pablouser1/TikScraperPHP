@@ -11,8 +11,7 @@ use Facebook\WebDriver\WebDriverExpectedCondition;
 use SapiStudio\SeleniumStealth\SeleniumStealth;
 
 class BrowserSigner implements SignerInterface {
-    const DEFAULT_URL = 'https://tiktok.com/@tiktok';
-    const PASSWORD = 'webapp1.0+202106';
+    const DEFAULT_URL = 'https://www.tiktok.com/@tiktok';
     private string $url = '';
     private bool $closeWhenDone = true;
     private RemoteWebDriver $driver;
@@ -27,22 +26,17 @@ class BrowserSigner implements SignerInterface {
         if ($this->closeWhenDone) $this->driver->quit();
     }
 
-    public function run(string $unsigned_url): ?object {
-        $signature = $this->driver->executeScript('return window.byted_acrawler.sign(arguments[0])', [
-            ['url' => $unsigned_url]
-        ]);
+    public function run(string $unsigned_url): object {
+        $params_str = parse_url($unsigned_url, PHP_URL_QUERY);
+        $bogus = $this->driver->executeScript('return window.byted_acrawler.frontierSign(arguments[0])', [$params_str]);
 
-        $signed_url = $unsigned_url . '&_signature=' . $signature;
-        # Get params of url as string
-        $params_str = parse_url($signed_url, PHP_URL_QUERY);
-        $xttparams = $this->__xttparams($params_str);
+        $signed_url = $unsigned_url . '&X-Bogus=' . $bogus["X-Bogus"];
 
         return (object) [
             'status' => 'ok',
             'data' => (object) [
-                'signature' => $signature,
+                'X-Bogus' => $bogus,
                 'signed_url' => $signed_url,
-                'x-tt-params' => $xttparams,
                 'navigator' => $this->__navigator()
             ]
         ];
@@ -77,10 +71,6 @@ class BrowserSigner implements SignerInterface {
             // Go to page
             $this->driver->get(self::DEFAULT_URL);
             $this->driver->wait()->until(WebDriverExpectedCondition::presenceOfElementLocated(WebDriverBy::id('app')));
-
-            // Load scripts
-            $signature = file_get_contents(__DIR__ . '/../../js/signature.js');
-            $this->driver->executeScript($signature);
         }
     }
 
@@ -97,9 +87,5 @@ class BrowserSigner implements SignerInterface {
         EOD;
         $info = $this->driver->executeScript($script);
         return (object) $info;
-    }
-
-    private function __xttparams(string $params): string {
-        return openssl_encrypt($params, 'aes-128-cbc', self::PASSWORD, 0, self::PASSWORD);
     }
 }

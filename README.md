@@ -50,7 +50,6 @@ TikScrapperPHP supports caching requests, to use it you need to implement [Cache
 ## TODO
 * Search
 * Comments
-* X-Bogus support for ChromeDriver
 
 ## Credits
 * @Sharqo78: Working TikTok downloader without watermark
