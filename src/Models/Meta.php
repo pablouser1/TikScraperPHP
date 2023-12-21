@@ -12,6 +12,15 @@ use TikScraper\Constants\Codes;
  * @param Response $response Original response for debugging purposes
  */
 class Meta {
+    // These keys in the rehidrateState payload potentially contain the metadata
+    // we require. They are checked in the order in which they are defined in
+    // this array.
+    private array $rehidrateKeys = [
+        'webapp.video-detail',
+        'webapp.user-detail',
+        'webapp.music-detail',
+    ];
+
     public bool $success = false;
     public int $httpCode = 503;
     public int $proxitokCode = -1;
@@ -49,11 +58,14 @@ class Meta {
                     $this->og->description = $res->sigiState->SEOState->metaParams->description;
                 } elseif ($res->hasRehidrate) {
                     $shareRoot = null;
-                    if (isset($res->state->__DEFAULT_SCOPE__->{"webapp.user-detail"})) {
-                        $shareRoot = $res->rehidrateState->__DEFAULT_SCOPE__->{"webapp.user-detail"};
-                    } elseif (isset($res->state->__DEFAULT_SCOPE__->{"webapp.music-detail"})) {
-                        $shareRoot = $res->rehidrateState->__DEFAULT_SCOPE__->{"webapp.music-detail"};
+
+                    foreach ($this->rehidrateKeys as &$key) {
+                        if (isset($res->rehidrateState->__DEFAULT_SCOPE__->{$key})) {
+                            $shareRoot = $res->rehidrateState->__DEFAULT_SCOPE__->{$key};
+                            break;
+                        }
                     }
+                    unset($key);
 
                     if ($shareRoot) {
                         $this->og = new \stdClass;

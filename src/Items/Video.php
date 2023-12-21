@@ -8,6 +8,15 @@ use TikScraper\Models\Info;
 use TikScraper\Sender;
 
 class Video extends Base {
+    // These keys in the rehidrateState payload potentially contain the video
+    // information we require. They are checked in the order in which they are
+    // defined in this array.
+    private array $rehidrateKeys = [
+        'webapp.video-detail',
+        'webapp.user-detail',
+        'webapp.music-detail',
+    ];
+
     private ?object $item = null;
 
     function __construct(string $term, Sender $sender, Cache $cache) {
@@ -55,6 +64,23 @@ class Video extends Base {
                         $response->setDetail($user);
                         // $response->setStats... is not used, for some reason $userModule->stats is empty (at least for now)
                     }
+                }
+            } elseif ($req->hasRehidrate) {
+                $root = null;
+
+                foreach ($this->rehidrateKeys as &$key) {
+                    if (isset($req->rehidrateState->__DEFAULT_SCOPE__->{$key})) {
+                        $root = $req->rehidrateState->__DEFAULT_SCOPE__->{$key};
+                        break;
+                    }
+                }
+                unset($key);
+
+                if ($root) {
+                    $this->state = $req->rehidrateState;
+                    $this->item = $root->itemInfo->itemStruct;
+                    $response->setDetail($this->item->author);
+                    $response->setStats($this->item->stats);
                 }
             }
         }
