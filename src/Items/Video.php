@@ -56,6 +56,12 @@ class Video extends Base {
                         // $response->setStats... is not used, for some reason $userModule->stats is empty (at least for now)
                     }
                 }
+            } elseif ($req->hasRehidrate && isset($req->rehidrateState->__DEFAULT_SCOPE__->{'webapp.video-detail'})) {
+                $root = $req->rehidrateState->__DEFAULT_SCOPE__->{'webapp.video-detail'};
+                $this->state = $req->rehidrateState;
+                $this->item = $root->itemInfo->itemStruct;
+                $response->setDetail($this->item->author);
+                $response->setStats($this->item->stats);
             }
         }
         $this->info = $response;
