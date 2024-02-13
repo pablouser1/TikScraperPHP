@@ -41,6 +41,10 @@ class Meta {
             } elseif ($res->isJson) {
                 // JSON Data
                 if ($res->jsonBody !== null) {
+                    if (isset($res->jsonBody->shareMeta)) {
+                        $this->setOgIfExists($res->jsonBody);
+                    }
+
                     $proxitokCode = $this->getCode($res->jsonBody);
                     $proxitokMsg = $this->getMsg($res->jsonBody);
                 } else {
@@ -65,11 +69,7 @@ class Meta {
                     }
                     unset($key);
 
-                    if (isset($root->shareMeta)) {
-                        $this->og = new \stdClass;
-                        $this->og->title = $root->shareMeta->title;
-                        $this->og->description = $root->shareMeta->desc;
-                    }
+                    $this->setOgIfExists($root);
 
                     $proxitokCode = $root->statusCode;
                     $proxitokMsg = $root->statusMsg;
@@ -111,5 +111,13 @@ class Meta {
             $msg = $data->status_msg;
         }
         return $msg;
+    }
+
+    private function setOgIfExists(object $root) {
+        if (isset($root->shareMeta)) {
+            $this->og = new \stdClass;
+            $this->og->title = $root->shareMeta->title;
+            $this->og->description = $root->shareMeta->desc;
+        }
     }
 }
