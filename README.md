@@ -5,8 +5,9 @@ A Wrapper for the TikTok API made with PHP
 ```php
 $api = new \TikScraper\Api([
     'user_agent' => 'YOUR_CUSTOM_USER_AGENT_HERE',
-    'cookie_path' => 'PATH_HERE', // Path to store TikTok's cookies, defaults to /tmp/tiktok.json
+    'cookie_path' => '/your/custom/path/here/tiktok.json', // Path to store TikTok's cookies, defaults to /tmp/tiktok.json
     'proxy' => 'http://user:password@hostname:port',
+    'ms_token' => 'YOUR_CUSTOM_MS_TOKEN_HERE', // Custom msToken, sometimes useful when having issues getting data from TikTok
     // More info about signing below
     'signer' => [
         'method' => 'remote',
