@@ -15,10 +15,7 @@ class Response {
 
     // -- HTML ONLY -- //
     public bool $isChallenge = false;
-    public ?object $sigiState = null;
     public ?object $rehidrateState = null;
-    public bool $hasSigi = false;
-    public bool $hasRehidrate = false;
 
     function __construct(?ResponseInterface $origRes) {
         $code = $origRes === null ? 503 : $origRes->getStatusCode();
@@ -29,33 +26,24 @@ class Response {
             $hasContentType = $this->origRes->hasHeader("Content-Type");
             $this->isJson = $hasContentType && strpos($this->origRes->getHeaderLine("Content-Type"), "application/json") !== false;
             $this->isHtml = $hasContentType && strpos($this->origRes->getHeaderLine("Content-Type"), "text/html") !== false;
-            
-            $this->jsonBody = $this->isJson ? json_decode($this->origRes->getBody()) : null;
-            
-            if ($this->isHtml) {
+
+            if ($this->isJson) {
+                $this->jsonBody = json_decode($this->origRes->getBody());
+            } else if ($this->isHtml) {
                 $dom = Misc::getDoc($this->origRes->getBody());
 
                 // We make sure is not a challenge
                 if ($dom->getElementById("wci") !== null && $dom->getElementById("cs") !== null) {
                     $this->isChallenge = true;
-                } else {
-                    // Try to get SIGI State
-                    if ($dom->getElementById("SIGI_STATE") !== null) {
-                        $this->sigiState = Misc::extractSigi($this->origRes->getBody(), $dom);
-                        if ($this->sigiState !== null) {
-                            $this->hasSigi = true;
-                        }
-                    }
-
-                    // Try to get Rehydration
-                    if ($dom->getElementById("__UNIVERSAL_DATA_FOR_REHYDRATION__") !== null) {
-                        $this->rehidrateState = Misc::extractHydra($this->origRes->getBody(), $dom);
-                        if ($this->rehidrateState !== null) {
-                            $this->hasRehidrate = true;
-                        }
-                    }
-                } 
+                // Try to get Rehydration
+                } else if ($dom->getElementById("__UNIVERSAL_DATA_FOR_REHYDRATION__") !== null) {
+                    $this->rehidrateState = Misc::extractHydra($this->origRes->getBody(), $dom);
+                }
             }
         }
+    }
+
+    public function hasRehidrate(): bool {
+        return $this->rehidrateState !== null;
     }
 }

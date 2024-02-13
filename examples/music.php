@@ -9,7 +9,7 @@ $api = new \TikScraper\Api([
         'url' => 'http://localhost:8080/signature'
     ]
 ]);
-$item = $api->music('Epic-Music-863502-6873501791145691137');
+$item = $api->music('6715002916702259202');
 $item->feed();
 
 if ($item->ok()) {

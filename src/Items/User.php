@@ -2,7 +2,6 @@
 namespace TikScraper\Items;
 
 use TikScraper\Cache;
-use TikScraper\Constants\StaticUrls;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
 use TikScraper\Sender;
@@ -16,34 +15,11 @@ class User extends Base {
     }
 
     public function info() {
-        $req = $this->sender->sendHTML("/@{$this->term}", 'www', [
-            'lang' => 'en'
-        ]);
+        $req = $this->sender->sendHTML("/@{$this->term}", 'www');
         $info = new Info;
         $info->setMeta($req);
         if ($info->meta->success) {
-            $userModule = null;
-            $uniqueId = null;
-
-            if ($req->hasSigi) {
-                // Get user data from SIGI JSON, support both mobile and desktop User-Agents
-                if (isset($req->sigiState->MobileUserModule, $req->sigiState->MobileUserPage)) {
-                    $userModule = $req->sigiState->MobileUserModule;
-                    $uniqueId = $req->sigiState->MobileUserPage->uniqueId;
-                } elseif (isset($req->sigiState->UserModule, $req->sigiState->UserPage)) {
-                    $userModule = $req->sigiState->UserModule;
-                    $uniqueId = $req->sigiState->UserPage->uniqueId;
-                }
-
-                if ($userModule) {
-                    $finalUniqueId = $uniqueId ?? $this->term; // Use the user-provided term as fallback
-                    $this->term = $finalUniqueId;
-                    $this->state = $req->sigiState;
-                    $info->setDetail($userModule->users->{$finalUniqueId});
-                    $info->setStats($userModule->stats->{$finalUniqueId});
-                }
-
-            } elseif ($userModule === null && $req->hasRehidrate && isset($req->state->__DEFAULT_SCOPE__->{"webapp.user-detail"}->userInfo)) {
+            if ($req->hasRehidrate() && isset($req->rehidrateState->__DEFAULT_SCOPE__->{"webapp.user-detail"}->userInfo)) {
                 $userModule = $req->rehidrateState->__DEFAULT_SCOPE__->{"webapp.user-detail"}->userInfo;
                 $info->setDetail($userModule->user);
                 $info->setStats($userModule->stats);
@@ -56,18 +32,19 @@ class User extends Base {
         $this->cursor = $cursor;
 
         if ($this->infoOk()) {
-            $preloaded = $this->handleFeedPreload('user-post');
+            $preloaded = $this->handleFeedCache();
 
             if (!$preloaded) {
                 $query = [
-                    "count" => 30,
+                    "count" => 35,
                     "coverFormat" => 2,
                     "cursor" => $cursor,
                     "from_page" => "user",
+                    "history_len" => 5,
                     "secUid" => $this->info->detail->secUid
                 ];
 
-                $req = $this->sender->sendApi('/api/post/item_list', 'www', $query);
+                $req = $this->sender->sendApi('/api/post/item_list/', 'www', $query);
                 $response = new Feed;
                 $response->fromReq($req, $cursor);
                 $this->feed = $response;

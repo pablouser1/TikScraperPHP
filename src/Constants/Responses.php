@@ -16,6 +16,10 @@ final class Responses {
     }
 
     private static function __buildResponse(int $code, int $statusCode, string $contentType = 'application/json'): Response {
-        return new Response(new \GuzzleHttp\Psr7\Response($code, ['Content-Type' => $contentType], '{"statusCode": ' . $statusCode . '}'));
+        return new Response(new \GuzzleHttp\Psr7\Response(
+            $code,
+            ['Content-Type' => $contentType],
+            '{"statusCode": ' . $statusCode . '}'
+        ));
     }
 }

@@ -49,29 +49,30 @@ class Meta {
                 }
             } elseif ($res->isHtml) {
                 // HTML Data
-                $proxitokCode = 0;
+                $scope = $res->rehidrateState->__DEFAULT_SCOPE__;
 
-                // Setting og
-                if ($res->hasSigi) {
-                    $this->og = new \stdClass;
-                    $this->og->title = $res->sigiState->SEOState->metaParams->title;
-                    $this->og->description = $res->sigiState->SEOState->metaParams->description;
-                } elseif ($res->hasRehidrate) {
-                    $shareRoot = null;
+                // Setting code and OG from rehidrate
+                if ($res->hasRehidrate()) {
+                    $scope = $res->rehidrateState->__DEFAULT_SCOPE__;
+                    $root = null;
 
+                    // Search for valid root
                     foreach ($this->rehidrateKeys as &$key) {
                         if (isset($res->rehidrateState->__DEFAULT_SCOPE__->{$key})) {
-                            $shareRoot = $res->rehidrateState->__DEFAULT_SCOPE__->{$key};
+                            $root = $res->rehidrateState->__DEFAULT_SCOPE__->{$key};
                             break;
                         }
                     }
                     unset($key);
 
-                    if ($shareRoot) {
+                    if (isset($root->shareMeta)) {
                         $this->og = new \stdClass;
-                        $this->og->title = $shareRoot->shareMeta->title;
-                        $this->og->description = $shareRoot->shareMeta->desc;
+                        $this->og->title = $root->shareMeta->title;
+                        $this->og->description = $root->shareMeta->desc;
                     }
+
+                    $proxitokCode = $root->statusCode;
+                    $proxitokMsg = $root->statusMsg;
                 } else {
                     // Request doesn't have state data
                     $proxitokCode = 12;

@@ -13,5 +13,5 @@ test('Invalid video', function () use ($api) {
     $vid = $api->video(VIDEO_INVALID)->feed();
     expect($vid->ok())->toBeFalse();
     $meta = $vid->error();
-    expect($meta->httpCode)->toBe(404);
+    expect($meta->proxitokCode)->not()->toBe(0);
 });

@@ -1,8 +1,6 @@
 <?php
 namespace TikScraper\Helpers;
 
-use TikScraper\Constants\UserAgents;
-
 class Request {
     /**
      * Builds query for TikTok Api
@@ -11,31 +9,38 @@ class Request {
         $query_merged = array_merge($query, [
             "WebIdLastTime" => time(),
             "aid" => 1988,
-            "app_language" => 'en',
+            "app_language" => 'en-US',
             "app_name" => "tiktok_web",
-            "browser_language" => "en-us",
+            "browser_language" => "en-US",
             "browser_name" => "Mozilla",
             "browser_online" => true,
-            "browser_platform" => "iPhone",
-            "browser_version" => urlencode(UserAgents::DEFAULT),
+            "browser_platform" => "Win32",
+            "browser_version" => "5.0 (Windows)",
             "channel" => "tiktok_web",
             "cookie_enabled" => true,
-            "device_platform" => "web_mobile",
+            "current_region" => "US",
+            "device_platform" => "web_pc",
+            "enter_from" => "tiktok_web",
             "focus_state" => true,
-            "history_len" => rand(1, 5),
+            "history_len" => rand(1, 10),
             "is_fullscreen" => false,
+            "is_non_personalized" => true,
             "is_page_visible" => true,
             "language" => "en",
-            "os" => "ios",
+            "os" => "windows",
             "priority_region" => "",
-            "referer" => '',
-            "region" => "us",
+            "referer" => "",
+            "region" => "US",
             "screen_width" => 1920,
             "screen_height" => 1080,
             "tz_name" => "America/Chicago",
-            "webcast_language" => "en",
-            "msToken" => $msToken
+            "webcast_language" => "en"
         ]);
+
+        if ($msToken !== '') {
+            $query_merged['msToken'] = $msToken;
+        }
+
         return '?' . http_build_query($query_merged);
     }
 }

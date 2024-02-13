@@ -20,13 +20,9 @@ class Misc {
         return self::__extractByTagName("__UNIVERSAL_DATA_FOR_REHYDRATION__", $body, $dom);
     }
 
-    public static function extractSigi(StreamInterface $body, ?\DOMDocument $dom = null): ?object {
-        return self::__extractByTagName("SIGI_STATE", $body, $dom);
-    }
-
     private static function __extractByTagName(string $tagName, StreamInterface $body, ?\DOMDocument $dom = null): ?object {
         // Disallow empty strings
-        $dom = $dom !== null ? $dom : self::getDoc($body);
+        $dom = $dom ?? self::getDoc($body);
         if ($dom !== null) {
             $script = $dom->getElementById($tagName);
             if ($script !== null) {

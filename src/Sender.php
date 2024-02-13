@@ -17,19 +17,6 @@ class Sender {
     private bool $testEndpoints = false;
     private string $userAgent;
 
-    private const DEFAULT_API_HEADERS = [
-        "authority" => "m.tiktok.com",
-        "method" => "GET",
-        "scheme" => "https",
-        "accept" => "application/json, text/plain, */*",
-        "accept-encoding" => "gzip, deflate, br",
-        "accept-language" => "en-US,en;q=0.9",
-        "sec-fetch-dest" => "empty",
-        "sec-fetch-mode" => "cors",
-        "sec-fetch-site" => "same-site",
-        "sec-gpc" => "1"
-    ];
-
     function __construct(array $config) {
         // Signing
         if (!isset($config['signer'])) {
@@ -39,20 +26,30 @@ class Sender {
 
         $this->httpClient = new HTTPClient($config);
         $this->signer = new Signer($config['signer']);
+
+        // Do GET to tiktok if first run
+        if ($this->httpClient->getJar()->count() === 0) {
+            $this->sendHTML("/explore");
+            $this->sendApi("/api/explore/item_list/", 'www', [
+                "categoryType" => 119,
+                "count" => 16
+            ], null, false);
+        }
     }
 
     /**
      * Send request to TikTok's internal API
-     * @param string $endpoint
-     * @param string $subdomain Subdomain to be used, may be m, t or www
+     * @param string $endpoint Api endpoint
+     * @param string $subdomain Subdomain to be used, may be m or www, defaults to www
      * @param array $query Custom query to be sent, later to me merged with some default values
      * @param ?SetCookie $ttwid Send or not ttwid cookie, only used for trending
      */
     public function sendApi(
         string $endpoint,
-        string $subdomain = 'm',
+        string $subdomain = 'www',
         array $query = [],
-        ?SetCookie $ttwid = null
+        ?SetCookie $ttwid = null,
+        bool $sign = true
     ): Response {
         $client = $this->httpClient->getClient();
         $useragent = $this->httpClient->getUserAgent();
@@ -60,7 +57,7 @@ class Sender {
         $msToken = '';
 
         // Use test subdomain if test endpoints are enabled
-        if ($this->testEndpoints && $subdomain === 'm') {
+        if ($this->testEndpoints) {
             $subdomain = 't';
         }
 
@@ -70,25 +67,25 @@ class Sender {
             $msToken = $msTokenCookie->getValue();
         }
 
-        $headers = [];
         $url = 'https://' . $subdomain . '.tiktok.com' . $endpoint;
         $device_id = Algorithm::deviceId();
-        $headers[] = "Path: $endpoint";
         $url .= Request::buildQuery($query, $msToken) . '&device_id=' . $device_id;
-        $headers = array_merge($headers, self::DEFAULT_API_HEADERS);
-        // URL to send to signer
-        $signer_res = $this->signer->run($url);
-        if ($signer_res && $signer_res->status === 'ok') {
-            $url = $signer_res->data->signed_url;
-            $useragent = $signer_res->data->navigator->user_agent;
-            if ($ttwid !== null) {
-                // Add ttwid to ram-only CookieJar for request
-                $jar = new CookieJar(false, $jar->toArray());
-                $jar->setCookie($ttwid);
+
+        if ($sign) {
+            // URL to send to signer
+            $signer_res = $this->signer->run($url);
+            if ($signer_res && $signer_res->status === 'ok') {
+                $url = $signer_res->data->signed_url;
+                $useragent = $signer_res->data->navigator->user_agent;
+                if ($ttwid !== null) {
+                    // Add ttwid to ram-only CookieJar for request
+                    $jar = new CookieJar(false, $jar->toArray());
+                    $jar->setCookie($ttwid);
+                }
+            } else {
+                // Signing error
+                return Responses::badSign();
             }
-        } else {
-            // Signing error
-            return Responses::badSign();
         }
 
         $httpRes = null;
@@ -97,8 +94,7 @@ class Sender {
             $res = $client->get($url, [
                 'jar' => $jar,
                 'headers' => [
-                    $headers,
-                    ...['User-Agent' => $useragent]
+                    'User-Agent' => $useragent
                 ]
             ]);
             $httpRes = $res;
@@ -117,7 +113,7 @@ class Sender {
      * Send request to TikTok website
      * @param string $endpoint
      * @param string $subdomain Subdomain to be used, may be m or www
-     * @param string $query Query to append to URL
+     * @param array $query Query to append to URL
      */
     public function sendHTML(
         string $endpoint,

@@ -12,6 +12,11 @@ class Trending extends Base {
         parent::__construct('', 'trending', $sender, $cache);
     }
 
+    public function info(): self {
+        // Stub, info is not needed for trending
+        return $this;
+    }
+
     public function feed($cursor = ""): self {
         $this->cursor = $cursor;
         $cookie = null;

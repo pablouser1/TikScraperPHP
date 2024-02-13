@@ -1,13 +1,15 @@
 <?php
 namespace TikScraper\Helpers;
 
+/**
+ * TikTok-focused algorithms
+ */
 class Algorithm {
-    // -- TikTok-focused -- //
     /**
      * Generates random device ID
      */
     static public function deviceId(): string {
-        return strval(self::randomNumber(9));
+        return strval(self::randomNumber(19));
     }
 
     /**
@@ -47,7 +49,7 @@ class Algorithm {
             // Check if the challenge is completed
             if ($expect === $hashFinal) {
                 $c->d = base64_encode(strval($i));
-                // We use unescaped slashes to get the samme result as the original JS version
+                // We use unescaped slashes to get the same result as the original JS version
                 $result = base64_encode(json_encode($c, JSON_UNESCAPED_SLASHES));
             }
             $i++;

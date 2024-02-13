@@ -21,7 +21,7 @@ abstract class Base {
     protected Info $info;
     protected Feed $feed;
 
-    /** Sigi State used for getting item list from HTML */
+    /** State used for getting item list from HTML */
     protected object $state;
 
     function __construct(string $term, string $type, Sender $sender, Cache $cache) {
@@ -108,13 +108,6 @@ abstract class Base {
         return $key;
     }
 
-    /**
-     * Try to fetch feed from Cache or from Sigi State
-     */
-    protected function handleFeedPreload(string $key): bool {
-        return $this->handleFeedCache() || $this->handleFeedZero($key);
-    }
-
     protected function handleFeedCache(): bool {
         $key = $this->getCacheKey(true);
         $exists = $this->cache->exists($key);
@@ -122,46 +115,5 @@ abstract class Base {
             $this->feed = $this->cache->handleFeed($key);
         }
         return $exists;
-    }
-
-    private function handleFeedZero(string $key): bool {
-        // We must be on cursor 0 and have hydra properly set
-        if ($this->cursor === 0 && isset($this->state)) {
-            $stateItems = null;
-            $stateUsers = null;
-            $nav = null;
-
-            // Sigi mobile
-            if (isset($this->state->MobileItemModule, $this->state->MobileUserModule)) {
-                $stateItems = $this->state->MobileItemModule;
-                $stateUsers = $this->state->MobileUserModule->users;
-                $nav = $this->state->MobileItemList->{$key};
-            // Sigi Desktop
-            } elseif (isset($this->state->ItemModule, $this->state->UserModule)) {
-                $stateItems = $this->state->ItemModule;
-                $stateUsers = $this->state->UserModule->users;
-                $nav = $this->state->ItemList->{$key};
-            }
-
-            if ($stateItems !== null && $stateUsers !== null && $nav !== null) {
-                $items = [];
-                foreach ($stateItems as $item) {
-                    $uniqueId = $item->author;
-                    $item->author = $stateUsers->{$uniqueId};
-                    $items[] = $item;
-                }
-        
-                // Building Feed
-                $realCursor = $nav->cursor === 0 ? count($items) : $nav->cursor; // Fixes bug that sets cursor to 0 even then there are multiple posts already
-                $feed = new Feed;
-                $feed->setMeta(Responses::ok());
-                $feed->setItems($items);
-                $feed->setNav($nav->hasMore, 0, $realCursor);
-    
-                $this->feed = $feed;
-                return true;
-            }
-        }
-        return false;
     }
 }

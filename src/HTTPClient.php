@@ -8,7 +8,10 @@ class HTTPClient {
     private string $userAgent;
 
     const DEFAULT_HEADERS = [
-        "referer" => "https://www.tiktok.com/"
+        "Accept" => "*/*",
+        "Accept-Language" => "en-US,en;q=0.5",
+        "Accept-Encoding" => "gzip, deflate, br",
+        "Referer" => "https://www.tiktok.com/explore"
     ];
 
     private Client $client;
@@ -17,6 +20,7 @@ class HTTPClient {
     function __construct(array $config = []) {
         // Base config
         $cookieFile = $config['cookie_path'] ?? sys_get_temp_dir() . '/tiktok.json';
+
         $this->jar = new FileCookieJar($cookieFile, true);
         $this->userAgent = $config['user_agent'] ?? UserAgents::DEFAULT;
         $httpConfig = [

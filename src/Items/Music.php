@@ -14,40 +14,30 @@ class Music extends Base {
         }
     }
 
-    public function info() {
-        $req = $this->sender->sendHTML('/music/' . $this->term, 'www', [
-            'lang' => 'en'
+    public function info(): self {
+        $req = $this->sender->sendApi("/api/music/detail/", 'www', [
+            'from_page' => 'music',
+            'musicId' => $this->term
         ]);
-        $response = new Info;
-        $response->setMeta($req);
-        if ($response->meta->success) {
-            $musicModule = null;
 
-            // Get hashtag data from both SIGI and new Rehidrate
-            if ($req->hasSigi || $req->hasRehidrate) {
-                if (isset($req->sigiState->MobileMusicModule)) {
-                    $musicModule = $req->sigiState->MobileMusicModule;
-                } elseif (isset($req->sigiState->MusicModule)) {
-                    $musicModule = $req->sigiState->MusicModule;
-                } elseif (isset($req->rehidrateState->__DEFAULT_SCOPE__->{"desktop.musicPage.musicDetail"})) {
-                    $musicModule = $req->rehidrateState->__DEFAULT_SCOPE__->{"desktop.musicPage.musicDetail"};
-                }
+        $res = new Info;
+        $res->setMeta($req);
 
-                if ($musicModule) {
-                    $this->state = $musicModule;
-                    $response->setDetail($musicModule->musicInfo->music);
-                    $response->setStats($musicModule->musicInfo->stats);
-                }
-            }
+        if ($res->meta->success && isset($req->jsonBody->musicInfo)) {
+            $res->setDetail($req->jsonBody->musicInfo->music);
+            $res->setStats($req->jsonBody->musicInfo->stats);
         }
-        $this->info = $response;
+
+        $this->info = $res;
+
+        return $this;
     }
 
     public function feed(int $cursor = 0): self {
         $this->cursor = $cursor;
 
         if ($this->infoOk()) {
-            $preloaded = $this->handleFeedPreload('music');
+            $preloaded = $this->handleFeedCache();
             if (!$preloaded) {
                 $query = [
                     "secUid" => "",
@@ -56,12 +46,13 @@ class Music extends Base {
                     "shareUid" => "",
                     "count" => 30,
                 ];
-                $req = $this->sender->sendApi('/api/music/item_list', 'www', $query);
+                $req = $this->sender->sendApi('/api/music/item_list/', 'www', $query);
                 $response = new Feed;
                 $response->fromReq($req, $cursor);
                 $this->feed = $response;
             }
         }
+
         return $this;
     }
 }

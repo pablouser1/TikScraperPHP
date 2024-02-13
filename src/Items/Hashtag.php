@@ -14,40 +14,29 @@ class Hashtag extends Base {
         }
     }
 
-    public function info() {
-        $req = $this->sender->sendHTML('/tag/' . $this->term, 'www', [
-            'lang' => 'en'
+    public function info(): self {
+        $req = $this->sender->sendApi("/api/challenge/detail/", "www", [
+            "challengeName" => $this->term
         ]);
-        $response = new Info;
-        $response->setMeta($req);
-        if ($response->meta->success) {
-            $challengePage = null;
 
-            // Get hashtag data from both SIGI and new Rehidrate
-            if ($req->hasSigi || $req->hasRehidrate) {
-                if (isset($req->sigiState->MobileChallengePage)) {
-                    $challengePage = $req->sigiState->MobileChallengePage;
-                } elseif (isset($req->sigiState->ChallengePage)) {
-                    $challengePage = $req->sigiState->ChallengePage;
-                } elseif (isset($req->rehidrateState->__DEFAULT_SCOPE__->{"desktop.challengePage.challengeDetail"})) {
-                    $challengePage = $req->rehidrateState->__DEFAULT_SCOPE__->{"desktop.challengePage.challengeDetail"};
-                }
+        $res = new Info;
+        $res->setMeta($req);
 
-                if ($challengePage) {
-                    $this->state = $challengePage;
-                    $response->setDetail($challengePage->challengeInfo->challenge);
-                    $response->setStats($challengePage->challengeInfo->stats);
-                }
-            }
+        if ($res->meta->success && isset($req->jsonBody->challengeInfo)) {
+            $res->setDetail($req->jsonBody->challengeInfo->challenge);
+            $res->setStats($req->jsonBody->challengeInfo->stats);
         }
-        $this->info = $response;
+
+        $this->info = $res;
+
+        return $this;
     }
 
     public function feed(int $cursor = 0): self {
         $this->cursor = $cursor;
 
         if ($this->infoOk()) {
-            $preloaded = $this->handleFeedPreload('challenge');
+            $preloaded = $this->handleFeedCache();
             if (!$preloaded) {
                 $query = [
                     "count" => 30,
@@ -56,7 +45,7 @@ class Hashtag extends Base {
                     "cursor" => $cursor,
                     "from_page" => "hashtag"
                 ];
-                $req = $this->sender->sendApi('/api/challenge/item_list', 'www', $query);
+                $req = $this->sender->sendApi('/api/challenge/item_list/', 'www', $query);
                 $response = new Feed;
                 $response->fromReq($req, $cursor);
                 $this->feed = $response;

@@ -19,5 +19,5 @@ test('Invalid User', function () use ($api) {
     $user = $api->user(randStr());
     expect($user->infoOk())->toBeFalse();
     $meta = $user->error();
-    expect($meta->httpCode)->toBe(404);
+    expect($meta->proxitokCode)->not()->toBe(0);
 });
