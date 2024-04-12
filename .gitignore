@@ -2,3 +2,4 @@
 /vendor
 .phpdoc
 .phpunit.result.cache
+/docs

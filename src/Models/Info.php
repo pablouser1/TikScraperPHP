@@ -7,19 +7,19 @@ class Info extends Base {
     public object $detail;
     public object $stats;
 
-    public function setMeta(Response $req) {
+    public function setMeta(Response $req): void {
         $this->meta = new Meta($req);
     }
 
-    public function setDetail(object $detail) {
+    public function setDetail(object $detail): void {
         $this->detail = $detail;
     }
 
-    public function setStats(object $stats) {
+    public function setStats(object $stats): void {
         $this->stats = $stats;
     }
 
-    public function fromCache(object $cache) {
+    public function fromCache(object $cache): void {
         $this->meta = new Meta(Responses::ok());
         if (isset($cache->meta->og)) {
             $this->meta->og = $cache->meta->og;

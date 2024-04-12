@@ -42,7 +42,7 @@ class BrowserSigner implements SignerInterface {
         ];
     }
 
-    private function __setupSelenium(string $browser_url) {
+    private function __setupSelenium(string $browser_url): void {
         // Create session
         $chromeOptions = new ChromeOptions();
         $chromeOptions->addArguments([

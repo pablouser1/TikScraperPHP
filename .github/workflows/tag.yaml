@@ -22,4 +22,5 @@ jobs:
       with:
         tag: v${{steps.version.outputs.content}}
         token: ${{ secrets.GITHUB_TOKEN }}
-        allowUpdates: true
+        generateReleaseNotes: true
+        skipIfReleaseExists: true

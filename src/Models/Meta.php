@@ -113,7 +113,7 @@ class Meta {
         return $msg;
     }
 
-    private function setOgIfExists(object $root) {
+    private function setOgIfExists(object $root): void {
         if (isset($root->shareMeta)) {
             $this->og = new \stdClass;
             $this->og->title = $root->shareMeta->title;

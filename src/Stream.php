@@ -20,7 +20,7 @@ class Stream {
         $this->httpClient = new HTTPClient($config);
     }
 
-    public function url(string $url) {
+    public function url(string $url): void {
         $client = $this->httpClient->getClient();
 
         $headers_to_send = [

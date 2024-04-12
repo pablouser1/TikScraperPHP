@@ -29,7 +29,7 @@ class Algorithm {
             // Build sha256 with $prefix and current $i
             $hash = hash_init("sha256");
             hash_update($hash, $prefix);
-            hash_update($hash, $i);
+            hash_update($hash, strval($i));
             $hashResult = hash_final($hash, true);
             $strArr = str_split($hashResult);
 

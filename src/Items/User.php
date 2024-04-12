@@ -14,7 +14,7 @@ class User extends Base {
         }
     }
 
-    public function info() {
+    public function info(): self {
         $req = $this->sender->sendHTML("/@{$this->term}", 'www');
         $info = new Info;
         $info->setMeta($req);
@@ -26,6 +26,8 @@ class User extends Base {
             }
         }
         $this->info = $info;
+
+        return $this;
     }
 
     public function feed(int $cursor = 0): self {

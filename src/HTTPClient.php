@@ -65,7 +65,7 @@ class HTTPClient {
         return $this->userAgent;
     }
 
-    public function setUserAgent(string $useragent) {
+    public function setUserAgent(string $useragent): void {
         $this->userAgent = $useragent;
     }
 }
