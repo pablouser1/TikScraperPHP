@@ -15,7 +15,7 @@ use TikScraper\Models\Response;
 
 class Sender {
     private const WEB_URL = "https://www.tiktok.com";
-    private const API_URL = "https://www.tiktok.com/api";
+    private const API_URL = self::WEB_URL . "/api";
     const DEFAULT_HEADERS = [
         "Accept" => "*/*",
         "Accept-Language" => "en-US,en;q=0.5",

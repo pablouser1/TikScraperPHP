@@ -23,7 +23,7 @@ if ($hastag->ok()) {
 ```
 
 ## Caching
-TikScrapperPHP supports caching requests, to use it you need to implement [CacheInterface.php](https://github.com/pablouser1/TikScraperPHP/blob/master/src/Interfaces/CacheInterface.php)
+TikScrapperPHP supports caching requests, to use it you need to implement [ICache.php](https://github.com/pablouser1/TikScraperPHP/blob/master/src/Interfaces/ICache.php)
 
 ## Known issues
 * The project `sapistudio/seleniumstealth` has been abandoned for 3 years now, TikTok's anti-bot systems may still get triggered

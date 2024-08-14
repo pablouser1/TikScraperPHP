@@ -1,17 +1,17 @@
 <?php
 namespace TikScraper;
 
+use TikScraper\Interfaces\ICache;
 use TikScraper\Items\User;
 use TikScraper\Items\Hashtag;
 use TikScraper\Items\Music;
 use TikScraper\Items\Video;
-use TikScraper\Interfaces\CacheInterface;
 
 class Api {
     private Sender $sender;
     private Cache $cache;
 
-    function __construct(array $config = [], ?CacheInterface $cache_engine = null) {
+    function __construct(array $config = [], ?ICache $cache_engine = null) {
         $this->sender = new Sender($config);
         $this->cache = new Cache($cache_engine);
     }

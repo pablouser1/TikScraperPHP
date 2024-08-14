@@ -1,16 +1,16 @@
 <?php
 namespace TikScraper;
 
+use TikScraper\Interfaces\ICache;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
-use TikScraper\Interfaces\CacheInterface;
 
 class Cache {
     const TIMEOUT = 3600;
     private bool $enabled = false;
-    private CacheInterface $engine;
+    private ICache $engine;
 
-    function __construct(?CacheInterface $cache_engine = null) {
+    function __construct(?ICache $cache_engine = null) {
         if ($cache_engine) {
             $this->enabled = true;
             $this->engine = $cache_engine;
