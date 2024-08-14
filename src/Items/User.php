@@ -15,14 +15,19 @@ class User extends Base {
     }
 
     public function info(): self {
-        $req = $this->sender->sendHTML("/@{$this->term}", 'www');
+        $req = $this->sender->sendApi("/user/detail/", [
+            "abTestVersion" => "[object Object]",
+            "appType" => "m",
+            "secUid" => "",
+            "uniqueId" => $this->term
+        ], "/@" . $this->term);
+
         $info = new Info;
         $info->setMeta($req);
         if ($info->meta->success) {
-            if ($req->hasRehidrate() && isset($req->rehidrateState->__DEFAULT_SCOPE__->{"webapp.user-detail"}->userInfo)) {
-                $userModule = $req->rehidrateState->__DEFAULT_SCOPE__->{"webapp.user-detail"}->userInfo;
-                $info->setDetail($userModule->user);
-                $info->setStats($userModule->stats);
+            if (isset($req->jsonBody->userInfo)) {
+                $info->setDetail($req->jsonBody->userInfo->user);
+                $info->setStats($req->jsonBody->userInfo->stats);
             }
         }
         $this->info = $info;
@@ -42,11 +47,13 @@ class User extends Base {
                     "coverFormat" => 2,
                     "cursor" => $cursor,
                     "from_page" => "user",
-                    "history_len" => 5,
-                    "secUid" => $this->info->detail->secUid
+                    "needPinnedItemIds" => "true",
+                    "post_item_list_request_type" => 0,
+                    "secUid" => $this->info->detail->secUid,
+                    "userId" => $this->info->detail->id
                 ];
 
-                $req = $this->sender->sendApi('/api/post/item_list/', 'www', $query);
+                $req = $this->sender->sendApi('/post/item_list/', $query, "/@" . $this->term);
                 $response = new Feed;
                 $response->fromReq($req, $cursor);
                 $this->feed = $response;

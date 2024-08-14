@@ -15,9 +15,9 @@ class Hashtag extends Base {
     }
 
     public function info(): self {
-        $req = $this->sender->sendApi("/api/challenge/detail/", "www", [
+        $req = $this->sender->sendApi("/challenge/detail/", [
             "challengeName" => $this->term
-        ]);
+        ], "/tag/" . $this->term);
 
         $res = new Info;
         $res->setMeta($req);
@@ -45,7 +45,7 @@ class Hashtag extends Base {
                     "cursor" => $cursor,
                     "from_page" => "hashtag"
                 ];
-                $req = $this->sender->sendApi('/api/challenge/item_list/', 'www', $query);
+                $req = $this->sender->sendApi('/challenge/item_list/', $query, "/tag/" . $this->term);
                 $response = new Feed;
                 $response->fromReq($req, $cursor);
                 $this->feed = $response;

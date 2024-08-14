@@ -1,7 +1,7 @@
 <?php
 namespace TikScraper\Interfaces;
 
-interface DownloaderInterface {
+interface IDownloader {
     public function watermark(string $payload);
     public function noWatermark(string $payload);
 }

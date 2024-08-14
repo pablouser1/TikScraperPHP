@@ -63,7 +63,7 @@ abstract class Base {
      * Returns feed, returns null if $this->feed has not been called
      */
     public function getFeed(): ?Feed {
-        return isset($this->feed) ? $this->feed : null;
+        return $this->feed ?? null;
     }
 
     public function getFull(): Full {

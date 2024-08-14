@@ -2,7 +2,6 @@
 namespace TikScraper;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
-use GuzzleHttp\Cookie\SetCookie;
 use TikScraper\Constants\UserAgents;
 
 class HTTPClient {
@@ -18,21 +17,11 @@ class HTTPClient {
     private Client $client;
     private FileCookieJar $jar;
 
-    function __construct(array $config = []) {
+    function __construct(array $config) {
         // Base config
         $cookieFile = $config['cookie_path'] ?? sys_get_temp_dir() . '/tiktok.json';
 
         $this->jar = new FileCookieJar($cookieFile, true);
-
-        if (isset($config['ms_token'])) {
-            $cookie = new SetCookie;
-            $cookie->setName("msToken");
-            $cookie->setValue($config['ms_token']);
-            $cookie->setDomain("tiktok.com");
-            $cookie->setPath("/");
-            $cookie->setSecure(true);
-            $this->jar->setCookie($cookie);
-        }
 
         $this->userAgent = $config['user_agent'] ?? UserAgents::DEFAULT;
         $httpConfig = [

@@ -3,12 +3,12 @@ namespace TikScraper\Downloaders;
 
 use TikScraper\Helpers\Algorithm;
 use TikScraper\Helpers\Converter;
-use TikScraper\Interfaces\DownloaderInterface;
+use TikScraper\Interfaces\IDownloader;
 
 /**
  * Video downloader using TikTok's own mobile API
  */
-class DefaultDownloader extends BaseDownloader implements DownloaderInterface {
+class DefaultDownloader extends BaseDownloader implements IDownloader {
     public function __construct(array $config = []) {
         parent::__construct($config);
     }

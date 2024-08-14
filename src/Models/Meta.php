@@ -12,15 +12,6 @@ use TikScraper\Constants\Codes;
  * @param Response $response Original response for debugging purposes
  */
 class Meta {
-    // These keys in the rehidrateState payload potentially contain the metadata
-    // we require. They are checked in the order in which they are defined in
-    // this array.
-    private array $rehidrateKeys = [
-        'webapp.video-detail',
-        'webapp.user-detail',
-        'webapp.music-detail',
-    ];
-
     public bool $success = false;
     public int $httpCode = 503;
     public int $proxitokCode = -1;
@@ -29,63 +20,52 @@ class Meta {
     public object $og;
 
     function __construct(Response $res) {
-        $this->response = $res;
-        $proxitokCode = -1;
-        $proxitokMsg = '';
-        if ($res->origRes !== null) {
-            // Request was at least made by now
-            $body = $res->origRes->getBody();
-            if ($body->getSize() === 0) {
-                // Response is empty
-                $proxitokCode = 10;
-            } elseif ($res->isJson) {
-                // JSON Data
-                if ($res->jsonBody !== null) {
-                    if (isset($res->jsonBody->shareMeta)) {
-                        $this->setOgIfExists($res->jsonBody);
-                    }
-
-                    $proxitokCode = $this->getCode($res->jsonBody);
-                    $proxitokMsg = $this->getMsg($res->jsonBody);
-                } else {
-                    // Couldn't decode JSON
-                    $proxitokCode = 11;
-                }
-            } elseif ($res->isHtml) {
-                // HTML Data
-                $scope = $res->rehidrateState->__DEFAULT_SCOPE__;
-
-                // Setting code and OG from rehidrate
-                if ($res->hasRehidrate()) {
-                    $scope = $res->rehidrateState->__DEFAULT_SCOPE__;
-                    $root = null;
-
-                    // Search for valid root
-                    foreach ($this->rehidrateKeys as &$key) {
-                        if (isset($res->rehidrateState->__DEFAULT_SCOPE__->{$key})) {
-                            $root = $res->rehidrateState->__DEFAULT_SCOPE__->{$key};
-                            break;
-                        }
-                    }
-                    unset($key);
-
-                    $this->setOgIfExists($root);
-
-                    $proxitokCode = $root->statusCode;
-                    $proxitokMsg = $root->statusMsg;
-                } else {
-                    // Request doesn't have state data
-                    $proxitokCode = 12;
-                }
-            }
-        } else {
-            // Couldn't make the request
-            $proxitokCode = 21;
-        }
-
-        // Setting values
-        $this->success = $res->http_success && $proxitokCode === 0;
         $this->httpCode = $res->code;
+        $this->response = $res;
+
+        if (empty($res->origRes["data"])) {
+            // No data
+            $this->setState($res->http_success, 10, "");
+            return;
+        }
+        if ($res->isJson) {
+            if ($res->jsonBody === null) {
+                // Couldn't decode JSON
+                $this->setState($res->http_success, 11, "");
+                return;
+            }
+            // JSON Data
+            if (isset($res->jsonBody->shareMeta)) {
+                $this->setOgIfExists($res->jsonBody);
+            }
+
+            $this->setState($res->http_success, $this->getCode($res->jsonBody), $this->getMsg($res->jsonBody));
+        } elseif ($res->isHtml) {
+            if (!$res->hasRehidrate()) {
+                // Response doesn't have valid data
+                $this->setState($res->http_success, 12, "");
+                return;
+            }
+
+            $scope = $res->rehidrateState->__DEFAULT_SCOPE__;
+            $root = null;
+
+            if (!isset($res->rehidrateState->__DEFAULT_SCOPE__->{"webapp.video-detail"})) {
+                // Response doesn't have valid data
+                $this->setState($res->http_success, 12, "");
+                return;
+            }
+
+            $root = $res->rehidrateState->__DEFAULT_SCOPE__->{"webapp.video-detail"};
+            $this->setState($res->http_success, $root->statusCode, $root->statusMsg);
+
+            $this->setOgIfExists($root);
+
+        }
+    }
+
+    private function setState(bool $http_success, int $proxitokCode, string $proxitokMsg) {
+        $this->success = $http_success && $proxitokCode === 0;
         $this->proxitokCode = $proxitokCode;
         $this->proxitokMsg = $proxitokMsg === '' ? Codes::fromId($proxitokCode) : $proxitokMsg;
     }
@@ -113,7 +93,7 @@ class Meta {
         return $msg;
     }
 
-    private function setOgIfExists(object $root): void {
+    private function setOgIfExists(?object $root): void {
         if (isset($root->shareMeta)) {
             $this->og = new \stdClass;
             $this->og->title = $root->shareMeta->title;

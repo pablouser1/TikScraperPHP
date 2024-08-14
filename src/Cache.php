@@ -1,7 +1,6 @@
 <?php
 namespace TikScraper;
 
-use TikScraper\Models\Discover;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
 use TikScraper\Interfaces\CacheInterface;
@@ -40,11 +39,5 @@ class Cache {
         $info = new Info;
         $info->fromCache($this->get($key));
         return $info;
-    }
-
-    public function handleDiscover(string $key): Discover {
-        $discover = new Discover;
-        $discover->fromCache($this->get($key));
-        return $discover;
     }
 }

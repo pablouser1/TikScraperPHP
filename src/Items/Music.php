@@ -15,7 +15,7 @@ class Music extends Base {
     }
 
     public function info(): self {
-        $req = $this->sender->sendApi("/api/music/detail/", 'www', [
+        $req = $this->sender->sendApi("/music/detail/", [
             'from_page' => 'music',
             'musicId' => $this->term
         ]);
@@ -44,9 +44,9 @@ class Music extends Base {
                     "musicID" => $this->info->detail->id,
                     "cursor" => $cursor,
                     "shareUid" => "",
-                    "count" => 30,
+                    "count" => 30
                 ];
-                $req = $this->sender->sendApi('/api/music/item_list/', 'www', $query);
+                $req = $this->sender->sendApi('/music/item_list/', $query);
                 $response = new Feed;
                 $response->fromReq($req, $cursor);
                 $this->feed = $response;

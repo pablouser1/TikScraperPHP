@@ -3,11 +3,10 @@ namespace TikScraper;
 
 use TikScraper\Constants\DownloadMethods;
 use TikScraper\Downloaders\DefaultDownloader;
-use TikScraper\Downloaders\TtdownDownloader;
-use TikScraper\Interfaces\DownloaderInterface;
+use TikScraper\Interfaces\IDownloader;
 
 class Download {
-    private DownloaderInterface $downloader;
+    private IDownloader $downloader;
 
     function __construct(string $method = DownloadMethods::DEFAULT) {
         $this->downloader = $this->__getDownloader($method);
@@ -26,14 +25,11 @@ class Download {
         exit;
     }
 
-    private function __getDownloader(string $method): DownloaderInterface {
+    private function __getDownloader(string $method): IDownloader {
         $class_str = '';
         switch ($method) {
             case DownloadMethods::DEFAULT:
                 $class_str = DefaultDownloader::class;
-                break;
-            case DownloadMethods::TTDOWN:
-                $class_str = TtdownDownloader::class;
                 break;
             default:
                 $class_str = DefaultDownloader::class;

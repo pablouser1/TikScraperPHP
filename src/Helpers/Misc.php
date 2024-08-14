@@ -1,12 +1,10 @@
 <?php
 namespace TikScraper\Helpers;
 
-use Psr\Http\Message\StreamInterface;
-
 class Misc {
-    public static function getDoc(StreamInterface $body): ?\DOMDocument {
+    public static function getDoc(string $body): ?\DOMDocument {
         // Disallow empty strings
-        if ($body->getSize() > 0) {
+        if ($body !== "") {
             $dom = new \DomDocument();
             @$dom->loadHTML($body);
             return $dom;
@@ -16,11 +14,11 @@ class Misc {
     /**
      * Get JSON data from HTML string
      */
-    public static function extractHydra(StreamInterface $body, ?\DOMDocument $dom = null): ?object {
+    public static function extractHydra(string $body, ?\DOMDocument $dom = null): ?object {
         return self::__extractByTagName("__UNIVERSAL_DATA_FOR_REHYDRATION__", $body, $dom);
     }
 
-    private static function __extractByTagName(string $tagName, StreamInterface $body, ?\DOMDocument $dom = null): ?object {
+    private static function __extractByTagName(string $tagName, string $body, ?\DOMDocument $dom = null): ?object {
         // Disallow empty strings
         $dom = $dom ?? self::getDoc($body);
         if ($dom !== null) {
