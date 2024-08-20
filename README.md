@@ -36,11 +36,7 @@ TikScrapperPHP supports caching requests, to use it you need to implement [ICach
 * Search
 * Comments
 ### Left to implement from legacy
-* Custom UA for both Selenium and Guzzle
-* Proxy for Selenium requests
 * Re-add TikTok's HTML challenge (is this still happening???)
-* Test if caching works properly
-* Check if response from API wants a captcha
 * For the love of god, actually document everything properly this time
 
 ## Credits

@@ -26,37 +26,38 @@ class Selenium {
         ];
 
         // Chrome flags
+        $args = [];
         $opts = new ChromeOptions();
         if (!$debug) {
             // Enable headless if not debugging
-            $opts->addArguments(["--headless"]);
+            $args[] = "--headless";
         }
 
-        // User agent
-        if (isset($config["user_agent"])) {
+        // User defined user agent
+        if (isset($config["user_agent"]) && !empty($config["user_agent"])) {
             $agent = $config["user_agent"];
-            $opts->addArguments(["--user-agent=$agent"]);
+            $args[] = "--user-agent=$agent";
         }
+
+        // Proxy
+        if (isset($config['proxy']) && !empty($config["proxy"])) {
+            $proxy = $config['proxy'];
+            $args[] = "--proxy-server=$proxy";
+        }
+
+        $opts->addArguments($args);
 
         $cap = DesiredCapabilities::chrome();
         $cap->setCapability(ChromeOptions::CAPABILITY_W3C, $opts);
 
-        // Get session
-        $executor = new HttpCommandExecutor($browser["url"], null, null);
-        $executor->setConnectionTimeout(30000);
-        $command = new WebDriverCommand(
-            null,
-            DriverCommand::GET_ALL_SESSIONS,
-            []
-        );
-
-        $sessions = $executor->execute($command)->getValue();
-
+        // Get sessionç
+        $sessions = $this->_getSessions($browser["url"]);
         if (count($sessions) > 0) {
             // Reuse session
             $this->driver = RemoteWebDriver::createBySessionID($sessions[0]["id"], $browser["url"], null, null, true, $cap);
         } else {
-            $this->_buildSeleniumSession($browser["url"], $cap, $tokens);
+            // Build new session
+            $this->_buildSession($browser["url"], $cap, $tokens);
         }
 
         if ($tokens->getDeviceId() === "") {
@@ -94,7 +95,7 @@ class Selenium {
      * @param \TikScraper\Helpers\Tokens $tokens
      * @return void
      */
-    private function _buildSeleniumSession(string $url, DesiredCapabilities $cap, Tokens $tokens): void {
+    private function _buildSession(string $url, DesiredCapabilities $cap, Tokens $tokens): void {
         $js = file_get_contents(__DIR__ . "/../../js/fetch.js");
         // Create session
         $tmpDriver = RemoteWebDriver::create($url, $cap);
@@ -120,5 +121,17 @@ class Selenium {
         (new WebDriverWait($this->driver, 10))->until(function () {
             return $this->driver->executeScript("return window.byted_acrawler !== undefined && this.byted_acrawler.frontierSign !== undefined");
         });
+    }
+
+    private function _getSessions(string $url): array {
+        $executor = new HttpCommandExecutor($url, null, null);
+        $executor->setConnectionTimeout(30000);
+        $command = new WebDriverCommand(
+            null,
+            DriverCommand::GET_ALL_SESSIONS,
+            []
+        );
+
+        return $executor->execute($command)->getValue();
     }
 }
