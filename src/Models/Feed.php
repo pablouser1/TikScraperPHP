@@ -9,23 +9,17 @@ class Feed extends Base {
     public ?int $minCursor = 0;
     public string $maxCursor = '0';
 
-    public function setMeta(Response $req) {
-        $this->meta = new Meta($req);
-    }
-
-    public function setNav(bool $hasMore, ?int $minCursor, string $maxCursor) {
-        $this->hasMore = $hasMore;
-        $this->minCursor = $minCursor;
-        $this->maxCursor = $maxCursor;
-    }
-
-    public function setItems(array $items) {
-        $this->items = $items;
-    }
-
-    public function fromReq(Response $req, ?int $minCursor = 0, string $ttwid = '') {
-        $this->meta = new Meta($req);
-        if ($this->meta->success) {
+    /**
+     * Build feed from TikTok response
+     * @param \TikScraper\Models\Response $req TikTok response
+     * @param mixed $minCursor Cursor
+     * @param string $ttwid ttwid token used for trending
+     * @return \TikScraper\Models\Feed
+     */
+    public static function fromReq(Response $req, ?int $minCursor = 0, string $ttwid = ''): self {
+        $feed = new Feed;
+        $feed->setMeta($req);
+        if ($feed->meta->success) {
             $data = $req->jsonBody;
 
             // Cursor
@@ -40,7 +34,7 @@ class Feed extends Base {
 
             // Items
             if (isset($data->itemList)) {
-                $this->setItems($data->itemList);
+                $feed->setItems($data->itemList);
             }
 
             // Nav
@@ -50,14 +44,32 @@ class Feed extends Base {
             }
 
             if ($maxCursor) {
-                $this->setNav($hasMore, $minCursor, $maxCursor);
+                $feed->setNav($hasMore, $minCursor, $maxCursor);
             }
         }
+
+        return $feed;
     }
 
-    public function fromCache(object $cache) {
-        $this->meta = new Meta(Responses::ok());
-        $this->setItems($cache->items);
-        $this->setNav($cache->hasMore, $cache->minCursor, $cache->maxCursor);
+    public static function fromCache(object $cache): self {
+        $feed = new Feed;
+        $feed->setMeta(Responses::ok());
+        $feed->setItems($cache->items);
+        $feed->setNav($cache->hasMore, $cache->minCursor, $cache->maxCursor);
+        return $feed;
+    }
+
+    private function setMeta(Response $req) {
+        $this->meta = new Meta($req);
+    }
+
+    private function setNav(bool $hasMore, ?int $minCursor, string $maxCursor) {
+        $this->hasMore = $hasMore;
+        $this->minCursor = $minCursor;
+        $this->maxCursor = $maxCursor;
+    }
+
+    private function setItems(array $items) {
+        $this->items = $items;
     }
 }

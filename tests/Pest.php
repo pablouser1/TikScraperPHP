@@ -1,13 +1,11 @@
 <?php
-const DEFAULT_SIGNER = "https://signtok.pabloferreiro.es";
-
 function initApi(): \TikScraper\Api {
-    $signer = isset($_ENV['API_SIGNER_URL']) ? $_ENV['API_SIGNER_URL'] : DEFAULT_SIGNER;
+    $verifyfp = $_SERVER["TIKTOK_VERIFYFP"] ?? "";
+    $chromedriver = $_SERVER["TIKTOK_CHROMEDRIVER"] ?? "http://localhost:4444";
     $api = new \TikScraper\Api([
-        'signer' => [
-            'method' => 'remote',
-            'url' => $signer
-        ]
+        "debug" => true,
+        "verify_fp" => $verifyfp,
+        "chromedriver" => $chromedriver
     ]);
     return $api;
 }

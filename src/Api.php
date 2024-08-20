@@ -1,68 +1,59 @@
 <?php
 namespace TikScraper;
 
+use TikScraper\Interfaces\ICache;
 use TikScraper\Items\User;
 use TikScraper\Items\Hashtag;
 use TikScraper\Items\Music;
 use TikScraper\Items\Video;
-use TikScraper\Items\Trending;
-use TikScraper\Models\Discover;
-use TikScraper\Interfaces\CacheInterface;
 
+/**
+ * Main Class of the library
+ */
 class Api {
     private Sender $sender;
     private Cache $cache;
 
-    function __construct(array $config = [], ?CacheInterface $cache_engine = null) {
+    function __construct(array $config = [], ?ICache $cache_engine = null) {
         $this->sender = new Sender($config);
         $this->cache = new Cache($cache_engine);
     }
 
     // -- Main methods -- //
+    /**
+     * Gets user from username (@...)
+     * @param string $term Username
+     * @return \TikScraper\Items\User
+     */
     public function user(string $term): User {
         return new User($term, $this->sender, $this->cache);
     }
 
+    /**
+     * Gets hashtag from name.
+     * Also known as tag or challenge
+     * @param string $term Hashtag name
+     * @return \TikScraper\Items\Hashtag
+     */
     public function hashtag(string $term): Hashtag {
         return new Hashtag($term, $this->sender, $this->cache);
     }
 
+    /**
+     * Gets videos that use a specific song
+     * @param string $term Song ID
+     * @return \TikScraper\Items\Music
+     */
     public function music(string $term): Music {
         return new Music($term, $this->sender, $this->cache);
     }
 
+    /**
+     * Gets video from ID, supports both Webapp and phone
+     * @param string $term ID
+     * @return \TikScraper\Items\Video
+     */
     public function video(string $term): Video {
         return new Video($term, $this->sender, $this->cache);
-    }
-
-    public function trending(): Trending {
-        return new Trending($this->sender, $this->cache);
-    }
-
-    /**
-     * Discover does not follow the same structure.
-     * For some reason all /node endpoints are dead EXCEPT this one
-     */
-    public function discover(): Discover {
-        $cacheKey = 'discover';
-        if ($this->cache->exists($cacheKey)) return $this->cache->handleDiscover($cacheKey);
-        $query = [
-            'count' => 30,
-            'from_page' => 'fyp',
-            'noUser' => 0,
-            'userId' => ''
-        ];
-        $req = $this->sender->sendApi('/node/share/discover', 'www', $query);
-        $response = new Discover;
-        $response->setMeta($req);
-        if ($response->meta->success) {
-            $response->setItems(
-                $req->jsonBody->body[0]->exploreList,
-                $req->jsonBody->body[1]->exploreList,
-                $req->jsonBody->body[2]->exploreList
-            );
-            $this->cache->set($cacheKey, $response->toJson());
-        }
-        return $response;
     }
 }

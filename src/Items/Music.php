@@ -15,20 +15,18 @@ class Music extends Base {
     }
 
     public function info(): self {
-        $req = $this->sender->sendApi("/api/music/detail/", 'www', [
+        $req = $this->sender->sendApi("/music/detail/", [
             'from_page' => 'music',
             'musicId' => $this->term
         ]);
 
-        $res = new Info;
-        $res->setMeta($req);
-
-        if ($res->meta->success && isset($req->jsonBody->musicInfo)) {
-            $res->setDetail($req->jsonBody->musicInfo->music);
-            $res->setStats($req->jsonBody->musicInfo->stats);
+        $info = Info::fromReq($req);
+        if ($info->meta->success && isset($req->jsonBody->musicInfo)) {
+            $info->setDetail($req->jsonBody->musicInfo->music);
+            $info->setStats($req->jsonBody->musicInfo->stats);
         }
 
-        $this->info = $res;
+        $this->info = $info;
 
         return $this;
     }
@@ -44,12 +42,10 @@ class Music extends Base {
                     "musicID" => $this->info->detail->id,
                     "cursor" => $cursor,
                     "shareUid" => "",
-                    "count" => 30,
+                    "count" => 30
                 ];
-                $req = $this->sender->sendApi('/api/music/item_list/', 'www', $query);
-                $response = new Feed;
-                $response->fromReq($req, $cursor);
-                $this->feed = $response;
+                $req = $this->sender->sendApi('/music/item_list/', $query);
+                $this->feed = Feed::fromReq($req, $cursor);
             }
         }
 

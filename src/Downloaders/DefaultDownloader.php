@@ -1,20 +1,23 @@
 <?php
 namespace TikScraper\Downloaders;
 
-use TikScraper\Helpers\Algorithm;
-use TikScraper\Helpers\Converter;
-use TikScraper\Interfaces\DownloaderInterface;
+use TikScraper\Interfaces\IDownloader;
 
 /**
- * Video downloader using TikTok's own mobile API
+ * Video downloader using TikTok's internal API
  */
-class DefaultDownloader extends BaseDownloader implements DownloaderInterface {
+class DefaultDownloader extends BaseDownloader implements IDownloader {
     public function __construct(array $config = []) {
         parent::__construct($config);
     }
 
-    public function watermark(string $url) {
-        $client = $this->httpClient->getClient();
+    /**
+     * Download video with watermark using Webapp API
+     * @param string $url Video URL
+     * @return void
+     */
+    public function watermark(string $url): void {
+        $client = $this->guzzle->getClient();
 
         $res = $client->get($url, [
             "stream" => true,
@@ -29,10 +32,13 @@ class DefaultDownloader extends BaseDownloader implements DownloaderInterface {
     }
 
     /**
-     * Downloads TikTok without watermark using Android/iOS API
+     * Downloads video without watermark using Android/iOS API
      * @link https://github.com/Sharqo78/VTik/blob/main/src/extractors/extractors.v
+     * @todo Currently broken
      */
-    public function noWatermark(string $url) {
+    public function noWatermark(string $url): void {
+        echo "CURRENTLY BROKEN!";
+        /*
         $id = Converter::urlToId($url);
 
         $time = time();
@@ -72,7 +78,7 @@ class DefaultDownloader extends BaseDownloader implements DownloaderInterface {
             'cp' => 'cbfhckdckkde1'
         ];
 
-        $client = $this->httpClient->getClient();
+        $client = $this->guzzle->getClient();
 
         $data = $client->get('https://api-h2.tiktokv.com/aweme/v1/feed/?' . http_build_query($query), [
             "http_errors" => false
@@ -95,5 +101,6 @@ class DefaultDownloader extends BaseDownloader implements DownloaderInterface {
         } else {
             die("Error while fetching data");
         }
+        */
     }
 }

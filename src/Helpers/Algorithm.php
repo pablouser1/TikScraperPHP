@@ -14,6 +14,7 @@ class Algorithm {
 
     /**
      * TikTok's new JS challenge that may show up
+     * @deprecated Maybe it isn't being shown up anymore?
      */
     static public function challenge(string $type, string $key): string {
         $c = json_decode(base64_decode($key)); // var c
@@ -59,6 +60,11 @@ class Algorithm {
     }
 
     // -- Generic -- //
+    /**
+     * Generates a random number as a string
+     * @param int $digits nº of digits
+     * @return string Result
+     */
     static public function randomNumber(int $digits = 8): string {
         $characters = '0123456789';
         $randomString = '';
@@ -69,10 +75,22 @@ class Algorithm {
         return $randomString;
     }
 
+    /**
+     * Generates a random string (a-z, A-Z, 0-9)
+     * @param int $length nº of characters
+     * @return string Result
+     */
     static public function randomString(int $length = 8): string {
         return bin2hex(random_bytes($length / 2));
     }
 
+    /**
+     * Does a bitwise unsigned right shift, used only for `Algorithm::challenge`
+     * @deprecated See `Algorithm::challenge`
+     * @param int $a
+     * @param int $b
+     * @return int Result
+     */
     static public function uRShift(int $a, int $b) {
         if($b == 0) return $a;
         return ($a >> $b) & ~(1<<(8*PHP_INT_SIZE-1)>>($b-1));

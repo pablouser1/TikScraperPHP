@@ -2,7 +2,14 @@
 namespace TikScraper;
 use GuzzleHttp\Exception\ConnectException;
 use Psr\Http\Message\ResponseInterface;
+use TikScraper\Helpers\Tokens;
+use TikScraper\Wrappers\Guzzle;
+use TikScraper\Wrappers\Selenium;
 
+/**
+ * Video streaming class.
+ * Does chunked video streaming using `Range` header
+ */
 class Stream {
     private const BUFFER_SIZE = 1024;
     // Headers to forward back to client, to be filled with response header values from TikTok
@@ -14,20 +21,28 @@ class Stream {
         'Accept-Ranges' => 'bytes'
     ];
 
-    private HTTPClient $httpClient;
+    private Tokens $tokens;
+    private Selenium $selenium;
+    private Guzzle $guzzle;
 
     public function __construct(array $config = []) {
-        $this->httpClient = new HTTPClient($config);
+        $this->tokens = new Tokens($config);
+        $this->selenium = new Selenium($config, $this->tokens);
+        $this->guzzle = new Guzzle($config, $this->selenium);
     }
 
+    /**
+     * Streams selected url
+     * @param string $url
+     * @return void
+     */
     public function url(string $url): void {
-        $client = $this->httpClient->getClient();
+        $client = $this->guzzle->getClient();
 
         $headers_to_send = [
             "Accept" => "video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5",
             "Accept-Language" => "en-US",
             "Referer" => "https://www.tiktok.com/",
-            "Origin" => "https://www.tiktok.com",
             "DNT" => "1",
             "Sec-Fetch-Dest" => "video",
             "Sec-Fetch-Mode" => "cors",

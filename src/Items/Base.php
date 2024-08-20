@@ -2,7 +2,6 @@
 namespace TikScraper\Items;
 
 use TikScraper\Cache;
-use TikScraper\Constants\Responses;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Full;
 use TikScraper\Models\Info;
@@ -50,7 +49,7 @@ abstract class Base {
         }
 
         // Feed
-        if ($this->feedOk() && !$this->cache->exists($key_feed) && strpos($key_info, 'trending') === false) {
+        if ($this->feedOk() && !$this->cache->exists($key_feed)) {
             $this->cache->set($key_feed, $this->feed->toJson());
         }
     }
@@ -63,7 +62,7 @@ abstract class Base {
      * Returns feed, returns null if $this->feed has not been called
      */
     public function getFeed(): ?Feed {
-        return isset($this->feed) ? $this->feed : null;
+        return $this->feed ?? null;
     }
 
     public function getFull(): Full {
@@ -108,6 +107,10 @@ abstract class Base {
         return $key;
     }
 
+    /**
+     * Checks if cache exists and sets the value of `$this->feed`
+     * @return bool Exists?
+     */
     protected function handleFeedCache(): bool {
         $key = $this->getCacheKey(true);
         $exists = $this->cache->exists($key);

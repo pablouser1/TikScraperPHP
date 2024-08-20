@@ -7,6 +7,7 @@ class Converter {
      *
      * ONLY FOR https://www.tiktok.com/@USERNAME/video/VIDEO_ID structure
      * @todo Support multiple structures
+     * @deprecated Only used for `DefaultDownloader::no_watermark`, but that method is now unused
      */
     static public function urlToId(string $url): string {
         $path = parse_url($url, PHP_URL_PATH);
