@@ -36,7 +36,6 @@ TikScrapperPHP supports caching requests, to use it you need to implement [ICach
 * Search
 * Comments
 ### Left to implement from legacy
-* Re-add TikTok's HTML challenge (is this still happening???)
 * For the love of god, actually document everything properly this time
 
 ## Credits
