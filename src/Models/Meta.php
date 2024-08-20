@@ -25,7 +25,6 @@ class Meta {
 
         if (isset($res->origRes["headers"]["bdturing-verify"])) {
             // Captcha detected
-            $code = Codes::VERIFY;
             $this->setState($res->http_success, Codes::VERIFY->value, "");
             return;
         }
@@ -68,7 +67,6 @@ class Meta {
             $this->setState($res->http_success, $root->statusCode, $root->statusMsg);
 
             $this->setOgIfExists($root);
-
         }
     }
 
