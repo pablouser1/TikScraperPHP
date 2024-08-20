@@ -63,8 +63,6 @@ class Cache {
      * @return \TikScraper\Models\Info Info data
      */
     public function handleInfo(string $key): Info {
-        $info = new Info;
-        $info->fromCache($this->get($key));
-        return $info;
+        return Info::fromCache($this->get($key));
     }
 }
