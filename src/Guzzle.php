@@ -4,7 +4,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\FileCookieJar;
 use TikScraper\Constants\UserAgents;
 
-class HTTPClient {
+class Guzzle {
     private string $userAgent;
 
     const DEFAULT_HEADERS = [
@@ -41,6 +41,7 @@ class HTTPClient {
 
         $this->client = new Client($httpConfig);
     }
+
 
     public function getClient(): Client {
         return $this->client;

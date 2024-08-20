@@ -14,14 +14,14 @@ class Stream {
         'Accept-Ranges' => 'bytes'
     ];
 
-    private HTTPClient $httpClient;
+    private Guzzle $guzzle;
 
     public function __construct(array $config = []) {
-        $this->httpClient = new HTTPClient($config);
+        $this->guzzle = new Guzzle($config);
     }
 
     public function url(string $url): void {
-        $client = $this->httpClient->getClient();
+        $client = $this->guzzle->getClient();
 
         $headers_to_send = [
             "Accept" => "video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5",
