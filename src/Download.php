@@ -11,8 +11,8 @@ use TikScraper\Interfaces\IDownloader;
 class Download {
     private IDownloader $downloader;
 
-    function __construct(string $method = DownloadMethods::DEFAULT) {
-        $this->downloader = $this->__getDownloader($method);
+    function __construct(string $method = DownloadMethods::DEFAULT, array $config = []) {
+        $this->downloader = $this->__getDownloader($method, $config);
     }
 
     public function url(string $item, $file_name = "tiktok-video", $watermark = true) {
@@ -33,7 +33,7 @@ class Download {
      * @param string $method
      * @return \TikScraper\Interfaces\IDownloader
      */
-    private function __getDownloader(string $method): IDownloader {
+    private function __getDownloader(string $method, array $config): IDownloader {
         $class_str = '';
         switch ($method) {
             case DownloadMethods::DEFAULT:
@@ -43,6 +43,6 @@ class Download {
                 $class_str = DefaultDownloader::class;
         }
 
-        return new $class_str();
+        return new $class_str($config);
     }
 }
