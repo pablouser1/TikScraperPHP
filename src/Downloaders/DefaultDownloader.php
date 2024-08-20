@@ -1,19 +1,22 @@
 <?php
 namespace TikScraper\Downloaders;
 
-use TikScraper\Helpers\Algorithm;
-use TikScraper\Helpers\Converter;
 use TikScraper\Interfaces\IDownloader;
 
 /**
- * Video downloader using TikTok's own mobile API
+ * Video downloader using TikTok's internal API
  */
 class DefaultDownloader extends BaseDownloader implements IDownloader {
     public function __construct(array $config = []) {
         parent::__construct($config);
     }
 
-    public function watermark(string $url) {
+    /**
+     * Download video with watermark using Webapp API
+     * @param string $url Video URL
+     * @return void
+     */
+    public function watermark(string $url): void {
         $client = $this->guzzle->getClient();
 
         $res = $client->get($url, [
@@ -29,11 +32,11 @@ class DefaultDownloader extends BaseDownloader implements IDownloader {
     }
 
     /**
-     * Downloads TikTok without watermark using Android/iOS API
+     * Downloads video without watermark using Android/iOS API
      * @link https://github.com/Sharqo78/VTik/blob/main/src/extractors/extractors.v
      * @todo Currently broken
      */
-    public function noWatermark(string $url) {
+    public function noWatermark(string $url): void {
         echo "CURRENTLY BROKEN!";
         /*
         $id = Converter::urlToId($url);
