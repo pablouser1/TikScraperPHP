@@ -7,6 +7,7 @@ $api = new \TikScraper\Api([
     'debug' => false, // Debug mode
     'browser' => [
         'url' => 'http://localhost:4444', // Url to your chromedriver instance
+        'close_when_done' => false, // Close chrome instance when request finishes
     ],
     'verify_fp' => 'verify_...', // Cookie used for skipping captcha requests
     'device_id' => '596845...' // Custom device id

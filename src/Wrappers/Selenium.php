@@ -20,7 +20,10 @@ class Selenium {
 
     function __construct(array $config, Tokens $tokens) {
         $debug = isset($config["debug"]) ? boolval($config["debug"]) : false;
-        $url = $config["chromedriver"] ?? self::DEFAULT_DRIVER_URL;
+        $browser = $config["browser"] ?? [
+            "url" => self::DEFAULT_DRIVER_URL,
+            "close_when_done" => false
+        ];
 
         // Chrome flags
         $opts = new ChromeOptions();
@@ -39,7 +42,7 @@ class Selenium {
         $cap->setCapability(ChromeOptions::CAPABILITY_W3C, $opts);
 
         // Get session
-        $executor = new HttpCommandExecutor($url, null, null);
+        $executor = new HttpCommandExecutor($browser["url"], null, null);
         $executor->setConnectionTimeout(30000);
         $command = new WebDriverCommand(
             null,
@@ -51,9 +54,9 @@ class Selenium {
 
         if (count($sessions) > 0) {
             // Reuse session
-            $this->driver = RemoteWebDriver::createBySessionID($sessions[0]["id"], $url, null, null, true, $cap);
+            $this->driver = RemoteWebDriver::createBySessionID($sessions[0]["id"], $browser["url"], null, null, true, $cap);
         } else {
-            $this->_buildSeleniumSession($url, $tokens);
+            $this->_buildSeleniumSession($browser["url"], $cap, $tokens);
         }
 
         if ($tokens->getDeviceId() === "") {
@@ -83,10 +86,10 @@ class Selenium {
         return $this->getNavigator()->user_agent;
     }
 
-    private function _buildSeleniumSession(string $url, Tokens $tokens): void {
+    private function _buildSeleniumSession(string $url, DesiredCapabilities $cap, Tokens $tokens): void {
         $js = file_get_contents(__DIR__ . "/../../js/fetch.js");
         // Create session
-        $tmpDriver = RemoteWebDriver::create($url, DesiredCapabilities::chrome());
+        $tmpDriver = RemoteWebDriver::create($url, $cap);
         $this->driver = (new SeleniumStealth($tmpDriver))->usePhpWebriverClient()->makeStealth();
 
         // Inject custom JS code for fetching TikTok's API
