@@ -1,0 +1,55 @@
+name: Docs
+
+on:
+  push:
+    branches: [master]
+    paths: ['src/**']
+
+# Allow GITHUB_TOKEN to deploy to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup graphviz
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: graphviz
+          version: 1.0
+      - name: Fetch PHPDocumentator
+        run: wget https://phpdoc.org/phpDocumentor.phar -O /usr/local/bin/phpDocumentator.phar && chmod +x /usr/local/bin/phpDocumentator.phar
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v1
+      - name: Build docs
+        run: phpDocumentator.phar run -vv -d src -t docs --cache-folder .phpdoc/cache
+      - name: Upload artifact to GitHub Pages
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: docs
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
