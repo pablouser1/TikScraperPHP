@@ -9,6 +9,13 @@ class Feed extends Base {
     public ?int $minCursor = 0;
     public string $maxCursor = '0';
 
+    /**
+     * Build feed from TikTok response
+     * @param \TikScraper\Models\Response $req TikTok response
+     * @param mixed $minCursor Cursor
+     * @param string $ttwid ttwid token used for trending
+     * @return \TikScraper\Models\Feed
+     */
     public static function fromReq(Response $req, ?int $minCursor = 0, string $ttwid = ''): self {
         $feed = new Feed;
         $feed->setMeta($req);

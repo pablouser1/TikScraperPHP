@@ -5,6 +5,9 @@ use TikScraper\Constants\DownloadMethods;
 use TikScraper\Downloaders\DefaultDownloader;
 use TikScraper\Interfaces\IDownloader;
 
+/**
+ * Wrapper around download methods
+ */
 class Download {
     private IDownloader $downloader;
 
@@ -25,6 +28,11 @@ class Download {
         exit;
     }
 
+    /**
+     * Picks downloader from env variable
+     * @param string $method
+     * @return \TikScraper\Interfaces\IDownloader
+     */
     private function __getDownloader(string $method): IDownloader {
         $class_str = '';
         switch ($method) {

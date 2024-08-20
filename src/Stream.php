@@ -6,6 +6,10 @@ use TikScraper\Helpers\Tokens;
 use TikScraper\Wrappers\Guzzle;
 use TikScraper\Wrappers\Selenium;
 
+/**
+ * Video streaming class.
+ * Does chunked video streaming using `Range` header
+ */
 class Stream {
     private const BUFFER_SIZE = 1024;
     // Headers to forward back to client, to be filled with response header values from TikTok
@@ -27,6 +31,11 @@ class Stream {
         $this->guzzle = new Guzzle($config, $this->selenium);
     }
 
+    /**
+     * Streams selected url
+     * @param string $url
+     * @return void
+     */
     public function url(string $url): void {
         $client = $this->guzzle->getClient();
 

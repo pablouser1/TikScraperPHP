@@ -4,6 +4,11 @@ namespace TikScraper\Helpers;
 class Request {
     /**
      * Builds query for TikTok Api
+     * @param array $querry Custom query
+     * @param string $verifyFp VerifyFP token
+     * @param string $deviceid Device ID token
+     * @todo Use more data from Selenium
+     * @return string Query as a string with a '?' prefix
      */
     static public function buildQuery(array $query, object $nav, string $verifyFp, string $device_id): string {
         $query_merged = array_merge($query, [

@@ -107,6 +107,10 @@ abstract class Base {
         return $key;
     }
 
+    /**
+     * Checks if cache exists and sets the value of `$this->feed`
+     * @return bool Exists?
+     */
     protected function handleFeedCache(): bool {
         $key = $this->getCacheKey(true);
         $exists = $this->cache->exists($key);
