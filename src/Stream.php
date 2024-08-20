@@ -1,5 +1,7 @@
 <?php
 namespace TikScraper;
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
 use GuzzleHttp\Exception\ConnectException;
 use Psr\Http\Message\ResponseInterface;
 
@@ -14,20 +16,24 @@ class Stream {
         'Accept-Ranges' => 'bytes'
     ];
 
+    private Selenium $selenium;
     private Guzzle $guzzle;
 
     public function __construct(array $config = []) {
+        $this->selenium = new Selenium($config);
         $this->guzzle = new Guzzle($config);
+
+        $this->guzzle->setUserAgent($this->selenium->getNavigator()->user_agent);
     }
 
     public function url(string $url): void {
+        $driver = $this->selenium->getDriver();
         $client = $this->guzzle->getClient();
 
         $headers_to_send = [
             "Accept" => "video/webm,video/ogg,video/*;q=0.9,application/ogg;q=0.7,audio/*;q=0.6,*/*;q=0.5",
             "Accept-Language" => "en-US",
             "Referer" => "https://www.tiktok.com/",
-            "Origin" => "https://www.tiktok.com",
             "DNT" => "1",
             "Sec-Fetch-Dest" => "video",
             "Sec-Fetch-Mode" => "cors",
@@ -39,8 +45,20 @@ class Stream {
             http_response_code(206);
         }
 
+        // Override Guzzle cookies with Selenium
+        $jar = new CookieJar();
+        $cookies = $driver->manage()->getCookies();
+        foreach ($cookies as $c) {
+            $set = new SetCookie();
+            $set->setName($c->getName());
+            $set->setValue($c->getValue());
+            $set->setDomain($c->getDomain());
+            $jar->setCookie($set);
+        }
+
         try {
             $res = $client->get($url, [
+                "cookies" => $jar,
                 "headers" => $headers_to_send,
                 "http_errors" => false,
                 "on_headers" => function (ResponseInterface $response) {

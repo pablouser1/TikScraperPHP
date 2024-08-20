@@ -1,6 +1,8 @@
 <?php
 namespace TikScraper\Downloaders;
 
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
 use TikScraper\Helpers\Algorithm;
 use TikScraper\Helpers\Converter;
 use TikScraper\Interfaces\IDownloader;
@@ -14,9 +16,22 @@ class DefaultDownloader extends BaseDownloader implements IDownloader {
     }
 
     public function watermark(string $url) {
-        $client = $this->httpClient->getClient();
+        $client = $this->guzzle->getClient();
+        $driver = $this->selenium->getDriver();
+
+        // Override Guzzle cookies with Selenium
+        $jar = new CookieJar();
+        $cookies = $driver->manage()->getCookies();
+        foreach ($cookies as $c) {
+            $set = new SetCookie();
+            $set->setName($c->getName());
+            $set->setValue($c->getValue());
+            $set->setDomain($c->getDomain());
+            $jar->setCookie($set);
+        }
 
         $res = $client->get($url, [
+            "cookies" => $jar,
             "stream" => true,
             "http_errors" => false
         ]);
@@ -72,7 +87,7 @@ class DefaultDownloader extends BaseDownloader implements IDownloader {
             'cp' => 'cbfhckdckkde1'
         ];
 
-        $client = $this->httpClient->getClient();
+        $client = $this->guzzle->getClient();
 
         $data = $client->get('https://api-h2.tiktokv.com/aweme/v1/feed/?' . http_build_query($query), [
             "http_errors" => false

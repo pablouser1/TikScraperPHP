@@ -15,6 +15,8 @@ class Sender {
     function __construct(array $config) {
         $this->selenium = new Selenium($config);
         $this->guzzle = new Guzzle($config);
+
+        $this->guzzle->setUserAgent($this->selenium->getNavigator()->user_agent);
     }
 
     /**
@@ -25,12 +27,12 @@ class Sender {
     public function sendApi(
         string $endpoint,
         array $query = [],
-        string $referrer = "/foryou"
+        string $referrer = "/"
     ): Response {
         $driver = $this->selenium->getDriver();
         $nav = $this->selenium->getNavigator();
         $full_referrer = self::WEB_URL . $referrer;
-        $url = self::API_URL . $endpoint . Request::buildQuery($query, $nav, $this->selenium->getVerifyFp());
+        $url = self::API_URL . $endpoint . Request::buildQuery($query, $nav, $this->selenium->getVerifyFp(), $this->selenium->getDeviceId());
 
         $res = $driver->executeAsyncScript(
             "var callback = arguments[2]; window.fetchApi(arguments[0], arguments[1]).then(d => callback(d))",

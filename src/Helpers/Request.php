@@ -5,7 +5,7 @@ class Request {
     /**
      * Builds query for TikTok Api
      */
-    static public function buildQuery(array $query, object $nav, string $verifyFp): string {
+    static public function buildQuery(array $query, object $nav, string $verifyFp, string $device_id): string {
         $query_merged = array_merge($query, [
             "WebIdLastTime" => time(),
             "aid" => 1988,
@@ -19,7 +19,7 @@ class Request {
             "channel" => "tiktok_web",
             "cookie_enabled" => "true",
             "data_collection_enabled" => "false",
-            "device_id" => Algorithm::deviceId(),
+            "device_id" => $device_id,
             "device_platform" => "web_pc",
             "focus_state" => "true",
             "history_len" => rand(1, 10),

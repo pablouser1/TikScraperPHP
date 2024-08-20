@@ -2,7 +2,6 @@
 namespace TikScraper\Items;
 
 use TikScraper\Cache;
-use TikScraper\Constants\Responses;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Full;
 use TikScraper\Models\Info;
