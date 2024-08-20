@@ -1,5 +1,5 @@
 # TikWrapperPHP
-A Wrapper for the TikTok API made with PHP >= 8.0
+A Wrapper for the TikTok API made with PHP >= 8.1
 
 ## How to Use
 ```php
