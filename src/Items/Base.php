@@ -8,6 +8,9 @@ use TikScraper\Models\Info;
 use TikScraper\Models\Meta;
 use TikScraper\Sender;
 
+/**
+ * Basic class for all available data from TikTok
+ */
 abstract class Base {
     protected string $term;
     private string $type;
