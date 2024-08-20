@@ -21,8 +21,13 @@ class Hashtag extends Base {
 
         $info = Info::fromReq($req);
         if ($info->meta->success && isset($req->jsonBody->challengeInfo)) {
-            $info->setDetail($req->jsonBody->challengeInfo->challenge);
-            $info->setStats($req->jsonBody->challengeInfo->stats);
+            if (isset($req->jsonBody->challengeInfo->challenge)) {
+                $info->setDetail($req->jsonBody->challengeInfo->challenge);
+            }
+
+            if (isset($req->jsonBody->challengeInfo->stats)) {
+                $info->setStats($req->jsonBody->challengeInfo->stats);
+            }
         }
 
         $this->info = $info;

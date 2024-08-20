@@ -24,9 +24,17 @@ class User extends Base {
 
         $info = Info::fromReq($req);
         if ($info->meta->success) {
-            if (isset($req->jsonBody->userInfo)) {
-                $info->setDetail($req->jsonBody->userInfo->user);
-                $info->setStats($req->jsonBody->userInfo->stats);
+            if (isset($req->jsonBody->userInfo, $req->jsonBody->userInfo->user)) {
+                // userInfo is available
+                if (isset($req->jsonBody->userInfo->user)) {
+                    // Set details
+                    $info->setDetail($req->jsonBody->userInfo->user);
+                }
+
+                if (isset($req->jsonBody->userInfo->stats)) {
+                    // Set stats
+                    $info->setStats($req->jsonBody->userInfo->stats);
+                }
             }
         }
         $this->info = $info;

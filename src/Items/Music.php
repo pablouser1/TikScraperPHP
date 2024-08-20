@@ -22,8 +22,13 @@ class Music extends Base {
 
         $info = Info::fromReq($req);
         if ($info->meta->success && isset($req->jsonBody->musicInfo)) {
-            $info->setDetail($req->jsonBody->musicInfo->music);
-            $info->setStats($req->jsonBody->musicInfo->stats);
+            if (isset($req->jsonBody->musicInfo->music)) {
+                $info->setDetail($req->jsonBody->musicInfo->music);
+            }
+
+            if (isset($req->jsonBody->musicInfo->stats)) {
+                $info->setStats($req->jsonBody->musicInfo->stats);
+            }
         }
 
         $this->info = $info;

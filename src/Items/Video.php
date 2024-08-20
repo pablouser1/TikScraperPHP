@@ -2,7 +2,6 @@
 namespace TikScraper\Items;
 
 use TikScraper\Cache;
-use TikScraper\Constants\Responses;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Info;
 use TikScraper\Sender;
@@ -47,13 +46,16 @@ class Video extends Base {
 
     public function feed(): self {
         $this->cursor = 0;
-        if ($this->item !== null) {
-            $this->feed = Feed::fromCache((object) [
-                "items" => [$this->item],
-                "hasMore" => false,
-                "minCursor" => 0,
-                "maxCursor" => ""
-            ]);
+        if ($this->infoOk()) {
+            $preloaded = $this->handleFeedCache();
+            if (!$preloaded && $this->item !== null) {
+                $this->feed = Feed::fromCache((object) [
+                    "items" => [$this->item],
+                    "hasMore" => false,
+                    "minCursor" => 0,
+                    "maxCursor" => ""
+                ]);
+            }
         }
         return $this;
     }
