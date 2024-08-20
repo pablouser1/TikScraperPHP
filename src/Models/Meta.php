@@ -25,13 +25,14 @@ class Meta {
 
         if (isset($res->origRes["headers"]["bdturing-verify"])) {
             // Captcha detected
-            $this->setState($res->http_success, 10000, "");
+            $code = Codes::VERIFY;
+            $this->setState($res->http_success, Codes::VERIFY->value, "");
             return;
         }
 
         if (empty($res->origRes["data"])) {
             // No data
-            $this->setState($res->http_success, 10, "");
+            $this->setState($res->http_success, Codes::EMPTY_RESPONSE->value, "");
             return;
         }
         if ($res->isJson) {
@@ -45,11 +46,12 @@ class Meta {
                 $this->setOgIfExists($res->jsonBody);
             }
 
+            // Seemingly ok
             $this->setState($res->http_success, $this->getCode($res->jsonBody), $this->getMsg($res->jsonBody));
         } elseif ($res->isHtml) {
             if (!$res->hasRehidrate()) {
                 // Response doesn't have valid data
-                $this->setState($res->http_success, 12, "");
+                $this->setState($res->http_success, Codes::STATE_DECODE_ERROR->value, "");
                 return;
             }
 
@@ -58,7 +60,7 @@ class Meta {
 
             if (!isset($res->rehidrateState->__DEFAULT_SCOPE__->{"webapp.video-detail"})) {
                 // Response doesn't have valid data
-                $this->setState($res->http_success, 12, "");
+                $this->setState($res->http_success, Codes::STATE_DECODE_ERROR->value, "");
                 return;
             }
 
@@ -73,7 +75,12 @@ class Meta {
     private function setState(bool $http_success, int $proxitokCode, string $proxitokMsg) {
         $this->success = $http_success && $proxitokCode === 0;
         $this->proxitokCode = $proxitokCode;
-        $this->proxitokMsg = $proxitokMsg === '' ? Codes::fromId($proxitokCode) : $proxitokMsg;
+        if ($proxitokMsg === '') {
+            // Get message from enum
+            $code = Codes::tryFrom($proxitokCode);
+
+            $this->proxitokMsg = $code === null ? Codes::UNKNOWN->name : $code->name;
+        }
     }
 
     private function getCode(object $data): int {
@@ -84,7 +91,7 @@ class Meta {
             $code = intval($data->status_code);
         } elseif (isset($data->type) && $data->type === "verify") {
             // Check verify
-            $code = 10000;
+            $code = Codes::VERIFY->value;
         }
         return $code;
     }

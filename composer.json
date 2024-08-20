@@ -24,7 +24,7 @@
         "test": "pest"
     },
     "require": {
-        "php": "^8.0",
+        "php": "^8.1",
         "php-webdriver/webdriver": "^1.12",
         "sapistudio/seleniumstealth": "^1.0",
         "guzzlehttp/guzzle": "^7.8"

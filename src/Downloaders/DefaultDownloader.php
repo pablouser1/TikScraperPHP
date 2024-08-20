@@ -31,7 +31,7 @@ class DefaultDownloader extends BaseDownloader implements IDownloader {
     /**
      * Downloads TikTok without watermark using Android/iOS API
      * @link https://github.com/Sharqo78/VTik/blob/main/src/extractors/extractors.v
-     * @todo Currently broken, fix
+     * @todo Currently broken
      */
     public function noWatermark(string $url) {
         echo "CURRENTLY BROKEN!";
