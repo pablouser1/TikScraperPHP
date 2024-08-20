@@ -86,6 +86,14 @@ class Selenium {
         return $this->getNavigator()->user_agent;
     }
 
+    /**
+     * Build selenium session, executes only on first run.
+     * Waits until `window.byted_acrawler` is available or timeout
+     * @param string $url Chromedriver url
+     * @param \Facebook\WebDriver\Remote\DesiredCapabilities $cap Chrome's capabilities
+     * @param \TikScraper\Helpers\Tokens $tokens
+     * @return void
+     */
     private function _buildSeleniumSession(string $url, DesiredCapabilities $cap, Tokens $tokens): void {
         $js = file_get_contents(__DIR__ . "/../../js/fetch.js");
         // Create session
