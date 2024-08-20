@@ -52,8 +52,7 @@ class Video extends Base {
                 $this->feed = Feed::fromCache((object) [
                     "items" => [$this->item],
                     "hasMore" => false,
-                    "minCursor" => 0,
-                    "maxCursor" => ""
+                    "cursor" => 0
                 ]);
             }
         }
