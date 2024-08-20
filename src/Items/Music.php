@@ -20,15 +20,13 @@ class Music extends Base {
             'musicId' => $this->term
         ]);
 
-        $res = new Info;
-        $res->setMeta($req);
-
-        if ($res->meta->success && isset($req->jsonBody->musicInfo)) {
-            $res->setDetail($req->jsonBody->musicInfo->music);
-            $res->setStats($req->jsonBody->musicInfo->stats);
+        $info = Info::fromReq($req);
+        if ($info->meta->success && isset($req->jsonBody->musicInfo)) {
+            $info->setDetail($req->jsonBody->musicInfo->music);
+            $info->setStats($req->jsonBody->musicInfo->stats);
         }
 
-        $this->info = $res;
+        $this->info = $info;
 
         return $this;
     }
@@ -47,9 +45,7 @@ class Music extends Base {
                     "count" => 30
                 ];
                 $req = $this->sender->sendApi('/music/item_list/', $query);
-                $response = new Feed;
-                $response->fromReq($req, $cursor);
-                $this->feed = $response;
+                $this->feed = Feed::fromReq($req, $cursor);
             }
         }
 

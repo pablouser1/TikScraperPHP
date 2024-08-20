@@ -29,18 +29,18 @@ class Video extends Base {
         }
 
         $req = $this->sender->sendHTML($endpoint, $subdomain);
-        $response = new Info;
-        $response->setMeta($req);
-        if ($response->meta->success) {
+
+        $info = Info::fromReq($req);
+        if ($info->meta->success) {
             if ($req->hasRehidrate() && isset($req->rehidrateState->__DEFAULT_SCOPE__->{'webapp.video-detail'})) {
                 $root = $req->rehidrateState->__DEFAULT_SCOPE__->{'webapp.video-detail'};
                 $this->state = $req->rehidrateState;
                 $this->item = $root->itemInfo->itemStruct;
-                $response->setDetail($this->item->author);
-                $response->setStats($this->item->stats);
+                $info->setDetail($this->item->author);
+                $info->setStats($this->item->stats);
             }
         }
-        $this->info = $response;
+        $this->info = $info;
 
         return $this;
     }
@@ -48,11 +48,12 @@ class Video extends Base {
     public function feed(): self {
         $this->cursor = 0;
         if ($this->item !== null) {
-            $response = new Feed;
-            $response->setItems([$this->item]);
-            $response->setNav(false, null, '');
-            $response->setMeta(Responses::ok());
-            $this->feed = $response;
+            $this->feed = Feed::fromCache((object) [
+                "items" => [$this->item],
+                "hasMore" => false,
+                "minCursor" => 0,
+                "maxCursor" => ""
+            ]);
         }
         return $this;
     }

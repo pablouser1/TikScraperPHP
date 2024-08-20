@@ -19,15 +19,13 @@ class Hashtag extends Base {
             "challengeName" => $this->term
         ], "/tag/" . $this->term);
 
-        $res = new Info;
-        $res->setMeta($req);
-
-        if ($res->meta->success && isset($req->jsonBody->challengeInfo)) {
-            $res->setDetail($req->jsonBody->challengeInfo->challenge);
-            $res->setStats($req->jsonBody->challengeInfo->stats);
+        $info = Info::fromReq($req);
+        if ($info->meta->success && isset($req->jsonBody->challengeInfo)) {
+            $info->setDetail($req->jsonBody->challengeInfo->challenge);
+            $info->setStats($req->jsonBody->challengeInfo->stats);
         }
 
-        $this->info = $res;
+        $this->info = $info;
 
         return $this;
     }
@@ -46,9 +44,7 @@ class Hashtag extends Base {
                     "from_page" => "hashtag"
                 ];
                 $req = $this->sender->sendApi('/challenge/item_list/', $query, "/tag/" . $this->term);
-                $response = new Feed;
-                $response->fromReq($req, $cursor);
-                $this->feed = $response;
+                $this->feed = Feed::fromReq($req, $cursor);
             }
         }
         return $this;

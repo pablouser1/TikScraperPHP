@@ -49,7 +49,7 @@ abstract class Base {
         }
 
         // Feed
-        if ($this->feedOk() && !$this->cache->exists($key_feed) && strpos($key_info, 'trending') === false) {
+        if ($this->feedOk() && !$this->cache->exists($key_feed)) {
             $this->cache->set($key_feed, $this->feed->toJson());
         }
     }

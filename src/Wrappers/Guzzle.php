@@ -1,9 +1,12 @@
 <?php
-namespace TikScraper;
+namespace TikScraper\Wrappers;
 use GuzzleHttp\Client;
-use GuzzleHttp\Cookie\FileCookieJar;
-use TikScraper\Constants\UserAgents;
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
 
+/**
+ * Wrapper for GuzzleHTTP
+ */
 class Guzzle {
     private string $userAgent;
 
@@ -15,18 +18,26 @@ class Guzzle {
     ];
 
     private Client $client;
-    private FileCookieJar $jar;
 
-    function __construct(array $config) {
-        // Base config
-        $cookieFile = $config['cookie_path'] ?? sys_get_temp_dir() . '/tiktok.json';
+    function __construct(array $config, Selenium $selenium) {
+        $driver = $selenium->getDriver();
 
-        $this->jar = new FileCookieJar($cookieFile, true);
+        // Share cookies with Selenium
+        $jar = new CookieJar();
+        $cookies = $driver->manage()->getCookies();
+        foreach ($cookies as $c) {
+            $set = new SetCookie();
+            $set->setName($c->getName());
+            $set->setValue($c->getValue());
+            $set->setDomain($c->getDomain());
+            $jar->setCookie($set);
+        }
 
-        $this->userAgent = $config['user_agent'] ?? UserAgents::DEFAULT;
+        // Use selenium's user agent or user-defined
+        $this->userAgent = $config['user_agent'] ?? $selenium->getUserAgent();
         $httpConfig = [
             'timeout' => 5.0,
-            'cookies' => $this->jar,
+            'cookies' => $jar,
             'allow_redirects' => true,
             'headers' => [
                 'User-Agent' => $this->userAgent,
@@ -45,17 +56,5 @@ class Guzzle {
 
     public function getClient(): Client {
         return $this->client;
-    }
-
-    public function getJar(): FileCookieJar {
-        return $this->jar;
-    }
-
-    public function getUserAgent(): string {
-        return $this->userAgent;
-    }
-
-    public function setUserAgent(string $useragent): void {
-        $this->userAgent = $useragent;
     }
 }

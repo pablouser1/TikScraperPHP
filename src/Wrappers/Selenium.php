@@ -1,5 +1,5 @@
 <?php
-namespace TikScraper;
+namespace TikScraper\Wrappers;
 use Facebook\WebDriver\Chrome\ChromeDevToolsDriver;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Cookie;
@@ -10,23 +10,28 @@ use Facebook\WebDriver\Remote\RemoteWebDriver;
 use Facebook\WebDriver\Remote\WebDriverCommand;
 use Facebook\WebDriver\WebDriverWait;
 use SapiStudio\SeleniumStealth\SeleniumStealth;
+use TikScraper\Helpers\Tokens;
 
 class Selenium {
-    private string $verifyFp = "";
-    private string $device_id = "";
+    private const DEFAULT_URL = "http://localhost:4444";
+
     private RemoteWebDriver $driver;
 
-    function __construct(array $config) {
-        $this->verifyFp = $config["verify_fp"] ?? "";
-        $this->device_id = $config["device_id"] ?? "";
+    function __construct(array $config, Tokens $tokens) {
         $debug = isset($config["debug"]) ? boolval($config["debug"]) : false;
-        $url = $config["chromedriver"] ?? "http://localhost:4444";
+        $url = $config["chromedriver"] ?? self::DEFAULT_URL;
 
         // Chrome flags
         $opts = new ChromeOptions();
         if (!$debug) {
             // Enable headless if not debugging
             $opts->addArguments(["--headless"]);
+        }
+
+        // User agent
+        if (isset($config["user_agent"])) {
+            $agent = $config["user_agent"];
+            $opts->addArguments(["user-agent=$agent"]);
         }
 
         $cap = DesiredCapabilities::chrome();
@@ -47,28 +52,20 @@ class Selenium {
             // Reuse session
             $this->driver = RemoteWebDriver::createBySessionID($sessions[0]["id"], $url, null, null, true, $cap);
         } else {
-            $this->_buildSeleniumSession($url);
+            $this->_buildSeleniumSession($url, $tokens);
         }
 
-        if ($this->device_id === "") {
+        if ($tokens->getDeviceId() === "") {
             // Get Device Id from localStorage
             $sess_id = $this->driver->executeScript('return sessionStorage.getItem("webapp_session_id")');
             if ($sess_id !== null) {
-                $this->device_id = substr($sess_id, 0, 19);
+                $tokens->setDeviceId(substr($sess_id, 0, 19));
             }
         }
     }
 
     public function getDriver(): RemoteWebDriver {
         return $this->driver;
-    }
-
-    public function getVerifyFp(): string {
-        return $this->verifyFp;
-    }
-
-    public function getDeviceId(): string {
-        return $this->device_id;
     }
 
     public function getNavigator(): object {
@@ -85,7 +82,7 @@ class Selenium {
         return $this->getNavigator()->user_agent;
     }
 
-    private function _buildSeleniumSession(string $url) {
+    private function _buildSeleniumSession(string $url, Tokens $tokens): void {
         $js = file_get_contents(__DIR__ . "/../js/fetch.js");
         // Create session
         $tmpDriver = RemoteWebDriver::create($url, DesiredCapabilities::chrome());
@@ -98,14 +95,16 @@ class Selenium {
         ]);
 
         $this->driver->get("https://www.tiktok.com/@tiktok");
-        if ($this->verifyFp !== "") {
-            $cookie = new Cookie("s_v_web_id", $this->verifyFp);
+
+        // Add captcha cookie to Selenium's jar
+        if ($tokens->getVerifyFp() !== "") {
+            $cookie = new Cookie("s_v_web_id", $tokens->getVerifyFp());
             $cookie->setDomain(".tiktok.com");
             $cookie->setSecure(true);
             $this->driver->manage()->addCookie($cookie);
         }
 
-        // Wait until window.byted_acrawler is ready
+        // Wait until window.byted_acrawler is ready or timeout
         (new WebDriverWait($this->driver, 10))->until(function () {
             return $this->driver->executeScript("return window.byted_acrawler !== undefined && this.byted_acrawler.frontierSign !== undefined");
         });

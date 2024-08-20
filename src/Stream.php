@@ -1,9 +1,10 @@
 <?php
 namespace TikScraper;
-use GuzzleHttp\Cookie\CookieJar;
-use GuzzleHttp\Cookie\SetCookie;
 use GuzzleHttp\Exception\ConnectException;
 use Psr\Http\Message\ResponseInterface;
+use TikScraper\Helpers\Tokens;
+use TikScraper\Wrappers\Guzzle;
+use TikScraper\Wrappers\Selenium;
 
 class Stream {
     private const BUFFER_SIZE = 1024;
@@ -16,18 +17,17 @@ class Stream {
         'Accept-Ranges' => 'bytes'
     ];
 
+    private Tokens $tokens;
     private Selenium $selenium;
     private Guzzle $guzzle;
 
     public function __construct(array $config = []) {
-        $this->selenium = new Selenium($config);
-        $this->guzzle = new Guzzle($config);
-
-        $this->guzzle->setUserAgent($this->selenium->getNavigator()->user_agent);
+        $this->tokens = new Tokens($config);
+        $this->selenium = new Selenium($config, $this->tokens);
+        $this->guzzle = new Guzzle($config, $this->selenium);
     }
 
     public function url(string $url): void {
-        $driver = $this->selenium->getDriver();
         $client = $this->guzzle->getClient();
 
         $headers_to_send = [
@@ -45,20 +45,8 @@ class Stream {
             http_response_code(206);
         }
 
-        // Override Guzzle cookies with Selenium
-        $jar = new CookieJar();
-        $cookies = $driver->manage()->getCookies();
-        foreach ($cookies as $c) {
-            $set = new SetCookie();
-            $set->setName($c->getName());
-            $set->setValue($c->getValue());
-            $set->setDomain($c->getDomain());
-            $jar->setCookie($set);
-        }
-
         try {
             $res = $client->get($url, [
-                "cookies" => $jar,
                 "headers" => $headers_to_send,
                 "http_errors" => false,
                 "on_headers" => function (ResponseInterface $response) {

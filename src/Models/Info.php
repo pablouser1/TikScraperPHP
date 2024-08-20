@@ -7,7 +7,29 @@ class Info extends Base {
     public object $detail;
     public object $stats;
 
-    public function setMeta(Response $req): void {
+    public static function fromReq(Response $req): self {
+        $info = new Info;
+        $info->setMeta($req);
+        return $info;
+    }
+
+    public static function fromCache(object $cache): self {
+        $info = new Info;
+        $info->setMeta(Responses::ok());
+        if (isset($cache->meta->og)) {
+            $info->meta->og = $cache->meta->og;
+        }
+
+        $info->setDetail($cache->detail);
+
+        if (isset($cache->stats)) {
+            $info->setStats($cache->stats);
+        }
+
+        return $info;
+    }
+
+    private function setMeta(Response $req): void {
         $this->meta = new Meta($req);
     }
 
@@ -17,16 +39,5 @@ class Info extends Base {
 
     public function setStats(object $stats): void {
         $this->stats = $stats;
-    }
-
-    public function fromCache(object $cache): void {
-        $this->meta = new Meta(Responses::ok());
-        if (isset($cache->meta->og)) {
-            $this->meta->og = $cache->meta->og;
-        }
-        $this->setDetail($cache->detail);
-        if (isset($cache->stats)) {
-            $this->setStats($cache->stats);
-        }
     }
 }

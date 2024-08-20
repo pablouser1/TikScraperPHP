@@ -22,8 +22,7 @@ class User extends Base {
             "uniqueId" => $this->term
         ], "/@" . $this->term);
 
-        $info = new Info;
-        $info->setMeta($req);
+        $info = Info::fromReq($req);
         if ($info->meta->success) {
             if (isset($req->jsonBody->userInfo)) {
                 $info->setDetail($req->jsonBody->userInfo->user);
@@ -54,9 +53,7 @@ class User extends Base {
                 ];
 
                 $req = $this->sender->sendApi('/post/item_list/', $query, "/@" . $this->term);
-                $response = new Feed;
-                $response->fromReq($req, $cursor);
-                $this->feed = $response;
+                $this->feed = Feed::fromReq($req, $cursor);
             }
         }
         return $this;

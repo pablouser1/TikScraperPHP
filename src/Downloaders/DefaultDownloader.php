@@ -1,8 +1,6 @@
 <?php
 namespace TikScraper\Downloaders;
 
-use GuzzleHttp\Cookie\CookieJar;
-use GuzzleHttp\Cookie\SetCookie;
 use TikScraper\Helpers\Algorithm;
 use TikScraper\Helpers\Converter;
 use TikScraper\Interfaces\IDownloader;
@@ -17,21 +15,8 @@ class DefaultDownloader extends BaseDownloader implements IDownloader {
 
     public function watermark(string $url) {
         $client = $this->guzzle->getClient();
-        $driver = $this->selenium->getDriver();
-
-        // Override Guzzle cookies with Selenium
-        $jar = new CookieJar();
-        $cookies = $driver->manage()->getCookies();
-        foreach ($cookies as $c) {
-            $set = new SetCookie();
-            $set->setName($c->getName());
-            $set->setValue($c->getValue());
-            $set->setDomain($c->getDomain());
-            $jar->setCookie($set);
-        }
 
         $res = $client->get($url, [
-            "cookies" => $jar,
             "stream" => true,
             "http_errors" => false
         ]);
@@ -46,8 +31,11 @@ class DefaultDownloader extends BaseDownloader implements IDownloader {
     /**
      * Downloads TikTok without watermark using Android/iOS API
      * @link https://github.com/Sharqo78/VTik/blob/main/src/extractors/extractors.v
+     * @todo Currently broken, fix
      */
     public function noWatermark(string $url) {
+        echo "CURRENTLY BROKEN!";
+        /*
         $id = Converter::urlToId($url);
 
         $time = time();
@@ -110,5 +98,6 @@ class DefaultDownloader extends BaseDownloader implements IDownloader {
         } else {
             die("Error while fetching data");
         }
+        */
     }
 }
