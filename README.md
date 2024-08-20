@@ -26,6 +26,9 @@ if ($hastag->ok()) {
 }
 ```
 
+## Documentation
+An initial version of the documentation is available [here](https://pablouser1.github.io/TikScraperPHP/)
+
 ## Caching
 TikScrapperPHP supports caching requests, to use it you need to implement [ICache.php](https://github.com/pablouser1/TikScraperPHP/blob/master/src/Interfaces/ICache.php)
 
