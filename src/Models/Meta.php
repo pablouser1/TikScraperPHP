@@ -23,6 +23,12 @@ class Meta {
         $this->httpCode = $res->code;
         $this->response = $res;
 
+        if (isset($res->origRes["headers"]["bdturing-verify"])) {
+            // Captcha detected
+            $this->setState($res->http_success, 10000, "");
+            return;
+        }
+
         if (empty($res->origRes["data"])) {
             // No data
             $this->setState($res->http_success, 10, "");

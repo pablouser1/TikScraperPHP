@@ -5,8 +5,11 @@ A Wrapper for the TikTok API made with PHP >= 8.0
 ```php
 $api = new \TikScraper\Api([
     'debug' => false, // Debug mode
-    'chromedriver' => 'http://localhost:4444', // Url to your chromedriver instance
+    'browser' => [
+        'url' => 'http://localhost:4444', // Url to your chromedriver instance
+    ],
     'verify_fp' => 'verify_...', // Cookie used for skipping captcha requests
+    'device_id' => '596845...' // Custom device id
     'user_agent' => 'YOUR_CUSTOM_USER_AGENT_HERE',
     'proxy' => 'http://user:password@hostname:port',
     'cookie_path' => '/your/custom/path/here/tiktok.json' // Path to store Guzzle's cookies, defaults to /tmp/tiktok.json

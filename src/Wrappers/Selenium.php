@@ -13,13 +13,14 @@ use SapiStudio\SeleniumStealth\SeleniumStealth;
 use TikScraper\Helpers\Tokens;
 
 class Selenium {
-    private const DEFAULT_URL = "http://localhost:4444";
+    private const DEFAULT_DRIVER_URL = "http://localhost:4444";
+    private const DEFAULT_TIKTOK_URL = "https://www.tiktok.com/";
 
     private RemoteWebDriver $driver;
 
     function __construct(array $config, Tokens $tokens) {
         $debug = isset($config["debug"]) ? boolval($config["debug"]) : false;
-        $url = $config["chromedriver"] ?? self::DEFAULT_URL;
+        $url = $config["chromedriver"] ?? self::DEFAULT_DRIVER_URL;
 
         // Chrome flags
         $opts = new ChromeOptions();
@@ -31,7 +32,7 @@ class Selenium {
         // User agent
         if (isset($config["user_agent"])) {
             $agent = $config["user_agent"];
-            $opts->addArguments(["user-agent=$agent"]);
+            $opts->addArguments(["--user-agent=$agent"]);
         }
 
         $cap = DesiredCapabilities::chrome();
@@ -83,7 +84,7 @@ class Selenium {
     }
 
     private function _buildSeleniumSession(string $url, Tokens $tokens): void {
-        $js = file_get_contents(__DIR__ . "/../js/fetch.js");
+        $js = file_get_contents(__DIR__ . "/../../js/fetch.js");
         // Create session
         $tmpDriver = RemoteWebDriver::create($url, DesiredCapabilities::chrome());
         $this->driver = (new SeleniumStealth($tmpDriver))->usePhpWebriverClient()->makeStealth();
@@ -94,10 +95,10 @@ class Selenium {
             "source" => $js
         ]);
 
-        $this->driver->get("https://www.tiktok.com/@tiktok");
+        $this->driver->get(self::DEFAULT_TIKTOK_URL);
 
         // Add captcha cookie to Selenium's jar
-        if ($tokens->getVerifyFp() !== "") {
+        if ($tokens->getVerifyFp() !== '') {
             $cookie = new Cookie("s_v_web_id", $tokens->getVerifyFp());
             $cookie->setDomain(".tiktok.com");
             $cookie->setSecure(true);
