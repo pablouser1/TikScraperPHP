@@ -14,7 +14,7 @@ use TikScraper\Helpers\Tokens;
 
 class Selenium {
     private const DEFAULT_DRIVER_URL = "http://localhost:4444";
-    private const DEFAULT_TIKTOK_URL = "https://www.tiktok.com/";
+    private const DEFAULT_TIKTOK_URL = "https://www.tiktok.com/feedback/";
 
     private RemoteWebDriver $driver;
 
