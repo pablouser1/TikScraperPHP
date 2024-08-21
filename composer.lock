@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6bbea8724bc0fbfea840ea9a02a646c4",
+    "content-hash": "b8c307dfc18dd21b6e0dd93d7a5ad92e",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -600,36 +600,6 @@
                 "source": "https://github.com/ralouphie/getallheaders/tree/develop"
             },
             "time": "2019-03-08T08:55:37+00:00"
-        },
-        {
-            "name": "sapistudio/seleniumstealth",
-            "version": "1.0.3",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Sapistudio/SeleniumStealth.git",
-                "reference": "4b392077e3d609fed564b78ae2e8becb98f01957"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Sapistudio/SeleniumStealth/zipball/4b392077e3d609fed564b78ae2e8becb98f01957",
-                "reference": "4b392077e3d609fed564b78ae2e8becb98f01957",
-                "shasum": ""
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "SapiStudio\\SeleniumStealth\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "support": {
-                "issues": "https://github.com/Sapistudio/SeleniumStealth/issues",
-                "source": "https://github.com/Sapistudio/SeleniumStealth/tree/1.0.3"
-            },
-            "time": "2022-01-10T20:04:41+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",

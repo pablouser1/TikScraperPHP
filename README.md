@@ -12,8 +12,7 @@ $api = new \TikScraper\Api([
     'verify_fp' => 'verify_...', // Cookie used for skipping captcha requests
     'device_id' => '596845...' // Custom device id
     'user_agent' => 'YOUR_CUSTOM_USER_AGENT_HERE',
-    'proxy' => 'http://user:password@hostname:port',
-    'cookie_path' => '/your/custom/path/here/tiktok.json' // Path to store Guzzle's cookies, defaults to /tmp/tiktok.json
+    'proxy' => 'http://user:password@hostname:port'
 ], $cacheEngine);
 
 $tag = $api->hashtag('funny');
@@ -46,6 +45,7 @@ TikScrapperPHP supports caching requests, to use it you need to implement [ICach
 
 HUGE thanks to the following projects, this wouldn't be possible without their help
 
+* [puppeteer-extra-plugin-stealth](https://github.com/berstend/puppeteer-extra/blob/master/packages/puppeteer-extra-plugin-stealth), ported library to PHP
 * [TikTok-API-PHP](https://github.com/ssovit/TikTok-API-PHP)
 * [TikTok-Api](https://github.com/davidteather/TikTok-Api)
 * [tiktok-signature](https://github.com/carcabot/tiktok-signature)
