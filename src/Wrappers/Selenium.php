@@ -39,7 +39,12 @@ class Selenium {
 
         // Chrome flags
         $opts = new ChromeOptions();
-        $opts->setExperimentalOption("excludeSwitches", ["enable-automation"]);
+        $opts->setExperimentalOption("excludeSwitches", [
+            "enable-automation",
+            "disable-extensions",
+            "disable-default-apps",
+            "disable-component-extensions-with-background-pages"
+        ]);
 
         if (!$debug) {
             // Enable headless if not debugging
@@ -63,7 +68,7 @@ class Selenium {
         }
 
         $cap = DesiredCapabilities::chrome();
-        $cap->setCapability(ChromeOptions::CAPABILITY_W3C, $opts);
+        $cap->setCapability(ChromeOptions::CAPABILITY, $opts);
 
         // Get sessionç
         $sessions = $this->_getSessions($browser["url"]);
