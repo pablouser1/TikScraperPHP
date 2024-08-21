@@ -4,7 +4,7 @@ namespace TikScraper\Downloaders;
 use TikScraper\Interfaces\IDownloader;
 
 /**
- * Video downloader using TikTok's internal API
+ * Video downloader using TikTok's internal API from WebApi
  */
 class DefaultDownloader extends BaseDownloader implements IDownloader {
     public function __construct(array $config = []) {
@@ -12,7 +12,7 @@ class DefaultDownloader extends BaseDownloader implements IDownloader {
     }
 
     /**
-     * Download video with watermark using Webapp API
+     * Download video with watermark using downloadAddr
      * @param string $url Video URL
      * @return void
      */
@@ -32,75 +32,12 @@ class DefaultDownloader extends BaseDownloader implements IDownloader {
     }
 
     /**
-     * Downloads video without watermark using Android/iOS API
-     * @link https://github.com/Sharqo78/VTik/blob/main/src/extractors/extractors.v
-     * @todo Currently broken
+     * Downloads video without watermark using playAddr.
+     * The method is identical from watermark, the url is the only thing that changes
+     * @param string $url Video URL
+     * @return void
      */
     public function noWatermark(string $url): void {
-        echo "CURRENTLY BROKEN!";
-        /*
-        $id = Converter::urlToId($url);
-
-        $time = time();
-        $query = [
-            'aweme_id' => $id,
-            'version_name' => '26.1.3',
-            'version_code' => 2613,
-            'build_number' => '26.1.3',
-            'manifest_version_code' => 2613,
-            'update_version_code' => 2613,
-            'openudid' => Algorithm::randomString(8),
-            'uuid' => Algorithm::randomString(8),
-            '_rticket' => $time,
-            'ts' => $time * 1000,
-            'device_brand' => 'Google',
-            'device_type' => 'Pixel%204',
-            'device_platform' => 'android',
-            'resolution' => '1080*1920',
-            'dpi' => 420,
-            'os_version' => 10,
-            'os_api' => 29,
-            'carrier_region' => 'US',
-            'sys_region' => 'US',
-            'region' => 'US',
-            'app_name' => 'trill',
-            'app_language' => 'en',
-            'language' => 'en',
-            'timezone_name' => 'America/New_York',
-            'timezone_offset' => -14400,
-            'channel' => 'googleplay',
-            'ac' => 'wifi',
-            'mcc_mnc' => 310260,
-            'is_my_cn' => 0,
-            'aid' => 1180,
-            'ssmix' => 'a',
-            'as' => 'a1qwert123',
-            'cp' => 'cbfhckdckkde1'
-        ];
-
-        $client = $this->guzzle->getClient();
-
-        $data = $client->get('https://api-h2.tiktokv.com/aweme/v1/feed/?' . http_build_query($query), [
-            "http_errors" => false
-        ]);
-
-        if ($data->getStatusCode() === 200) {
-            $json = json_decode($data->getBody());
-            $nowatermark_url = $json->aweme_list[0]->video->play_addr->url_list[0];
-
-            $res = $client->get($nowatermark_url, [
-                "stream" => true,
-                "http_errors" => false
-            ]);
-
-            $body = $res->getBody();
-
-            while (!$body->eof()) {
-                echo $body->read(self::BUFFER_SIZE);
-            }
-        } else {
-            die("Error while fetching data");
-        }
-        */
+        $this->watermark($url);
     }
 }
