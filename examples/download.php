@@ -1,10 +1,16 @@
 <?php
-
 use TikScraper\Constants\DownloadMethods;
 use TikScraper\Download;
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/common.php';
 
-$downloader = new Download(DownloadMethods::DEFAULT);
+$api = buildApi();
 
-$downloader->url("https://www.tiktok.com/@willsmith/video/7079929224945093934", "example", false);
+$user = $api->user('willsmith');
+$user->feed();
+
+if ($user->ok()) {
+    $downloader = new Download(DownloadMethods::DEFAULT);
+    $downloader->url($user->getFeed()->items[0]->video->playAddr, 'tiktok-video', false);
+}
