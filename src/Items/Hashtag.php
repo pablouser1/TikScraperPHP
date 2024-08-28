@@ -49,7 +49,7 @@ class Hashtag extends Base {
                     "from_page" => "hashtag"
                 ];
                 $req = $this->sender->sendApi('/challenge/item_list/', $query, "/tag/" . $this->term);
-                $this->feed = Feed::fromReq($req, $cursor);
+                $this->feed = Feed::fromReq($req);
             }
         }
         return $this;

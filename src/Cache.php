@@ -54,7 +54,7 @@ class Cache {
      * @return \TikScraper\Models\Feed Feed data
      */
     public function handleFeed(string $key): Feed {
-        return Feed::fromCache($this->get($key));
+        return Feed::fromObj($this->get($key));
     }
 
     /**
@@ -63,6 +63,6 @@ class Cache {
      * @return \TikScraper\Models\Info Info data
      */
     public function handleInfo(string $key): Info {
-        return Info::fromCache($this->get($key));
+        return Info::fromObj($this->get($key));
     }
 }

@@ -7,7 +7,7 @@ class Request {
      * @param array $querry Custom query
      * @param string $verifyFp VerifyFP token
      * @param string $deviceid Device ID token
-     * @todo Use more data from Selenium
+     * @todo investigate odinId origin
      * @return string Query as a string with a '?' prefix
      */
     static public function buildQuery(array $query, object $nav, string $verifyFp, string $device_id): string {
@@ -38,6 +38,7 @@ class Request {
             "screen_width" => 1920,
             "screen_height" => 1080,
             "tz_name" => "America/Chicago",
+            "user_is_login" => false,
             "webcast_language" => "en",
             "verifyFp" => $verifyFp
         ]);

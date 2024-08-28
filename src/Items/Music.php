@@ -50,7 +50,7 @@ class Music extends Base {
                     "count" => 30
                 ];
                 $req = $this->sender->sendApi('/music/item_list/', $query);
-                $this->feed = Feed::fromReq($req, $cursor);
+                $this->feed = Feed::fromReq($req);
             }
         }
 

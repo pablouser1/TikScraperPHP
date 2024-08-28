@@ -61,7 +61,7 @@ class User extends Base {
                 ];
 
                 $req = $this->sender->sendApi('/post/item_list/', $query, "/@" . $this->term);
-                $this->feed = Feed::fromReq($req, $cursor);
+                $this->feed = Feed::fromReq($req);
             }
         }
         return $this;

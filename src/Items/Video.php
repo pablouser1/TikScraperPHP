@@ -33,7 +33,6 @@ class Video extends Base {
         if ($info->meta->success) {
             if ($req->hasRehidrate() && isset($req->rehidrateState->__DEFAULT_SCOPE__->{'webapp.video-detail'})) {
                 $root = $req->rehidrateState->__DEFAULT_SCOPE__->{'webapp.video-detail'};
-                $this->state = $req->rehidrateState;
                 $this->item = $root->itemInfo->itemStruct;
                 $info->setDetail($this->item->author);
                 $info->setStats($this->item->stats);
@@ -49,7 +48,7 @@ class Video extends Base {
         if ($this->infoOk()) {
             $preloaded = $this->handleFeedCache();
             if (!$preloaded && $this->item !== null) {
-                $this->feed = Feed::fromCache((object) [
+                $this->feed = Feed::fromObj((object) [
                     "items" => [$this->item],
                     "hasMore" => false,
                     "cursor" => 0

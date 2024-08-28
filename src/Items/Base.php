@@ -2,6 +2,7 @@
 namespace TikScraper\Items;
 
 use TikScraper\Cache;
+use TikScraper\Constants\CachingMode;
 use TikScraper\Models\Feed;
 use TikScraper\Models\Full;
 use TikScraper\Models\Info;
@@ -20,11 +21,11 @@ abstract class Base {
     protected Sender $sender;
     private Cache $cache;
 
+    /** Enable caching for Item */
+    protected CachingMode $caching_mode = CachingMode::FULL;
+
     protected Info $info;
     protected Feed $feed;
-
-    /** State used for getting item list from HTML */
-    protected object $state;
 
     function __construct(string $term, string $type, Sender $sender, Cache $cache) {
         $this->term = urlencode($term);
@@ -33,9 +34,11 @@ abstract class Base {
         $this->cache = $cache;
 
         // Sets info from cache if it exists
-        $key = $this->getCacheKey();
-        if ($this->cache->exists($key)) {
-            $this->info = $this->cache->handleInfo($key);
+        if ($this->caching_mode === CachingMode::FULL) {
+            $key = $this->getCacheKey();
+            if ($this->cache->exists($key)) {
+                $this->info = $this->cache->handleInfo($key);
+            }
         }
     }
 
@@ -43,12 +46,18 @@ abstract class Base {
      * Destruct function, handles cache
      */
     function __destruct() {
+        if ($this->caching_mode === CachingMode::NONE) {
+            return;
+        }
+
         $key_info = $this->getCacheKey();
         $key_feed = $this->getCacheKey(true);
 
         // Info
-        if ($this->infoOk() && !$this->cache->exists($key_info)) {
-            $this->cache->set($key_info, $this->info->toJson());
+        if ($this->caching_mode === CachingMode::FULL) {
+            if ($this->infoOk() && !$this->cache->exists($key_info)) {
+                $this->cache->set($key_info, $this->info->toJson());
+            }
         }
 
         // Feed

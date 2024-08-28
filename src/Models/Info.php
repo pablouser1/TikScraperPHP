@@ -13,7 +13,7 @@ class Info extends Base {
         return $info;
     }
 
-    public static function fromCache(object $cache): self {
+    public static function fromObj(object $cache): self {
         $info = new Info;
         $info->setMeta(Responses::ok());
         if (isset($cache->meta->og)) {

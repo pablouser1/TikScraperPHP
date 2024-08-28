@@ -2,6 +2,8 @@
 namespace TikScraper;
 
 use TikScraper\Interfaces\ICache;
+use TikScraper\Items\Following;
+use TikScraper\Items\ForYou;
 use TikScraper\Items\User;
 use TikScraper\Items\Hashtag;
 use TikScraper\Items\Music;
@@ -55,5 +57,21 @@ class Api {
      */
     public function video(string $term): Video {
         return new Video($term, $this->sender, $this->cache);
+    }
+
+    /**
+     * Gets for you feed.
+     * @return \TikScraper\Items\ForYou
+     */
+    public function foryou(): ForYou {
+        return new ForYou($this->sender, $this->cache);
+    }
+
+    /**
+     * Gets recommended users
+     * @return \TikScraper\Items\Following
+     */
+    public function following(): Following {
+        return new Following($this->sender, $this->cache);
     }
 }
